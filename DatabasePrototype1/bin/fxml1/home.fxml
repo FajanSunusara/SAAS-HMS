@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="homePage" xmlns:fx="http://javafx.com/fxml" stylesheets="@/css/app.css, @/css/sidebar.css" fx:controller="application.controllers.HomeController">
+
+<left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+
+<center>
+<VBox spacing="20" styleClass="main-content-area">
+<padding>
+<Insets top="20" right="20" bottom="20" left="20" />
+</padding>
+
+<!-- Header with Dashboard Button -->
+<HBox alignment="CENTER" spacing="20" styleClass="header-container">
+<Label styleClass="top-hotel-logo" text="Hotel Rooms" />
+<Region HBox.hgrow="ALWAYS"/> <!-- Spacer -->
+
+</HBox>
+
+<!-- Color Legend -->
+<HBox spacing="15" styleClass="legend-container" alignment="CENTER_LEFT">
+<Label styleClass="legend-title" text="Status Legend:"/>
+<HBox spacing="8" alignment="CENTER_LEFT">
+<HBox styleClass="legend-item">
+<Region styleClass="legend-color, legend-empty"/>
+<Label styleClass="legend-text" text="Available"/>
+</HBox>
+<HBox spacing="8" alignment="CENTER_LEFT">
+<Region styleClass="legend-color, legend-occupied"/>
+<Label styleClass="legend-text" text="Occupied"/>
+</HBox>
+<HBox spacing="8" alignment="CENTER_LEFT">
+<Region styleClass="legend-color, legend-cleaning"/>
+<Label styleClass="legend-text" text="Cleaning"/>
+</HBox>
+<HBox spacing="8" alignment="CENTER_LEFT">
+<Region styleClass="legend-color, legend-maintenance"/>
+<Label styleClass="legend-text" text="Maintenance"/>
+</HBox>
+<HBox spacing="8" alignment="CENTER_LEFT">
+<Region styleClass="legend-color, legend-reserved"/>
+<Label styleClass="legend-text" text="Reserved"/>
+</HBox>
+</HBox>
+</HBox>
+
+<!-- Filters -->
+<HBox styleClass="filter-container" alignment="CENTER_LEFT" spacing="15">
+<Label styleClass="filter-group-label" text="Filters:"/>
+<ComboBox fx:id="roomTypeFilter" promptText="Room Type" styleClass="combo-box"/>
+<ComboBox fx:id="statusFilter" promptText="Status" styleClass="combo-box"/>
+<ComboBox fx:id="floorFilter" promptText="Floor" styleClass="combo-box"/>
+<ComboBox fx:id="priceRangeFilter" promptText="Price Range" styleClass="combo-box"/>
+<Button fx:id="dashboardButton" styleClass="dashboard-button" text="📊 Dashboard" onAction="#showDashboard"/>
+</HBox>
+
+<Separator/>
+
+<!-- Room Cards Area -->
+<ScrollPane fx:id="roomScroll" fitToWidth="true" styleClass="room-scroll-pane" VBox.vgrow="ALWAYS">
+<GridPane fx:id="roomGrid" hgap="15" vgap="15" styleClass="room-grid-container">
+<padding>
+<Insets top="15" right="15" bottom="15" left="15" />
+</padding>
+</GridPane>
+</ScrollPane>
+
+</VBox>
+</center>
+
+</BorderPane>

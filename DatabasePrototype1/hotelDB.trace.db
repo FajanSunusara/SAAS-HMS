@@ -1,0 +1,10 @@
+2025-09-11 22:20:20.413033+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "BOOKINGS" not found (this database is empty); SQL statement:
+    SELECT g.name, g.phone, g.email, g.address,
+           b.room_no, b.check_in_date, b.check_out_date, b.status, b.total_amount,
+           COALESCE(p.amount,0) as paid, p.method, p.transaction_id
+    FROM bookings b
+    JOIN guests g ON b.guest_id = g.id
+    LEFT JOIN payments p ON b.id = p.booking_id
+    WHERE g.name LIKE ? OR g.phone LIKE ? OR CAST(b.id AS VARCHAR) LIKE ?
+ [42104-232]

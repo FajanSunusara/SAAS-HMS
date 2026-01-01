@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="application.controllers.LoginController"
+           stylesheets="@/css/auth.css">
+
+    <!-- Background Gradient -->
+    <Rectangle fill="linear-gradient(to bottom, #2c3e50, #34495e)"
+               width="900" height="520" />
+
+    <!-- Main Container -->
+    <HBox alignment="CENTER" maxWidth="760" maxHeight="440"
+          style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 0);">
+
+        <!-- Branding Panel -->
+        <VBox alignment="CENTER" prefWidth="300" prefHeight="440"
+              style="-fx-background-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -fx-background-radius: 10 10 10 10;">
+            <children>
+                <Label text="🏨" style="-fx-font-size: 48px;" />
+                <Label text="GRAND HOTEL"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="MANAGEMENT"
+                       style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.8);"/>
+            </children>
+            <padding><Insets top="20"/></padding>
+        </VBox>
+
+        <!-- Form Panel -->
+        <VBox alignment="CENTER" spacing="15" prefWidth="460" prefHeight="440"
+              style="-fx-background-color: white; -fx-background-radius: 10 10 10 10;">
+            <children>
+                <Label text="Sign In"
+                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label text="Enter your credentials"
+                       style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+
+                <VBox spacing="6" maxWidth="300">
+                    <Label text="Username" style="-fx-font-size: 12px;"/>
+                    <TextField fx:id="usernameField" promptText="Enter username" styleClass="auth-input"/>
+                </VBox>
+
+                <VBox spacing="6" maxWidth="300">
+                    <Label text="Password" style="-fx-font-size: 12px;"/>
+                    <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="auth-input"/>
+                </VBox>
+
+                <Label fx:id="errorMessageLabel" visible="false" styleClass="error-message" maxWidth="300" wrapText="true"/>
+
+                <Button text="Sign In" onAction="#handleLoginButton" maxWidth="300"
+                        styleClass="auth-button" style="-fx-padding: 8 0;"/>
+
+                <HBox alignment="CENTER" spacing="5">
+                    <Label text="No account?" style="-fx-font-size: 12px; -fx-text-fill: #6c757d;"/>
+                    <Hyperlink text="Sign up" onAction="#handleSignupLink" styleClass="auth-hyperlink"/>
+                </HBox>
+            </children>
+        </VBox>
+    </HBox>
+</StackPane>

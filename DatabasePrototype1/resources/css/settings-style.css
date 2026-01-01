@@ -1,0 +1,339 @@
+/* Modern Pastel Theme for HMS Settings Page */
+
+/* Root Variables */
+.root {
+    -fx-primary-color: #87CEEB;        /* Sky Blue */
+    -fx-secondary-color: #F0F8FF;      /* Alice Blue */
+    -fx-accent-color: #98FB98;         /* Pale Green */
+    -fx-warning-color: #FFB6C1;        /* Light Pink */
+    -fx-danger-color: #FFA07A;         /* Light Salmon */
+    -fx-text-primary: #2F4F4F;         /* Dark Slate Gray */
+    -fx-text-secondary: #708090;       /* Slate Gray */
+    -fx-background-light: #FAFAFA;     /* Very Light Gray */
+    -fx-background-white: #FFFFFF;
+    -fx-border-light: #E6E6FA;         /* Lavender */
+    -fx-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Main Layout */
+.border-pane {
+    -fx-background-color: -fx-background-light;
+}
+
+/* Top Navbar */
+.navbar {
+    -fx-background-color: linear-gradient(to bottom, -fx-primary-color, #7EC8E3);
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+    -fx-effect: dropshadow(gaussian, -fx-shadow, 10, 0, 0, 2);
+}
+
+.hotel-logo {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+}
+
+.page-title {
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-font-size: 16px;
+}
+
+.user-name {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.profile-avatar {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-text-fill: white;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-max-width: 35px;
+    -fx-max-height: 35px;
+    -fx-font-weight: bold;
+}
+
+.profile-avatar:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-cursor: hand;
+}
+
+/* Navigation Tabs in Navbar */
+.tab-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-padding: 8 15;
+    -fx-alignment: CENTER;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-cursor: hand;
+}
+
+.tab-button.active-tab {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: white;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+
+/* Content Area */
+.content-area {
+    -fx-background-color: -fx-background-light;
+    -fx-padding: 0;
+}
+
+.tab-content {
+    -fx-background-color: transparent;
+    -fx-spacing: 20;
+}
+
+.content-title {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10 0;
+}
+
+.section-title {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 18px;
+    -fx-font-weight: 600;
+    -fx-padding: 20 0 10 0;
+}
+
+/* Action Buttons */
+.action-button {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 8 16;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, -fx-shadow, 4, 0, 0, 2);
+    -fx-transition: all 0.15s ease;
+}
+
+.add-button {
+    -fx-background-color: -fx-accent-color;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.add-button:hover {
+    -fx-background-color: derive(-fx-accent-color, -10%);
+}
+
+.edit-button {
+    -fx-background-color: -fx-primary-color;
+    -fx-text-fill: white;
+}
+
+.edit-button:hover {
+    -fx-background-color: derive(-fx-primary-color, -10%);
+}
+
+.delete-button {
+    -fx-background-color: -fx-danger-color;
+    -fx-text-fill: white;
+}
+
+.delete-button:hover {
+    -fx-background-color: derive(-fx-danger-color, -10%);
+}
+
+.save-button {
+    -fx-background-color: -fx-accent-color;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.save-button:hover {
+    -fx-background-color: derive(-fx-accent-color, -10%);
+}
+
+.upload-button {
+    -fx-background-color: -fx-warning-color;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.upload-button:hover {
+    -fx-background-color: derive(-fx-warning-color, -10%);
+}
+
+/* Tables */
+.data-table {
+    -fx-background-color: -fx-background-white;
+    -fx-border-color: -fx-border-light;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, -fx-shadow, 6, 0, 0, 2);
+}
+
+.data-table .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, -fx-secondary-color, derive(-fx-secondary-color, -5%));
+    -fx-border-color: -fx-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.data-table .column-header {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-padding: 12 8;
+}
+
+.data-table .table-row-cell {
+    -fx-background-color: -fx-background-white;
+    -fx-border-color: -fx-border-light;
+    -fx-border-width: 0 0 1 0;
+    -fx-transition: background-color 0.15s ease;
+}
+
+.data-table .table-row-cell:filled:selected {
+    -fx-background-color: derive(-fx-primary-color, 80%);
+}
+
+.data-table .table-row-cell:filled:hover {
+    -fx-background-color: derive(-fx-secondary-color, 50%);
+}
+
+.data-table .table-row-cell:odd {
+    -fx-background-color: derive(-fx-secondary-color, 90%);
+}
+
+.data-table .table-cell {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 12px;
+    -fx-padding: 10 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.data-table .table-view:focused .table-row-cell:filled:focused:selected {
+    -fx-background-color: derive(-fx-primary-color, 60%);
+}
+
+/* Form Elements */
+.form-label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+
+.text-field {
+    -fx-background-color: -fx-background-white;
+    -fx-border-color: -fx-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-field:focused {
+    -fx-border-color: -fx-primary-color;
+    -fx-border-width: 2;
+}
+
+.text-area {
+    -fx-background-color: -fx-background-white;
+    -fx-border-color: -fx-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-area:focused {
+    -fx-border-color: -fx-primary-color;
+    -fx-border-width: 2;
+}
+
+.combo-box {
+    -fx-background-color: -fx-background-white;
+    -fx-border-color: -fx-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 13px;
+}
+
+.combo-box:focused {
+    -fx-border-color: -fx-primary-color;
+    -fx-border-width: 2;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: -fx-secondary-color;
+    -fx-background-radius: 0 6 6 0;
+}
+
+/* Preview Label */
+.preview-label {
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+/* Modal Styles */
+.dialog-pane {
+    -fx-background-color: -fx-background-white;
+    -fx-border-color: -fx-border-light;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 15, 0, 0, 5);
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -fx-secondary-color;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-weight: 600;
+    -fx-font-size: 16px;
+}
+
+/* Scrollbar Styling */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: -fx-secondary-color;
+    -fx-border-color: transparent;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-primary-color;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: derive(-fx-primary-color, -10%);
+}

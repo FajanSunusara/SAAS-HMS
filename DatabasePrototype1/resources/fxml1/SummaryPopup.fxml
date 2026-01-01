@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefWidth="600" prefHeight="550.0" styleClass="card" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.SummaryPopupController" stylesheets="@../css/checkout.css">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    
+    <children>
+        <Label styleClass="section-title" text="Booking &amp; Billing Summary">
+            <padding>
+                <Insets bottom="15.0" />
+            </padding>
+        </Label>
+        
+        <GridPane VBox.vgrow="ALWAYS" hgap="15" vgap="10"> <!-- Reduced hgap and vgap -->
+            <columnConstraints>
+                <ColumnConstraints hgrow="NEVER"/> <!-- Label 1 (Guest Name, Duration, Room Charges, Total Amount, Amount Paid) -->
+                <ColumnConstraints hgrow="ALWAYS"/> <!-- Value 1 (summaryName, summaryDuration, summaryRoomCharges, summaryTotal, summaryAmountPaid) -->
+                <ColumnConstraints hgrow="NEVER"/> <!-- Label 2 (Room, Status, GST & Other, Pending Amount) -->
+                <ColumnConstraints hgrow="ALWAYS"/> <!-- Value 2 (summaryRoomTypeNo, summaryStatus, summaryGstDiscounts, summaryPendingAmount) -->
+            </columnConstraints>
+            
+            <rowConstraints>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/> <!-- Spacer row or for a separator if needed -->
+                <RowConstraints vgrow="NEVER"/> <!-- Charges Breakdown Heading -->
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/> <!-- Spacer row or for a separator if needed -->
+                <RowConstraints vgrow="NEVER"/> <!-- Payment Details Heading -->
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="ALWAYS"/> <!-- Spacer to push buttons to bottom -->
+            </rowConstraints>
+
+            <!-- Guest Information -->
+            <Label styleClass="summary-label" text="Guest Name:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label fx:id="summaryName" styleClass="summary-value" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            
+            <Label styleClass="summary-label" text="Room:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+            <Label fx:id="summaryRoomTypeNo" styleClass="summary-value" text="-" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+            <Label styleClass="summary-label" text="Duration:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Label fx:id="summaryDuration" styleClass="summary-value" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            
+            <Label styleClass="summary-label" text="Status:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+            <Label fx:id="summaryStatus" styleClass="summary-value" text="-" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+            <!-- Charges Breakdown Heading -->
+            <Label styleClass="summary-heading" text="💰 Charges Breakdown" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="4">
+                <padding>
+                    <Insets bottom="5.0" />
+                </padding>
+            </Label>
+
+            <Label styleClass="summary-label" text="Room Charges:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+            <Label fx:id="summaryRoomCharges" styleClass="summary-value" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+            
+            <Label styleClass="summary-label" text="GST &amp; Other:" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+            <Label fx:id="summaryGstDiscounts" styleClass="summary-value" text="-" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
+
+            <Label styleClass="summary-label-total" text="Total Amount:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+            <Label fx:id="summaryTotal" styleClass="summary-value-total" text="-" GridPane.columnIndex="1" GridPane.rowIndex="5" GridPane.columnSpan="3"/>
+
+            <!-- Payment Details Heading -->
+            <Label styleClass="summary-heading" text="💳 Payment Details" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="4">
+                <padding>
+                    <Insets bottom="5.0" />
+                </padding>
+            </Label>
+
+            <Label styleClass="summary-label" text="Amount Paid:" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+            <Label fx:id="summaryAmountPaid" styleClass="summary-value" text="-" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+            
+            <Label styleClass="summary-label-pending" text="Pending Amount:" GridPane.columnIndex="2" GridPane.rowIndex="8"/>
+            <Label fx:id="summaryPendingAmount" styleClass="summary-value-pending" text="-" GridPane.columnIndex="3" GridPane.rowIndex="8"/>
+
+        </GridPane>
+
+      <!-- Action Buttons -->
+<GridPane hgap="10" vgap="10"> <!-- Reduced gap, added column/row constraints -->
+    <columnConstraints>
+        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints vgrow="NEVER"/>
+        <RowConstraints vgrow="NEVER"/>
+        <RowConstraints vgrow="NEVER"/>
+    </rowConstraints>
+
+    <Button fx:id="fullFinalSettlementBtn" onAction="#handleFullFinalSettlement"  GridPane.columnIndex="0" GridPane.rowIndex="0"
+            maxWidth="Infinity" styleClass="summary-action-button-primary" 
+            text="💰 Full &amp; Final Settlement">
+        <graphic>
+            <ImageView fx:id="summarySettleIconView" fitWidth="18" fitHeight="18"/>
+        </graphic>
+    </Button>
+    
+    <Button fx:id="checkoutBtn" onAction="#handleMarkAsCheckedOut"  GridPane.columnIndex="0" GridPane.rowIndex="1"
+            maxWidth="Infinity" styleClass="summary-action-button-primary" 
+            text="🚪 Mark as Checked-Out">
+        <graphic>
+            <ImageView fx:id="summaryCheckedOutIconView" fitWidth="18" fitHeight="18"/>
+        </graphic>
+    </Button>
+    
+    <Button fx:id="printBillBtn" onAction="#handlePrintFinalBill"  GridPane.columnIndex="1" GridPane.rowIndex="0"
+            maxWidth="Infinity" styleClass="summary-action-button" 
+            text="🖨️ Print Final Bill">
+        <graphic>
+            <ImageView fx:id="summaryPrintIconView" fitWidth="18" fitHeight="18"/>
+        </graphic>
+    </Button>
+    
+    <Button fx:id="extendStayBtn" onAction="#handleExtendStay"  GridPane.columnIndex="1" GridPane.rowIndex="1"
+            maxWidth="Infinity" styleClass="summary-action-button" 
+            text="📅 Extend Stay">
+        <graphic>
+            <ImageView fx:id="summaryExtendIconView" fitWidth="18" fitHeight="18"/>
+        </graphic>
+    </Button>
+    
+    <!-- NEW REFUND BUTTON -->
+    <Button fx:id="refundPaymentBtn" onAction="#handleRefundPayment" GridPane.columnIndex="0" GridPane.rowIndex="2"
+            maxWidth="Infinity" styleClass="summary-action-button-refund" 
+            text="🔄 Refund Payment" GridPane.columnSpan="2">
+        <graphic>
+            <ImageView fx:id="summaryRefundIconView" fitWidth="18" fitHeight="18"/>
+        </graphic>
+    </Button>
+</GridPane>
+
+    </children>
+</VBox>

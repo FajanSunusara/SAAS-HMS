@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="rootPane" xmlns:fx="http://javafx.com/fxml" stylesheets="@/css/inventory.css, @/css/sidebar.css" fx:controller="application.controllers.InventoryController">
+
+    <!-- Sidebar -->
+  <!-- Sidebar Integration -->
+   <left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+    <!-- Center Content -->
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="main-scroll">
+            <VBox spacing="12" alignment="TOP_CENTER" styleClass="main-container" minHeight="600">
+                <padding>
+                    <Insets top="15" bottom="15" left="15" right="15"/>
+                </padding>
+
+                <!-- Compact Header Section -->
+                <VBox spacing="10" styleClass="header-section">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="Inventory Management" styleClass="header-label"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        
+                        <!-- Compact Action Buttons -->
+                        <Button text="+ Add" fx:id="btnAddItem" styleClass="action-button primary" prefWidth="80"/>
+                        <Button text="Import" fx:id="btnBulkImport" styleClass="action-button secondary" prefWidth="80"/>
+                        <Button text="Report" fx:id="btnGenerateReport" styleClass="action-button secondary" prefWidth="80"/>
+                        <Button text="⟲" fx:id="btnRefresh" styleClass="action-button refresh" prefWidth="35"/>
+                    </HBox>
+                    
+                    <!-- Search and Filter Controls in One Row -->
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <VBox spacing="3">
+                            <Label text="Search:" styleClass="label-small"/>
+                            <TextField fx:id="searchField" promptText="Item name..." styleClass="search-field" prefWidth="180"/>
+                        </VBox>
+                        
+                        <VBox spacing="3">
+                            <Label text="Category:" styleClass="label-small"/>
+                            <ComboBox fx:id="categoryFilter" promptText="All" styleClass="filter-combo" prefWidth="120"/>
+                        </VBox>
+                        
+                        <VBox spacing="3">
+                            <Label text="Status:" styleClass="label-small"/>
+                            <ComboBox fx:id="statusFilter" promptText="All" styleClass="filter-combo" prefWidth="100"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Compact Statistics Cards -->
+                <HBox spacing="12" alignment="CENTER" styleClass="stats-container">
+                    <VBox alignment="CENTER" styleClass="stat-card" prefWidth="120">
+                        <Label fx:id="lblTotalItems" text="0" styleClass="stat-number"/>
+                        <Label text="Total Items" styleClass="stat-label"/>
+                    </VBox>
+                    <VBox alignment="CENTER" styleClass="stat-card" prefWidth="120">
+                        <Label fx:id="lblLowStock" text="0" styleClass="stat-number low-stock"/>
+                        <Label text="Low Stock" styleClass="stat-label"/>
+                    </VBox>
+                    <VBox alignment="CENTER" styleClass="stat-card" prefWidth="120">
+                        <Label fx:id="lblOutOfStock" text="0" styleClass="stat-number out-of-stock"/>
+                        <Label text="Out of Stock" styleClass="stat-label"/>
+                    </VBox>
+                    <VBox alignment="CENTER" styleClass="stat-card" prefWidth="120">
+                        <Label fx:id="lblPendingOrders" text="0" styleClass="stat-number pending"/>
+                        <Label text="Pending Orders" styleClass="stat-label"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Main Content with TabPane -->
+                <TabPane fx:id="mainTabs" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" minHeight="400">
+                    <tabs>
+                        <!-- Inventory Items Tab -->
+                        <Tab text="Inventory Items">
+                            <VBox spacing="8" minHeight="350">
+                                <padding>
+                                    <Insets top="10" bottom="10" left="10" right="10"/>
+                                </padding>
+
+                                <!-- Compact Table Header -->
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <Label text="Items" styleClass="section-header"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                </HBox>
+
+                                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="inventoryTable" styleClass="modern-table" minHeight="300">
+                                        <columns>
+                                            <TableColumn text="ID" fx:id="colItemId" prefWidth="50" styleClass="col-center"/>
+                                            <TableColumn text="Item Name" fx:id="colItemName" prefWidth="160"/>
+                                            <TableColumn text="Category" fx:id="colCategory" prefWidth="100"/>
+                                            <TableColumn text="Location" fx:id="colLocation" prefWidth="100"/>
+                                            <TableColumn text="Available" fx:id="colAvailableQty" prefWidth="80" styleClass="col-center"/>
+                                            <TableColumn text="Reserved" fx:id="colReservedQty" prefWidth="80" styleClass="col-center"/>
+                                            <TableColumn text="Min" fx:id="colMinStock" prefWidth="60" styleClass="col-center"/>
+                                            <TableColumn text="Price" fx:id="colUnitPrice" prefWidth="80" styleClass="col-currency"/>
+                                            <TableColumn text="Value" fx:id="colTotalValue" prefWidth="90" styleClass="col-currency"/>
+                                            <TableColumn text="Status" fx:id="colStatus" prefWidth="80" styleClass="col-center"/>
+                                            <TableColumn text="Updated" fx:id="colLastUpdated" prefWidth="110"/>
+                                            <TableColumn text="Actions" fx:id="colActions" prefWidth="120" styleClass="col-center"/>
+                                        </columns>
+                                        <placeholder>
+                                            <Label text="No inventory items found. Click 'Add' to get started." styleClass="placeholder-text"/>
+                                        </placeholder>
+                                    </TableView>
+                                </ScrollPane>
+                            </VBox>
+                        </Tab>
+                        
+                        <!-- Stock Movements Tab -->
+                        <Tab text="Stock Movements">
+                            <VBox spacing="8" minHeight="350">
+                                <padding>
+                                    <Insets top="10" bottom="10" left="10" right="10"/>
+                                </padding>
+                                
+                                <!-- Transaction Controls -->
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <Label text="Stock Movements" styleClass="section-header"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="New Transaction" fx:id="btnNewTransaction" styleClass="action-button primary" prefWidth="120"/>
+                                    <Button text="Export" fx:id="btnExportHistory" styleClass="action-button secondary" prefWidth="80"/>
+                                </HBox>
+
+                                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="transactionTable" styleClass="modern-table" minHeight="300">
+                                        <columns>
+                                            <TableColumn text="Date" fx:id="colTransDate" prefWidth="100"/>
+                                            <TableColumn text="Trans ID" fx:id="colTransId" prefWidth="100"/>
+                                            <TableColumn text="Item" fx:id="colTransItem" prefWidth="150"/>
+                                            <TableColumn text="Type" fx:id="colTransType" prefWidth="80"/>
+                                            <TableColumn text="Qty" fx:id="colTransQty" prefWidth="60" styleClass="col-center"/>
+                                            <TableColumn text="Location" fx:id="colTransLocation" prefWidth="120"/>
+                                            <TableColumn text="Reference" fx:id="colTransReference" prefWidth="110"/>
+                                            <TableColumn text="User" fx:id="colTransUser" prefWidth="100"/>
+                                            <TableColumn text="Notes" fx:id="colTransNotes" prefWidth="180"/>
+                                        </columns>
+                                    </TableView>
+                                </ScrollPane>
+                            </VBox>
+                        </Tab>
+                        
+                        <!-- Room Assignments Tab -->
+                        <Tab text="Room Assignments">
+                            <VBox spacing="8" minHeight="350">
+                                <padding>
+                                    <Insets top="10" bottom="10" left="10" right="10"/>
+                                </padding>
+                                
+                                <!-- Assignment Controls -->
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <Label text="Room Assignments" styleClass="section-header"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="Assign to Room" fx:id="btnAssignToRoom" styleClass="action-button primary" prefWidth="110"/>
+                                    <Button text="Bulk Assign" fx:id="btnBulkAssign" styleClass="action-button secondary" prefWidth="90"/>
+                                </HBox>
+
+                                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="assignmentTable" styleClass="modern-table" minHeight="300">
+                                        <columns>
+                                            <TableColumn text="Room" fx:id="colAssignRoom" prefWidth="80"/>
+                                            <TableColumn text="Item" fx:id="colAssignItem" prefWidth="150"/>
+                                            <TableColumn text="Qty" fx:id="colAssignQty" prefWidth="60" styleClass="col-center"/>
+                                            <TableColumn text="Assigned" fx:id="colAssignDate" prefWidth="100"/>
+                                            <TableColumn text="Status" fx:id="colAssignStatus" prefWidth="90"/>
+                                            <TableColumn text="By" fx:id="colAssignedBy" prefWidth="100"/>
+                                            <TableColumn text="Return Date" fx:id="colReturnDate" prefWidth="100"/>
+                                            <TableColumn text="Actions" fx:id="colAssignActions" prefWidth="100" styleClass="col-center"/>
+                                        </columns>
+                                    </TableView>
+                                </ScrollPane>
+                            </VBox>
+                        </Tab>
+                        
+                        <!-- Purchase Orders Tab -->
+                        <Tab text="Purchase Orders">
+                            <VBox spacing="8" minHeight="350">
+                                <padding>
+                                    <Insets top="10" bottom="10" left="10" right="10"/>
+                                </padding>
+                                
+                                <!-- Purchase Order Controls -->
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <Label text="Purchase Orders" styleClass="section-header"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="Create PO" fx:id="btnCreatePO" styleClass="action-button primary" prefWidth="90"/>
+                                    <Button text="Auto Generate" fx:id="btnAutoGenerate" styleClass="action-button secondary" prefWidth="110"/>
+                                </HBox>
+
+                                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="purchaseOrderTable" styleClass="modern-table" minHeight="300">
+                                        <columns>
+                                            <TableColumn text="PO Number" fx:id="colPONumber" prefWidth="100"/>
+                                            <TableColumn text="Vendor" fx:id="colPOVendor" prefWidth="130"/>
+                                            <TableColumn text="Order Date" fx:id="colPODate" prefWidth="100"/>
+                                            <TableColumn text="Expected" fx:id="colPOExpected" prefWidth="100"/>
+                                            <TableColumn text="Items" fx:id="colPOItems" prefWidth="70" styleClass="col-center"/>
+                                            <TableColumn text="Amount" fx:id="colPOAmount" prefWidth="100" styleClass="col-currency"/>
+                                            <TableColumn text="Status" fx:id="colPOStatus" prefWidth="90"/>
+                                            <TableColumn text="Actions" fx:id="colPOActions" prefWidth="100" styleClass="col-center"/>
+                                        </columns>
+                                    </TableView>
+                                </ScrollPane>
+                            </VBox>
+                        </Tab>
+                    </tabs>
+                </TabPane>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

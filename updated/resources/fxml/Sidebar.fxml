@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox fx:id="sidebar"
+      alignment="TOP_CENTER"
+      spacing="8"  styleClass="sidebar-container" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="application.controllers.SidebarController"
+      stylesheets="@/css/sidebar.css">
+
+    <Button fx:id="hamburgerButton"
+            text="☰"
+            styleClass="sidebar-hamburger-button" onAction="#toggleSidebar"
+            maxWidth="Infinity"
+            alignment="CENTER"/>
+
+    <VBox fx:id="buttonContainer" spacing="10" VBox.vgrow="ALWAYS">
+        <Button fx:id="homeButton" styleClass="sidebar-button"/>
+        <Button fx:id="bookingButton" styleClass="sidebar-button"/>
+        <Button fx:id="checkoutButton" styleClass="sidebar-button"/>
+        <Button fx:id="reservationButton" styleClass="sidebar-button"/>
+        <Button fx:id="invoiceButton" styleClass="sidebar-button"/>
+        <Button fx:id="housekeepingButton" styleClass="sidebar-button"/>
+        <Button fx:id="guestManagementButton" styleClass="sidebar-button"/>
+        <Button fx:id="staffManagementButton" styleClass="sidebar-button"/>
+        <Button fx:id="reportsButton" styleClass="sidebar-button"/>
+        <Button fx:id="servicesButton" styleClass="sidebar-button"/>
+        <Button fx:id="settingsButton" styleClass="sidebar-button"/>
+        
+        <Button fx:id="logoutButton" styleClass="sidebar-button"/>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+    </VBox>
+
+</VBox>

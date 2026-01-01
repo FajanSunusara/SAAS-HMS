@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane styleClass="border-pane" stylesheets="@/css/settings-style.css, @/css/sidebar.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.SettingsController">
+     <!-- Sidebar Integration -->
+   <left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+    <center>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" prefHeight="70.0" styleClass="navbar">
+                <children>
+                    <Label styleClass="hotel-logo" text="🏨 HMS Portal">
+                        <font>
+                            <Font name="Inter Bold" size="18.0" />
+                        </font>
+                        <HBox.margin>
+                            <Insets right="20.0" />
+                        </HBox.margin>
+                    </Label>
+                    <HBox fx:id="navbarTabs" alignment="CENTER_LEFT" spacing="10.0">
+                        <children>
+                            <Button fx:id="roomsTab" mnemonicParsing="false" onAction="#showRoomsTab" styleClass="tab-button" text="🛏️ Rooms" />
+                            <Button fx:id="servicesTab" mnemonicParsing="false" onAction="#showServicesTab" styleClass="tab-button" text="🛎️ Services" />
+                            <Button fx:id="referencesTab" mnemonicParsing="false" onAction="#showReferencesTab" styleClass="tab-button" text="📖 References" />
+                            <Button fx:id="userAccessTab" mnemonicParsing="false" onAction="#showUserAccessTab" styleClass="tab-button" text="🔐 User Access" />
+                            <Button fx:id="invoiceDesignTab" mnemonicParsing="false" onAction="#showInvoiceDesignTab" styleClass="tab-button" text="🧾 Invoice Design" />
+                            <Button fx:id="controlsTab" mnemonicParsing="false" onAction="#showControlsTab" styleClass="tab-button" text="⚙️ Controls" />
+                            
+                        </children>
+                    </HBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                        <children>
+                            <Label styleClass="user-name" text="John Admin" />
+                            <Button mnemonicParsing="false" styleClass="profile-avatar" text="JA" />
+                        </children>
+                    </HBox>
+                </children>
+                <padding>
+                    <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                </padding>
+            </HBox>
+            
+            <StackPane fx:id="contentArea" styleClass="content-area" VBox.vgrow="ALWAYS">
+                <children>
+                    <VBox fx:id="roomsContent" styleClass="tab-content" visible="true">
+                        <children>
+                            <HBox alignment="CENTER_LEFT">
+                                <children>
+                                    <Label styleClass="content-title" text="Room Management" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <HBox spacing="10.0">
+                                        <children>
+                                            <Button fx:id="addRoomBtn" mnemonicParsing="false" onAction="#showAddRoomModal" styleClass="action-button, add-button" text="➕ Add Room" />
+                                            <Button fx:id="editRoomBtn" mnemonicParsing="false" onAction="#showEditRoomModal" styleClass="action-button, edit-button" text="✏️ Edit" />
+                                            <Button fx:id="deleteRoomBtn" mnemonicParsing="false" onAction="#deleteRoom" styleClass="action-button, delete-button" text="🗑️ Delete" />
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+                            <TableView fx:id="roomsTable" styleClass="data-table">
+                                <columns>
+                                    <TableColumn fx:id="roomNoCol" prefWidth="75.0" text="Room No." />
+                                    <TableColumn fx:id="roomTypeCol" prefWidth="100.0" text="Type" />
+                                    <TableColumn fx:id="floorCol" prefWidth="75.0" text="Floor" />
+                                    <TableColumn fx:id="statusCol" prefWidth="100.0" text="Status" />
+                                    <TableColumn fx:id="priceCol" prefWidth="100.0" text="Price" />
+                                    <TableColumn fx:id="acCol" prefWidth="100.0" text="AC/Non-AC" />
+                                </columns>
+                            </TableView>
+                        </children>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                        </padding>
+                    </VBox>
+
+                    <VBox fx:id="servicesContent" styleClass="tab-content" visible="false">
+                        <children>
+                            <HBox alignment="CENTER_LEFT">
+                                <children>
+                                    <Label styleClass="content-title" text="Service Management" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <HBox spacing="10.0">
+                                        <children>
+                                            <Button fx:id="addServiceBtn" mnemonicParsing="false" onAction="#showAddServiceModal" styleClass="action-button, add-button" text="➕ Add Service" />
+                                            <Button fx:id="editServiceBtn" mnemonicParsing="false" onAction="#showEditServiceModal" styleClass="action-button, edit-button" text="✏️ Edit" />
+                                            <Button fx:id="deleteServiceBtn" mnemonicParsing="false" onAction="#deleteService" styleClass="action-button, delete-button" text="🗑️ Delete" />
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+                            <TableView fx:id="servicesTable" styleClass="data-table">
+                                <columns>
+                                    <TableColumn fx:id="serviceNameCol" prefWidth="150.0" text="Service Name" />
+                                    <TableColumn fx:id="descriptionCol" prefWidth="200.0" text="Description" />
+                                    <TableColumn fx:id="servicePriceCol" prefWidth="100.0" text="Price" />
+                                    <TableColumn fx:id="taxCol" prefWidth="75.0" text="Tax %" />
+                                    <TableColumn fx:id="availableCol" prefWidth="100.0" text="Available" />
+                                </columns>
+                            </TableView>
+                        </children>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                        </padding>
+                    </VBox>
+
+                    <VBox fx:id="referencesContent" styleClass="tab-content" visible="false">
+                        <children>
+                            <Label styleClass="content-title" text="Reference Management" />
+                            <HBox alignment="CENTER_LEFT">
+                                <children>
+                                    <Label styleClass="section-title" text="Reference Sources" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <HBox spacing="10.0">
+                                        <children>
+                                            <Button mnemonicParsing="false" onAction="#showAddReferenceModal" styleClass="action-button, add-button" text="➕ Add Reference" />
+                                            <Button mnemonicParsing="false" onAction="#showEditReferenceModal" styleClass="action-button, edit-button" text="✏️ Edit" />
+                                            <Button mnemonicParsing="false" onAction="#deleteReference" styleClass="action-button, delete-button" text="🗑️ Delete" />
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+                            <TableView fx:id="referencesTable" prefHeight="200.0" styleClass="data-table">
+                                <columns>
+                                    <TableColumn fx:id="sourceNameCol" prefWidth="200.0" text="Source Name" />
+                                    <TableColumn fx:id="sourceTypeCol" prefWidth="150.0" text="Type" />
+                                </columns>
+                            </TableView>
+                            <HBox alignment="CENTER_LEFT">
+                                <children>
+                                    <Label styleClass="section-title" text="Commission Details" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <HBox spacing="10.0">
+                                        <children>
+                                            <Button mnemonicParsing="false" styleClass="action-button, add-button" text="➕ Add Commission" />
+                                            <Button mnemonicParsing="false" styleClass="action-button, edit-button" text="✏️ Edit" />
+                                            <Button mnemonicParsing="false" styleClass="action-button, delete-button" text="🗑️ Delete" />
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+                            <TableView fx:id="commissionTable" prefHeight="200.0" styleClass="data-table">
+                                <columns>
+                                    <TableColumn fx:id="commissionSourceCol" prefWidth="150.0" text="Source" />
+                                    <TableColumn fx:id="commissionPercentCol" prefWidth="100.0" text="Commission %" />
+                                    <TableColumn fx:id="fixedAmountCol" prefWidth="120.0" text="Fixed Amount" />
+                                    <TableColumn fx:id="notesCol" prefWidth="200.0" text="Notes" />
+                                </columns>
+                            </TableView>
+                        </children>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                        </padding>
+                    </VBox>
+
+                    <VBox fx:id="userAccessContent" styleClass="tab-content" visible="false">
+                        <children>
+                            <HBox alignment="CENTER_LEFT">
+                                <children>
+                                    <Label styleClass="content-title" text="User Access Management" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <HBox spacing="10.0">
+                                        <children>
+                                            <Button fx:id="addUserBtn" mnemonicParsing="false" onAction="#showAddUserModal" styleClass="action-button, add-button" text="➕ Add User" />
+                                            <Button fx:id="editUserBtn" mnemonicParsing="false" onAction="#showEditUserModal" styleClass="action-button, edit-button" text="✏️ Edit" />
+                                            <Button fx:id="deleteUserBtn" mnemonicParsing="false" onAction="#deleteUser" styleClass="action-button, delete-button" text="🗑️ Delete" />
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </HBox>
+                            <TableView fx:id="usersTable" styleClass="data-table">
+                                <columns>
+                                    <TableColumn fx:id="usernameCol" prefWidth="120.0" text="Username" />
+                                    <TableColumn fx:id="roleCol" prefWidth="100.0" text="Role" />
+                                    <TableColumn fx:id="emailCol" prefWidth="180.0" text="Email" />
+                                    <TableColumn fx:id="userStatusCol" prefWidth="100.0" text="Status" />
+                                    <TableColumn fx:id="lastLoginCol" prefWidth="150.0" text="Last Login" />
+                                </columns>
+                            </TableView>
+                        </children>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                        </padding>
+                    </VBox>
+
+                    <VBox fx:id="invoiceDesignContent" styleClass="tab-content" visible="false">
+                        <children>
+                            <Label styleClass="content-title" text="Invoice Design Settings" />
+                            <VBox spacing="20.0">
+                                <children>
+                                    <VBox spacing="10.0">
+                                        <children>
+                                            <Label styleClass="form-label" text="Hotel Logo" />
+                                            <HBox spacing="10.0">
+                                                <children>
+                                                    <Button fx:id="uploadLogoBtn" mnemonicParsing="false" onAction="#uploadLogo" styleClass="upload-button" text="📁 Upload Logo" />
+                                                    <Label fx:id="logoPreview" styleClass="preview-label" text="No logo selected" />
+                                                </children>
+                                            </HBox>
+                                        </children>
+                                    </VBox>
+                                    <VBox spacing="10.0">
+                                        <children>
+                                            <Label styleClass="form-label" text="Invoice Header Text" />
+                                            <TextArea fx:id="headerTextArea" prefRowCount="3" promptText="Enter invoice header text..." styleClass="text-area" />
+                                        </children>
+                                    </VBox>
+                                    <VBox spacing="10.0">
+                                        <children>
+                                            <Label styleClass="form-label" text="Invoice Footer Text" />
+                                            <TextArea fx:id="footerTextArea" prefRowCount="3" promptText="Enter invoice footer text..." styleClass="text-area" />
+                                        </children>
+                                    </VBox>
+                                    <VBox spacing="10.0">
+                                        <children>
+                                            <Label styleClass="form-label" text="Invoice Template Style" />
+                                            <ComboBox fx:id="templateStyleCombo" prefWidth="200.0" promptText="Select template style" styleClass="combo-box" />
+                                        </children>
+                                    </VBox>
+                                    <HBox spacing="10.0">
+                                        <children>
+                                            <Button fx:id="saveInvoiceSettingsBtn" mnemonicParsing="false" onAction="#saveInvoiceSettings" styleClass="action-button, save-button" text="💾 Save Settings" />
+                                            <Button fx:id="previewInvoiceBtn" mnemonicParsing="false" onAction="#previewInvoice" styleClass="action-button" text="👁️ Preview" />
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </VBox>
+                        </children>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                        </padding>
+                    </VBox>
+               <VBox fx:id="controlsContent" styleClass="tab-content" visible="false">
+    <children>
+        <Label styleClass="content-title" text="System Controls" />
+        <VBox spacing="20.0">
+            <children>
+                <!-- GST Configuration Section -->
+                <VBox spacing="10.0" styleClass="config-section">
+                    <children>
+                        <Label styleClass="section-title" text="📊 GST Configuration" />
+                        <HBox spacing="15.0" alignment="CENTER_LEFT">
+                            <children>
+                                <Label styleClass="form-label" text="GST Rate:" minWidth="100.0"/>
+                                <TextField fx:id="gstRateField" prefWidth="80.0" promptText="18.0"/>
+                                <Label text=".%." styleClass="unit-label"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="gstValidationLabel" styleClass="validation-label" text=""/>
+                            </children>
+                        </HBox>
+                        <Label styleClass="help-text" text="Valid GST rates: 0-100% (decimal values allowed)"/>
+                    </children>
+                </VBox>
+                
+                <!-- Default Values Section -->
+                <VBox spacing="10.0" styleClass="config-section">
+                    <children>
+                        <Label styleClass="section-title" text="🌍 Default Values" />
+                        <HBox spacing="15.0" alignment="CENTER_LEFT">
+                            <children>
+                                <Label styleClass="form-label" text="Default Nationality:" minWidth="100.0"/>
+                                <ComboBox fx:id="defaultNationalityCombo" prefWidth="200.0" styleClass="combo-box"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+  <VBox spacing="10" styleClass="config-section" prefWidth="400">
+    <Label text="Page Access Control" styleClass="section-title" />
+    <FlowPane fx:id="pageAccessFlowPane" hgap="15" vgap="15" prefWrapLength="580"  >  <padding>
+    <Insets top="10" right="20" bottom="10" left="20" />
+</padding>
+  </FlowPane>
+    
+</VBox>
+<Button text="💾 Save Page Access" onAction="#savePageAccessSettings" styleClass="action-button, save-button" />
+      
+                <!-- Action Buttons -->
+                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="action-section">
+                    <children>
+                        <Button fx:id="saveControlsBtn" mnemonicParsing="false" onAction="#saveControlsSettings" 
+                                styleClass="action-button, save-button" text="💾 Save Settings" />
+                        <Button fx:id="resetControlsBtn" mnemonicParsing="false" onAction="#resetControlsSettings" 
+                                styleClass="action-button, reset-button" text="🔄 Reset to Defaults" />
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="controlsStatusLabel" styleClass="status-label" text=""/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+</VBox>
+                </children>
+            </StackPane>
+        </VBox>
+    </center>
+</BorderPane>

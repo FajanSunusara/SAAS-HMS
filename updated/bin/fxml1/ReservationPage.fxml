@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            prefWidth="1400" prefHeight="900"
+            stylesheets="@/css/reservation.css,@/css/sidebar.css"
+            fx:controller="application.controllers.ReservationController">
+
+      <!-- Sidebar Integration -->
+   <left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+    
+    <center>
+        <VBox spacing="20" styleClass="main-wrapper">
+            <padding>
+                <Insets top="10" right="20" bottom="20" left="20" />
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="Reservations" styleClass="page-title"/>
+  
+            </HBox>
+
+            <VBox spacing="16" styleClass="filter-card-modern">
+
+                <FlowPane hgap="16" vgap="16" alignment="CENTER_LEFT">
+                    <VBox spacing="6" styleClass="filter-group">
+                        <Label text="📅 Check-in Date" styleClass="filter-label"/>
+                        <DatePicker fx:id="checkInDate" styleClass="date-picker-modern" prefWidth="160"/>
+                    </VBox>
+
+                    <VBox spacing="6" styleClass="filter-group">
+                        <Label text="📅 Check-out Date" styleClass="filter-label"/>
+                        <DatePicker fx:id="checkOutDate" styleClass="date-picker-modern" prefWidth="160"/>
+                    </VBox>
+
+                    <VBox spacing="6" styleClass="filter-group">
+                        <Label text="🏠 Room Category" styleClass="filter-label"/>
+                        <ComboBox fx:id="roomCategoryFilter" promptText="All Categories" 
+                                 styleClass="combo-modern" prefWidth="180"/>
+                    </VBox>
+
+                    <VBox spacing="6" styleClass="filter-group">
+                        <Label text="🚪 Room Number" styleClass="filter-label"/>
+                        <ComboBox fx:id="roomNumberFilter" promptText="All Rooms" 
+                                 styleClass="combo-modern" prefWidth="140"/>
+                    </VBox>
+                     
+                    <VBox spacing="6" styleClass="filter-group">
+                        <Label text="📊 Quick Actions" styleClass="filter-label"/>
+                        <HBox spacing="8">
+                            <Button text="Clear All" styleClass="btn-link" onAction="#onClearFilters"/>
+                                   <Button text="📊 Reports" styleClass="btn-icon-text btn-outline"/>
+                          <Button text="🔄 Refresh" onAction="#onSearch" styleClass="btn-icon-text btn-ghost"/>
+                          <Button text="➕ New Reservation" onAction="#onNewReservation" styleClass="btn-icon-text btn-primary"/>
+                          
+                        </HBox>
+                    </VBox>
+                </FlowPane>
+            </VBox>
+
+            <VBox spacing="12" styleClass="calendar-container" VBox.vgrow="ALWAYS">
+                <HBox spacing="20" alignment="CENTER_LEFT" styleClass="legend-stats-bar">
+                    <HBox spacing="16" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                        <HBox spacing="8" alignment="CENTER" styleClass="legend-item">
+                            <Circle radius="6" styleClass="legend-circle booked"/>
+                            <Label text="Booked" styleClass="legend-text"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER" styleClass="legend-item">
+                            <Circle radius="6" styleClass="legend-circle reserved"/>
+                            <Label text="Reserved" styleClass="legend-text"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER" styleClass="legend-item">
+                            <Circle radius="6" styleClass="legend-circle available"/>
+                            <Label text="Available" styleClass="legend-text"/>
+                        </HBox>
+                    </HBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="💡 Click any cell to create or edit reservations" styleClass="legend-hint"/>
+                </HBox>
+
+                <HBox spacing="12" alignment="CENTER_LEFT" styleClass="calendar-header-bar">
+                    <Label text="📅 Availability Calendar" styleClass="section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+             
+                  <Button text="Today" onAction="#onFilterToday" styleClass="btn-quick-filter"/>
+                            <Button text="This Week" onAction="#onFilterWeek" styleClass="btn-quick-filter"/>
+                            <Button text="This Month" onAction="#onFilterMonth" styleClass="btn-quick-filter"/>
+                  <Button text="⬅️ Previous" onAction="#onCalendarPrevious" styleClass="btn-nav btn-nav-prev"/>
+                            <Button text="📍 Today" onAction="#onCalendarToday" styleClass="btn-nav btn-today"/>
+                            <Button text="Next ➡️" onAction="#onCalendarNext" styleClass="btn-nav btn-nav-next"/>
+                </HBox>
+                
+                <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="calendar-scroll" VBox.vgrow="ALWAYS">
+                    <content>
+                        <GridPane fx:id="calendarGrid" styleClass="calendar-grid-modern" 
+                                 gridLinesVisible="false" hgap="2" vgap="2" />
+                    </content>
+                </ScrollPane>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

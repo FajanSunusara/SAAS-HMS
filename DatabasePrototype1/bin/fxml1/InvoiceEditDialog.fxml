@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.Image?>
+<?import java.net.URL?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.InvoiceEditDialogController" 
+      styleClass="invoice-edit-dialog" prefWidth="500" prefHeight="500">
+    <stylesheets>
+        <URL value="@../../resources/css/invoices.css" />
+        <URL value="@../../resources/css/app.css" />
+    </stylesheets>
+    <padding>
+        <Insets topRightBottomLeft="20.0" />
+    </padding>
+    <spacing>15.0</spacing>
+    
+    <!-- Hotel Logo and Header -->
+    
+    
+    <!-- Invoice Basic Info -->
+    <GridPane hgap="10" vgap="8" styleClass="invoice-details-grid">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" prefWidth="120" />
+            <ColumnConstraints hgrow="ALWAYS" prefWidth="200" />
+        </columnConstraints>
+        <Label text="Invoice Number:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="detail-label" />
+        <Label fx:id="invoiceNumberLabel" text="" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="detail-value-bold" />
+        
+        <Label text="Invoice Date:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="detail-label" />
+        <DatePicker fx:id="invoiceDatePicker" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity" />
+    </GridPane>
+    
+    <Separator styleClass="section-separator" />
+    
+    <!-- Guest Information -->
+    <VBox spacing="8">
+        <Label text="Guest Information" styleClass="section-header" />
+        <GridPane hgap="10" vgap="8">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" prefWidth="120" />
+                <ColumnConstraints hgrow="ALWAYS" prefWidth="200" />
+            </columnConstraints>
+            <Label text="Guest Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="detail-label" />
+            <TextField fx:id="guestNameField" GridPane.rowIndex="0" GridPane.columnIndex="1" promptText="Enter guest name" />
+            
+            <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="detail-label" />
+            <TextField fx:id="guestEmailField" GridPane.rowIndex="1" GridPane.columnIndex="1" promptText="Enter email address" />
+            
+            <Label text="Phone:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="detail-label" />
+            <TextField fx:id="guestPhoneField" GridPane.rowIndex="2" GridPane.columnIndex="1" promptText="Enter phone number" />
+        </GridPane>
+    </VBox>
+    
+    <Separator styleClass="section-separator" />
+    
+    <!-- Room Details -->
+    <VBox spacing="8">
+        <Label text="Room Details" styleClass="section-header" />
+        <GridPane hgap="10" vgap="8">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" prefWidth="120" />
+                <ColumnConstraints hgrow="ALWAYS" prefWidth="80" />
+                <ColumnConstraints hgrow="SOMETIMES" prefWidth="120" />
+                <ColumnConstraints hgrow="ALWAYS" prefWidth="80" />
+            </columnConstraints>
+            <Label text="Check-in Date:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="detail-label" />
+            <DatePicker fx:id="checkInDatePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+            
+            <Label text="Check-out Date:" GridPane.rowIndex="0" GridPane.columnIndex="2" styleClass="detail-label" />
+            <DatePicker fx:id="checkOutDatePicker" GridPane.rowIndex="0" GridPane.columnIndex="3" />
+            
+            <Label text="Room Number:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="detail-label" />
+            <TextField fx:id="roomNumberField" GridPane.rowIndex="1" GridPane.columnIndex="1" promptText="Room No." />
+            
+            <Label text="Room Rate:" GridPane.rowIndex="1" GridPane.columnIndex="2" styleClass="detail-label" />
+            <TextField fx:id="roomRateField" GridPane.rowIndex="1" GridPane.columnIndex="3" promptText="Rate" />
+        </GridPane>
+    </VBox>
+    
+    <Separator styleClass="section-separator" />
+    
+    <!-- Payment Details -->
+    <VBox spacing="8">
+        <Label text="Payment Details" styleClass="section-header" />
+        <GridPane hgap="10" vgap="8">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" prefWidth="120" />
+                <ColumnConstraints hgrow="ALWAYS" prefWidth="80" />
+                <ColumnConstraints hgrow="SOMETIMES" prefWidth="120" />
+                <ColumnConstraints hgrow="ALWAYS" prefWidth="80" />
+            </columnConstraints>
+            <Label text="Subtotal:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="detail-label" />
+            <TextField fx:id="subtotalField" GridPane.rowIndex="0" GridPane.columnIndex="1" promptText="Amount" />
+            
+            <Label text="Tax %:" GridPane.rowIndex="0" GridPane.columnIndex="2" styleClass="detail-label" />
+            <TextField fx:id="taxPercentageDialogField" GridPane.rowIndex="0" GridPane.columnIndex="3" promptText="18.0" text="18.0" />
+            
+            <Label text="Tax Amount:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="detail-label" />
+            <Label fx:id="taxAmountLabel" text="₹0.00" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="detail-value-bold" />
+            
+            <Label text="Total Amount:" GridPane.rowIndex="1" GridPane.columnIndex="2" styleClass="detail-label" />
+            <Label fx:id="totalAmountLabel" text="₹0.00" GridPane.rowIndex="1" GridPane.columnIndex="3" styleClass="detail-value-bold" />
+            
+            <Label text="Payment Method:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="detail-label" />
+            <ComboBox fx:id="paymentMethodComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="1" maxWidth="Infinity" />
+            
+            <Label text="Payment Status:" GridPane.rowIndex="2" GridPane.columnIndex="2" styleClass="detail-label" />
+            <ComboBox fx:id="paymentStatusComboBox" GridPane.rowIndex="2" GridPane.columnIndex="3" GridPane.columnSpan="1" maxWidth="Infinity" />
+        </GridPane>
+    </VBox>
+    
+    <!-- Action Buttons -->
+    <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 10 0 0 0;">
+        <Button fx:id="printInvoiceButton" text="Print Invoice" onAction="#handlePrintInvoice" styleClass="secondary-button" />
+        <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel" styleClass="secondary-button" />
+        <Button fx:id="saveButton" text="Save Changes" onAction="#handleSave" styleClass="accent-button" />
+    </HBox>
+</VBox>

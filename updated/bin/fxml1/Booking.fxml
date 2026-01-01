@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="mainRoot" stylesheets="@/css/Booking.css,@/css/sidebar.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.BookingController">
+
+    <left>
+     <fx:include source="/fxml1/Sidebar.fxml"/>
+    </left>
+
+    <center>
+        <!-- Main Container with YouTube-style Search Overlay -->
+        <StackPane>
+            <!-- Background Content -->
+            <VBox styleClass="main-container">
+                <ScrollPane fx:id="mainScrollPane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" styleClass="main-scroll-pane" vbarPolicy="AS_NEEDED">
+                    <content>
+                        <VBox fx:id="bookingFormContentVBox" spacing="25" styleClass="content-container">
+                            <padding>
+                                <Insets bottom="30" left="30" right="30" top="20" />
+                            </padding>
+
+                            <!-- Enhanced Quick Search Section -->
+                            <VBox spacing="15" styleClass="youtube-search-section">
+                                <HBox alignment="CENTER_LEFT" spacing="15" styleClass="search-header">
+                                    <Label styleClass="search-icon" text="🔍" />
+                                    <Label styleClass="search-title" text="Quick Guest Search" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label styleClass="search-hint" text="Find existing guests instantly" />
+                                </HBox>
+                                
+                                <!-- YouTube-style Search Container -->
+                                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="youtube-search-container">
+                                    <TextField fx:id="guestSearchField" promptText="Search by name, phone, or guest ID..." styleClass="youtube-search-field" HBox.hgrow="ALWAYS" />
+                                    <Button onAction="#handleSearchGuest" styleClass="youtube-search-btn" text="🔍" />
+                                </HBox>
+                            </VBox>
+
+                            <!-- Main Content Grid -->
+                            <GridPane hgap="25" styleClass="main-grid" vgap="25">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="65.0" />
+                                    <ColumnConstraints percentWidth="35.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints />
+                                </rowConstraints>
+
+                                <!-- Left Column: Guest Details -->
+                                <VBox spacing="20" styleClass="form-column" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    
+                                    <!-- Guest Information Card -->
+                                    <VBox spacing="18" styleClass="modern-info-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="modern-card-header">
+                                            <Label styleClass="modern-card-icon" text="👤" />
+                                            <Label styleClass="modern-card-title" text="Guest Information" />
+                                            <Region HBox.hgrow="ALWAYS" />
+                                            <Label fx:id="guestStatusLabel" styleClass="modern-status-badge" text="New Guest" />
+                                        </HBox>
+
+                                        <GridPane hgap="15" styleClass="modern-form-grid" vgap="15">
+                                            <columnConstraints>
+                                                <ColumnConstraints minWidth="120" prefWidth="120" />
+                                                <ColumnConstraints />
+                                            </columnConstraints>
+
+                                            <!-- ID Fields -->
+                                            <Label styleClass="modern-field-label" text="Booking ID" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                            <TextField fx:id="bookingIdField" editable="false" styleClass="modern-id-field" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                            <Label styleClass="modern-field-label" text="Guest ID" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                            <TextField fx:id="guestIdField" editable="false" styleClass="modern-id-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                            <!-- Contact Information -->
+                                            <Label styleClass="modern-field-label modern-required" text="Full Name" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                            <TextField fx:id="fullNameField" promptText="Enter guest's full name" styleClass="modern-input-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                            <Label styleClass="modern-field-label modern-required" text="Mobile" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                            <TextField fx:id="mobileNumberField" promptText="10-digit mobile number" styleClass="modern-input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                            <Label styleClass="modern-field-label" text="Email" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                            <TextField fx:id="emailField" promptText="guest@email.com" styleClass="modern-input-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                                            <!-- Enhanced Document Upload Section -->
+                                            <Label styleClass="modern-field-label" text="Photo ID Documents" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                            <VBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                                <!-- Document Upload Button -->
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Button onAction="#handleUploadPhotoId" styleClass="modern-upload-btn" text="📄 Upload Document" />
+                                                    <Label fx:id="photoIdPathLabel" styleClass="modern-upload-status" text="No document uploaded" />
+                                                </HBox>
+                                                
+                                                <!-- Photo ID Verification Section -->
+                                                <VBox spacing="8" styleClass="verification-section">
+                                                    <HBox alignment="CENTER_LEFT" spacing="10">
+                                                        <Button fx:id="photoIdVerificationBtn" onAction="#handlePhotoIdVerification" styleClass="photo-id-verify-btn" text="🆔 Photo ID Verification" />
+                                                        <Region HBox.hgrow="ALWAYS" />
+                                                        <Label fx:id="verificationStatusLabel" styleClass="verification-status-pending" text="⏳ Not Verified" />
+                                                    </HBox>
+                                                    <Label styleClass="verification-hint" text="Complete ID verification for all persons staying in the room" />
+                                                </VBox>
+                                            </VBox>
+
+                                            <!-- Business Information -->
+                                            <Label styleClass="modern-field-label" text="GST Number" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                            <TextField fx:id="gstNumberField" promptText="GST registration number" styleClass="modern-input-field" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+                                            <!-- Booking Source -->
+                                            <Label styleClass="modern-field-label" text="Source" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                            <ComboBox fx:id="sourceWebsiteComboBox" promptText="Select booking source" styleClass="modern-combo-field" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+                                            <Label styleClass="modern-field-label" text="Reference" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                            <TextField fx:id="referencePersonField" promptText="Reference person (optional)" styleClass="modern-input-field" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+
+                                            <!-- Address -->
+                                            <Label styleClass="modern-field-label modern-required" text="Address" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                            <TextArea fx:id="addressArea" prefRowCount="2" promptText="Complete address with city and postal code" styleClass="modern-text-area" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                                            
+                                            <!-- Nationality -->
+                                            <Label styleClass="modern-field-label" text="Nationality" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                                            <ComboBox fx:id="nationalityField" promptText="Select nationality" styleClass="modern-combo-field" 
+                                                      GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+
+                                            <rowConstraints>
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                            </rowConstraints>
+                                        </GridPane>
+
+                                        <!-- Additional Services -->
+                                        <VBox spacing="12" styleClass="services-section">
+                                            <Label styleClass="modern-field-label" text="Additional Services" />
+                                            <GridPane hgap="15" vgap="10">
+                                                <columnConstraints>
+                                                    <ColumnConstraints />
+                                                    <ColumnConstraints />
+                                                    <ColumnConstraints />
+                                                    <ColumnConstraints />
+                                                </columnConstraints>
+                                                <CheckBox fx:id="wifiCheckbox" styleClass="modern-checkbox" text="WiFi" />
+                                                <CheckBox fx:id="breakfastCheckbox" styleClass="modern-checkbox" text="Breakfast" GridPane.columnIndex="1" />
+                                                <CheckBox fx:id="extraBedCheckbox" styleClass="modern-checkbox" text="Extra Bed" GridPane.columnIndex="2" />
+                                                <CheckBox fx:id="parkingCheckbox" styleClass="modern-checkbox" text="Parking" GridPane.columnIndex="3" />
+                                            </GridPane>
+                                        </VBox>
+
+                                        <!-- Enhanced OCR Section -->
+                                        <VBox spacing="15" styleClass="modern-ocr-section">
+                                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                                <ToggleButton fx:id="ocrToggle" onAction="#handleOcrToggle" styleClass="modern-ocr-toggle" text="🤖 AI Auto-Fill" />
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label styleClass="modern-user-indicator" text="👤 Admin" />
+                                            </HBox>
+                                            <Label styleClass="modern-ocr-hint" text="Enable AI-powered document processing to automatically extract guest details" />
+                                        </VBox>
+
+                                        <!-- Enhanced Action Buttons -->
+                                        <VBox spacing="15" styleClass="modern-action-section">
+                                            <Button onAction="#handleProceedToPayment" styleClass="modern-primary-action-btn" text="💳 Proceed to Payment" />
+                                            <HBox spacing="12" styleClass="modern-secondary-actions">
+                                                <Button onAction="#handleReset" styleClass="modern-secondary-btn" text="🔄 Reset" HBox.hgrow="ALWAYS" />
+                                                <Button onAction="#handleCancelBooking" styleClass="modern-cancel-btn" text="❌ Cancel" HBox.hgrow="ALWAYS" />
+                                            </HBox>
+                                        </VBox>
+                                    </VBox>
+                                </VBox>
+
+                                <!-- Right Column: Stay Details & Summary -->
+                                <VBox spacing="20" styleClass="form-column" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    
+                                    <!-- Stay Details Card -->
+                                    <VBox spacing="18" styleClass="modern-info-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="modern-card-header">
+                                            <Label styleClass="modern-card-icon" text="🏨" />
+                                            <Label styleClass="modern-card-title" text="Stay Details" />
+                                        </HBox>
+
+                                        <GridPane hgap="12" styleClass="modern-form-grid" vgap="15">
+                                            <columnConstraints>
+                                                <ColumnConstraints minWidth="100" prefWidth="100" />
+                                                <ColumnConstraints />
+                                            </columnConstraints>
+
+                                            <!-- Room Selection -->
+                                            <Label styleClass="modern-field-label modern-required" text="Room Type" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                            <ComboBox fx:id="roomTypeComboBox" promptText="Select type" styleClass="modern-combo-field" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                            <Label styleClass="modern-field-label modern-required" text="Room No." GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                            <ComboBox fx:id="roomNumberComboBox" promptText="Select room" styleClass="modern-combo-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                            <Label styleClass="modern-field-label" text="Status" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                            <Label fx:id="availabilityLabel" styleClass="modern-availability-status" text="⏳ Select room first" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                            <!-- Date Selection -->
+                                            <Label styleClass="modern-field-label modern-required" text="Check-in" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                            <DatePicker fx:id="checkInDatePicker" styleClass="modern-date-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                            <Label styleClass="modern-field-label modern-required" text="Check-out" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                            <DatePicker fx:id="checkOutDatePicker" styleClass="modern-date-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                                            <Label styleClass="modern-field-label" text="Duration" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                            <TextField fx:id="totalDaysField" editable="false" styleClass="modern-readonly-field" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                                            <!-- Pricing -->
+                                            <Label styleClass="modern-field-label" text="Rate/Night" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                            <TextField fx:id="roomPriceField" promptText="₹0.00" styleClass="modern-price-field" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+                                            <Label styleClass="modern-field-label" text="Advance" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                            <TextField fx:id="advancePaymentField" promptText="₹0.00" styleClass="modern-input-field" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+                                            <!-- Auto Fill Option -->
+                                            <Label styleClass="modern-field-label" text="Quick Fill" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                            <ComboBox fx:id="autoFillComboBox" promptText="Quick options" styleClass="modern-combo-field" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+
+                                            <rowConstraints>
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                            </rowConstraints>
+                                        </GridPane>
+                                    </VBox>
+
+                                    <!-- Enhanced Booking Summary Card -->
+                                    <VBox spacing="18" styleClass="modern-summary-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="modern-card-header">
+                                            <Label styleClass="modern-card-icon" text="💰" />
+                                            <Label styleClass="modern-card-title" text="Booking Summary" />
+                                        </HBox>
+
+                                        <VBox spacing="12" styleClass="modern-summary-content">
+                                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                                <Label styleClass="modern-summary-label" text="Room Rate:" />
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="summaryRoomRate" styleClass="modern-summary-value" text="₹0.00" />
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                                <Label styleClass="modern-summary-label" text="Nights:" />
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="summaryNights" styleClass="modern-summary-value" text="0" />
+                                            </HBox>
+                                            <Separator styleClass="modern-summary-separator" />
+                                            
+                                            <!-- GST Toggle Section -->
+                                            <VBox spacing="8" styleClass="gst-section">
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label styleClass="modern-field-label" text="GST Settings:" />
+                                                    <ToggleButton fx:id="gstToggle" text="GST Excluded" styleClass="gst-toggle-button" />
+                                                    <Region HBox.hgrow="ALWAYS" />
+                                                    <Label fx:id="gstBreakdownLabel" text="(18%)" styleClass="gst-percentage-label"/>
+                                                </HBox>
+                                                
+                                                <!-- Amount Breakdown -->
+                                                <VBox spacing="4" styleClass="breakdown-section">
+                                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                                        <Label text="Base Amount:" styleClass="breakdown-label"/>
+                                                        <Region HBox.hgrow="ALWAYS" />
+                                                        <Label fx:id="baseAmountLabel" text="₹0.00" styleClass="breakdown-value"/>
+                                                    </HBox>
+                                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                                        <Label text="GST Amount:" styleClass="breakdown-label"/>
+                                                        <Region HBox.hgrow="ALWAYS" />
+                                                        <Label fx:id="gstAmountLabel" text="₹0.00" styleClass="breakdown-value"/>
+                                                    </HBox>
+                                                    <Separator styleClass="breakdown-separator" />
+                                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                                        <Label text="Total Amount:" styleClass="breakdown-total-label"/>
+                                                        <Region HBox.hgrow="ALWAYS" />
+                                                        <Label fx:id="summaryTotal" text="₹0.00" styleClass="breakdown-total-value"/>
+                                                    </HBox>
+                                                </VBox>
+                                            </VBox>
+                                            
+                                            <Separator styleClass="modern-summary-separator" />
+                                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                                <Label styleClass="modern-summary-label" text="Advance:" />
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="summaryAdvance" styleClass="modern-summary-value" text="₹0.00" />
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                                <Label styleClass="modern-summary-pending-label" text="Balance:" />
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="summaryPending" styleClass="modern-summary-pending-value" text="₹0.00" />
+                                            </HBox>
+                                        </VBox>
+                                    </VBox>
+                                    
+                                    <!-- Verification Status Card -->
+                                    <VBox spacing="15" styleClass="verification-status-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="modern-card-header">
+                                            <Label styleClass="modern-card-icon" text="🛡️" />
+                                            <Label styleClass="modern-card-title" text="Verification Status" />
+                                        </HBox>
+                                        <VBox spacing="10" styleClass="verification-details">
+                                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                                <Label text="Document Upload:" styleClass="verification-item-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="documentStatusLabel" text="❌ Pending" styleClass="verification-status-pending"/>
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                                <Label text="Photo ID Verification:" styleClass="verification-item-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="photoIdStatusLabel" text="❌ Pending" styleClass="verification-status-pending"/>
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                                <Label text="All Persons Verified:" styleClass="verification-item-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="allPersonsStatusLabel" text="❌ No" styleClass="verification-status-pending"/>
+                                            </HBox>
+                                            <Separator styleClass="verification-separator"/>
+                                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                                <Label text="Overall Status:" styleClass="verification-overall-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="overallVerificationStatusLabel" text="🔴 Incomplete" styleClass="verification-status-incomplete"/>
+                                            </HBox>
+                                        </VBox>
+                                    </VBox>
+                                </VBox>
+                            </GridPane>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </VBox>
+
+            <!-- YouTube-style Search Suggestions Overlay (Always on Top) -->
+            <VBox fx:id="searchOverlay" alignment="TOP_LEFT" managed="false" mouseTransparent="false" visible="false" styleClass="search-overlay-container">
+                <padding>
+                    <Insets bottom="0" left="30" right="30" top="95" />
+                </padding>
+                <ListView fx:id="guestSuggestionsListView" styleClass="youtube-suggestions-list" maxHeight="300" prefWidth="400" />
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

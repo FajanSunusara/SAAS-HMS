@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           prefWidth="720" prefHeight="580"
+           fx:controller="application.controllers.ReservationFormController">
+
+    <stylesheets>
+        <URL value="@/css/reservationForm.css"/>
+    </stylesheets>
+    
+    <VBox spacing="8">
+        <padding>
+            <Insets top="12" right="12" bottom="12" left="12"/>
+        </padding>
+    
+        <HBox spacing="16" alignment="CENTER_LEFT" styleClass="premium-header">
+            <VBox spacing="2">
+                <Label fx:id="formTitleLabel" text="✨ Premium Reservation" styleClass="header-title-modern"/>
+                <Label text="Create exceptional guest experiences" styleClass="header-subtitle-modern"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="↻" onAction="#onRefreshRoomData" styleClass="btn-glass">
+                <tooltip>
+                    <Tooltip text="Refresh Room Data"/>
+                </tooltip>
+            </Button>
+            <Button text="⚙" styleClass="btn-glass-secondary">
+                <tooltip>
+                    <Tooltip text="Settings"/>
+                </tooltip>
+            </Button>
+        </HBox>
+    
+        <VBox styleClass="youtube-search-section">
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="youtube-search-container">
+                <TextField fx:id="guestSearchField" promptText="Search by name, phone, or email..." styleClass="youtube-search-field" HBox.hgrow="ALWAYS"/>
+            </HBox>
+        </VBox>
+    
+        <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="main-content-modern">
+            <padding>
+                <Insets top="8" right="0" bottom="8" left="0"/>
+            </padding>
+    
+            <GridPane hgap="12" vgap="12" styleClass="premium-grid">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                    <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                    <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                </columnConstraints>
+    
+                <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" spacing="8" styleClass="floating-card guest-card">
+                    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="card-header-modern">
+                        <Label text="👤" styleClass="card-icon"/>
+                        <Label text="Guest Details" styleClass="card-title-modern"/>
+                    </HBox>
+    
+                    <Separator styleClass="card-divider"/>
+    
+                    <VBox spacing="8">
+                        <VBox spacing="4">
+                            <Label text="FULL NAME *" styleClass="field-label-modern"/>
+                            <TextField fx:id="guestNameField" promptText="Enter guest name" styleClass="input-modern"/>
+                        </VBox>
+    
+                        <VBox spacing="4">
+                            <Label text="EMAIL ADDRESS" styleClass="field-label-modern"/>
+                            <TextField fx:id="emailField" promptText="guest@example.com" styleClass="input-modern"/>
+                        </VBox>
+    
+                        <VBox spacing="4">
+                            <Label text="PHONE NUMBER" styleClass="field-label-modern"/>
+                            <TextField fx:id="phoneField" promptText="+91 98765 43210" styleClass="input-modern"/>
+                        </VBox>
+    
+                        <VBox spacing="4">
+                            <Label text="GUESTS" styleClass="field-label-modern"/>
+                            <HBox spacing="6">
+                                <TextField fx:id="noOfPersonsField" promptText="2" styleClass="input-modern-small" prefWidth="60"/>
+                                <Label text="persons" styleClass="field-hint"/>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </VBox>
+    
+                <VBox GridPane.columnIndex="1" GridPane.rowIndex="0" spacing="8" styleClass="floating-card booking-card">
+                    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="card-header-modern">
+                        <Label text="🏨" styleClass="card-icon"/>
+                        <Label text="Room /Dates" styleClass="card-title-modern"/>
+                    </HBox>
+                    <Separator styleClass="card-divider"/>
+                    <VBox spacing="8">
+                        <VBox spacing="4">
+                            <Label text="ROOM CATEGORY *" styleClass="field-label-modern"/>
+                            <ComboBox fx:id="roomCategoryCombo" promptText="Select room type" styleClass="combo-modern" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="ROOM NUMBER *" styleClass="field-label-modern"/>
+                            <ComboBox fx:id="roomsComboField" promptText="Choose room" styleClass="combo-modern" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="CHECK-IN *" styleClass="field-label-modern"/>
+                            <DatePicker fx:id="formCheckInDate" promptText="Check-in Date" styleClass="date-picker-modern" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="CHECK-OUT *" styleClass="field-label-modern"/>
+                            <DatePicker fx:id="formCheckOutDate" promptText="Check-out Date" styleClass="date-picker-modern" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="NIGHTS" styleClass="field-label-modern"/>
+                            <TextField fx:id="noOfDaysField" editable="false" promptText="0 nights" styleClass="input-modern"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="AVAILABILITY" styleClass="field-label-modern"/>
+                            <Label fx:id="availabilityLabel" text="⌛" styleClass="availability-status"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+    
+                <VBox GridPane.columnIndex="2" GridPane.rowIndex="0" spacing="8" styleClass="floating-card rate-card">
+                    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="card-header-modern">
+                        <Label text="💵" styleClass="card-icon"/>
+                        <Label text="Rates /Payment" styleClass="card-title-modern"/>
+                    </HBox>
+                    <Separator styleClass="card-divider"/>
+                    <VBox spacing="8">
+                        <VBox spacing="4">
+                            <Label text="ROOM RATE" styleClass="field-label-modern"/>
+                            <TextField fx:id="roomRateField" promptText="0.00" styleClass="input-modern"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="ADVANCE PAID" styleClass="field-label-modern"/>
+                            <TextField fx:id="advancePaidField" promptText="0.00" styleClass="input-modern"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="TIME OF ARRIVAL" styleClass="field-label-modern"/>
+                            <TextField fx:id="timeOfArrivalField" promptText="e.g. 14:00" styleClass="input-modern"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </GridPane>
+    
+            <VBox spacing="8" styleClass="floating-card notes-card">
+                <HBox spacing="8" alignment="CENTER_LEFT" styleClass="card-header-modern">
+                    <Label text="📝" styleClass="card-icon"/>
+                    <Label text="Special Requests /Notes" styleClass="card-title-modern"/>
+                </HBox>
+                <Separator styleClass="card-divider"/>
+                <TextArea fx:id="specialRequestField"
+                          promptText="Any special requirements, dietary preferences, accessibility needs..."
+                          prefRowCount="3" styleClass="textarea-modern"/>
+            </VBox>
+    
+            <HBox spacing="12" alignment="CENTER" styleClass="premium-actions">
+                <Button text="💾 Save Reservation" onAction="#onSaveReservation" styleClass="btn-primary-premium"/>
+                <Button text="💳 Process Payment" onAction="#onProceedToPayment" styleClass="btn-success-premium"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="•" styleClass="action-separator"/>
+                <Button text="🗑" onAction="#onDeleteReservation" styleClass="btn-danger-premium">
+                    <tooltip>
+                        <Tooltip text="Delete Reservation"/>
+                    </tooltip>
+                </Button>
+                <Button text="✕" onAction="#onCancel" styleClass="btn-cancel-premium">
+                    <tooltip>
+                        <Tooltip text="Cancel /Close"/>
+                    </tooltip>
+                </Button>
+            </HBox>
+        </VBox>
+    </VBox>
+
+    <VBox fx:id="searchOverlay" alignment="TOP_LEFT" managed="false" mouseTransparent="false" visible="false" styleClass="search-overlay-container">
+        <padding>
+            <Insets bottom="0" left="20" right="20" top="115" />
+        </padding>
+        <ListView fx:id="guestSuggestionsListView" styleClass="youtube-suggestions-list" maxHeight="300" prefWidth="400"/>
+    </VBox>
+    
+</StackPane>

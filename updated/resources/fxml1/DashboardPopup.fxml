@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" styleClass="dashboard-popup-root" xmlns:fx="http://javafx.com/fxml" fx:controller="application.controllers.DashboardPopupController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label styleClass="popup-header" text="Hotel Dashboard" />
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="✕ Close" styleClass="dashboard-button" onAction="#closePopup"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- Tables Container -->
+    <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="table-scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="25" styleClass="tables-container">
+
+            <!-- Pending Payments -->
+            <VBox spacing="10" styleClass="table-section">
+                <Label styleClass="table-heading" text="Pending Payments"/>
+                <TableView fx:id="paymentTable" prefHeight="200" styleClass="table-view">
+                    <placeholder>
+                        <Label text="No pending payments."/>
+                    </placeholder>
+                    <columns>
+                        <TableColumn fx:id="paymentGuestCol" prefWidth="200" text="Guest"/>
+                        <TableColumn fx:id="paymentRoomCol" prefWidth="100" text="Room"/>
+                        <TableColumn fx:id="paymentAmountCol" prefWidth="120" text="Amount"/>
+                        <TableColumn fx:id="paymentDueCol" prefWidth="100" text="Due Date"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
+
+            <!-- Today's Reservations -->
+            <VBox spacing="10" styleClass="table-section">
+                <Label styleClass="table-heading" text="Today's Reservations"/>
+                <TableView fx:id="todaysTable" prefHeight="200" styleClass="table-view">
+                    <placeholder>
+                        <Label text="No reservations for today."/>
+                    </placeholder>
+                    <columns>
+                        <TableColumn fx:id="todaysReservationIdCol" prefWidth="200" text="ID"/>
+                        <TableColumn fx:id="todaysGuestCol" prefWidth="200" text="Guest"/>
+                        <TableColumn fx:id="todaysRoomCol" prefWidth="100" text="Room"/>
+                        <TableColumn fx:id="todaysCheckInCol" prefWidth="120" text="Check-In"/>
+                        <TableColumn fx:id="todaysCheckOutCol" prefWidth="120" text="Check-Out"/>
+                        <TableColumn fx:id="todaysStatusCol" prefWidth="100" text="Status"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
+
+
+        </VBox>
+    </ScrollPane>
+
+</VBox>

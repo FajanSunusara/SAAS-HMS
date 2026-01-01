@@ -1,0 +1,379 @@
+/* ===============================
+   Root Background & Base Typography
+================================= */
+.root {
+    -fx-background-color: #f7f9fc; /* Softer light background */
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 14px; /* Base font size for consistency */
+}
+
+/* ===============================
+   Sidebar (assuming it's consistent with sidebar.css)
+================================= */
+/* These styles are typically inherited or defined in sidebar.css */
+/* I've kept them here for reference but they should come from sidebar.css if included */
+.sidebar {
+    -fx-background-color: #2d3e50;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 8, 0, 4, 0);
+}
+
+.logo-emoji {
+    /* This should now use an ImageView in FXML and not emojis */
+    -fx-font-size: 30px; /* Placeholder size if still using text/font */
+    -fx-padding: 0 6px 0 0;
+}
+
+.logo-text {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #cfd8dc;
+    -fx-font-size: 14px;
+    -fx-padding: 10 15;
+    -fx-background-radius: 8px; /* Consistent rounding */
+    -fx-border-radius: 8px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-graphic-text-gap: 10px;
+    -fx-cursor: hand;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: #3c536a;
+    -fx-text-fill: #ffffff;
+}
+
+.sidebar-button:focused {
+    -fx-background-color: #4a657c;
+    -fx-text-fill: #ffffff;
+}
+
+/* ===============================
+   Top Bar
+================================= */
+.top-bar {
+    -fx-background-color: #ffffff;
+    -fx-padding: 12 20;
+    -fx-spacing: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 2); /* Softer shadow */
+    -fx-alignment: CENTER_LEFT; /* Ensure vertical alignment of items */
+}
+
+.search-field {
+    -fx-background-color: #eef1f4;
+    -fx-border-color: #cfd8dc;
+    -fx-border-radius: 8px; /* Consistent rounding */
+    -fx-background-radius: 8px;
+    -fx-padding: 8 15; /* Increased padding for better feel */
+    -fx-font-size: 14px;
+}
+
+/* Styles for ImageViews in the top bar (e.g., notification, user avatar) */
+.top-bar-icon-wrapper {
+    -fx-padding: 5px; /* Padding around the icon to make it clickable */
+    -fx-background-radius: 50%; /* Make it round */
+    -fx-transition: -fx-background-color 0.2s ease-in-out;
+}
+.top-bar-icon-wrapper:hover {
+    -fx-background-color: #e0e0e0; /* Subtle hover effect */
+}
+
+
+.user-name {
+    -fx-font-size: 14px;
+    -fx-text-fill: #333;
+    -fx-font-weight: bold;
+}
+
+/* ===============================
+   Cards
+================================= */
+.card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 25px; /* Increased padding for more breathing room */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 5); /* Slightly stronger, but still soft shadow */
+}
+
+.section-title {
+    -fx-font-size: 22px; /* Slightly larger heading */
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 20px 0; /* More space below title */
+}
+
+/* ===============================
+   Table View
+================================= */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #e9e9e9; /* Lighter border */
+    -fx-border-radius: 10px; /* Slightly more rounded */
+    -fx-table-cell-border-color: transparent; /* Remove internal cell borders */
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f0f3f6; /* Lighter header background */
+    -fx-border-radius: 10px 10px 0 0; /* Match table rounding */
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 40px; /* Taller headers */
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #5f6c7c; /* Slightly darker text for headers */
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 14px;
+}
+
+.table-view .table-cell {
+    -fx-padding: 10 15; /* More padding in cells */
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: #f2f2f2; /* Very light separator */
+    -fx-border-width: 0 0 1px 0;
+    -fx-font-size: 13px;
+    -fx-text-fill: #4c5a6d;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-pref-height: 48px; /* Taller rows */
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #fbfdff; /* Subtle alternating row color */
+}
+
+.table-view .table-row-cell:hover {
+    -fx-background-color: #eaf6ff; /* Lighter blue on hover */
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #c9e6ff; /* Clearer selected color */
+    -fx-text-fill: #1d3557;
+    -fx-font-weight: bold; /* Make selected text bold */
+}
+
+/* ===============================
+   Buttons (Main Content Actions)
+================================= */
+.action-button-primary,
+.summary-action-button-primary { /* Combined for consistency */
+    -fx-background-color: #3498db;
+    -fx-text-fill: #ffffff; /* Explicitly white */
+    -fx-font-weight: bold;
+    -fx-padding: 10 20; /* More padding */
+    -fx-background-radius: 8px; /* Consistent rounding */
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-graphic-text-gap: 8px; /* Space for icon */
+    -fx-alignment: CENTER; /* Center content by default */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2); /* Subtle button shadow */
+}
+.action-button-primary:hover,
+.summary-action-button-primary:hover {
+    -fx-background-color: #2980b9;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 3); /* Enhanced shadow on hover */
+}
+
+.action-button-secondary {
+    -fx-background-color: #95a5a6; /* Gray */
+    -fx-text-fill: #ffffff;
+    -fx-padding: 10 20;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-graphic-text-gap: 8px;
+    -fx-alignment: CENTER;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 5, 0, 0, 2);
+}
+.action-button-secondary:hover {
+    -fx-background-color: #7f8c8d;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 3);
+}
+
+.action-button-checkout {
+    -fx-background-color: #2ecc71; /* Green */
+    -fx-text-fill: #ffffff;
+    -fx-padding: 10 20;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-graphic-text-gap: 8px;
+    -fx-alignment: CENTER;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+.action-button-checkout:hover {
+    -fx-background-color: #27ae60;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 3);
+}
+
+.summary-action-button {
+    -fx-background-color: #ecf0f1; /* Light gray */
+    -fx-text-fill: #2c3e50; /* Changed to a darker color for better contrast */
+    -fx-padding: 10 20;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-graphic-text-gap: 10px;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 3, 0, 0, 1);
+}
+.summary-action-button:hover {
+    -fx-background-color: #d0d6d8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+/* Style for ImageViews used as button graphics */
+.button .image-view {
+    /* Ensures images are not distorted if their aspect ratio is different from fitWidth/Height */
+    -fx-preserve-ratio: true;
+}
+
+
+/* ===============================
+   Summary Section (Booking & Billing)
+================================= */
+.summary-item {
+    -fx-padding: 8 0; /* Increased padding */
+    -fx-spacing: 15; /* More space between label and value */
+    -fx-alignment: CENTER_LEFT; /* Align content centrally */
+}
+
+.summary-label {
+    -fx-text-fill: #666; /* Slightly softer text for labels */
+    -fx-font-size: 14px;
+    /* Removed pref-width to allow more flexible sizing within the smaller window */
+}
+
+.summary-value {
+    -fx-text-fill: #222;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-font-size: 15px; /* Slightly larger value text */
+}
+
+.summary-item-total {
+    -fx-padding: 12 0; /* More padding for total */
+    -fx-spacing: 15;
+    -fx-alignment: CENTER_LEFT;
+}
+.summary-item-total .summary-label-total,
+.summary-item-total .summary-value-total {
+    -fx-font-size: 18px; /* Larger total font */
+    -fx-font-weight: bolder;
+    -fx-text-fill: #2c3e50; /* Stronger color for total */
+}
+
+.summary-item-pending {
+    -fx-padding: 12 0; /* More padding for pending */
+    -fx-spacing: 15;
+    -fx-alignment: CENTER_LEFT;
+}
+.summary-item-pending .summary-label-pending,
+.summary-item-pending .summary-value-pending {
+    -fx-text-fill: #e74c3c; /* Red color for pending */
+    -fx-font-weight: bold;
+    -fx-font-size: 18px; /* Larger pending font */
+}
+
+.summary-separator {
+    -fx-border-color: #e0e0e0; /* Lighter separator */
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 15 0 10px 0; /* Adjust padding around separator */
+}
+
+.summary-heading {
+    -fx-font-size: 18px; /* Slightly larger heading */
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+    -fx-padding: 10 0 8px 0; /* Adjust padding */
+}
+
+/* Ensure prompt text is visible and styled */
+.text-field {
+    -fx-prompt-text-fill: #a0a0a0;
+}
+
+/* Statistics Cards */
+.stats-card {
+    -fx-background-color: white;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 0, 2);
+    -fx-min-width: 140;
+    -fx-alignment: center;
+}
+
+.stats-number {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a202c;
+}
+
+.stats-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #718096;
+    -fx-padding: 5 0 0 0;
+}
+
+.info-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #718096;
+    -fx-font-style: italic;
+}
+
+/* Summary Popup Styles */
+.summary-action-button-primary {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 12 20 12 20;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+.summary-action-button {
+    -fx-font-size: 13px;
+    -fx-padding: 10 20 10 20;
+    -fx-background-color: #374151;
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.summary-action-button:hover {
+    -fx-background-color: #4b5563;
+}
+
+.summary-label-pending {
+    -fx-font-weight: bold;
+    -fx-text-fill: #dc2626;
+}
+
+.summary-value-pending {
+    -fx-font-weight: bold;
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 14px;
+}
+
+.summary-separator {
+    -fx-background-color: #e5e7eb;
+}
+
+.button-separator {
+    -fx-background-color: #f3f4f6;
+}

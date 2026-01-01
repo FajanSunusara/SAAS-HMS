@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.ScrollPane?>
+
+<VBox fx:id="rootLayout" styleClass="dashboard-panel" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.ManagerDashboardController">
+    <HBox alignment="CENTER_LEFT" styleClass="dashboard-header-panel" spacing="20">
+        <padding>
+            <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+        </padding>
+        <VBox spacing="2" alignment="CENTER_LEFT">
+            <Label fx:id="managerNameLabel" styleClass="secondary-text" text="Logged in as: Manager Name" />
+            <Label fx:id="managerDesignationLabel" styleClass="secondary-text-small" text="Designation: Ops Manager" />
+            <Label fx:id="managerFloorShiftLabel" styleClass="secondary-text-small" text="Floor: All Floors, Shift: Day" />
+        </VBox>
+        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="10">
+            <TextField fx:id="searchField" promptText="Search tasks..." styleClass="search-field" />
+            <DatePicker fx:id="dateFilter" promptText="Filter by Date" styleClass="standard-datepicker" />
+            <ComboBox fx:id="autoRefreshDropdown" promptText="Auto-Refresh" styleClass="standard-dropdown" />
+            <ToggleButton fx:id="darkModeToggle" styleClass="dark-mode-toggle" text="🌙" />
+        </HBox>
+    </HBox>
+
+    <SplitPane dividerPositions="0.3" styleClass="split-pane" VBox.vgrow="ALWAYS">
+        <VBox minWidth="300" maxWidth="500" prefWidth="350" styleClass="room-cards-panel">
+            <padding>
+                <Insets top="20.0" right="15.0" bottom="20.0" left="15.0" />
+            </padding>
+            <Label styleClass="section-title" text="Room Status Overview" />
+            <HBox alignment="CENTER_LEFT" spacing="10" VBox.vgrow="NEVER">
+                <ComboBox fx:id="roomStatusFilterDropdown" promptText="Filter Status" styleClass="standard-dropdown" HBox.hgrow="ALWAYS" />
+                <Button fx:id="refreshRoomStatusButton" text="⟳" styleClass="action-button-secondary" />
+            </HBox>
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" 
+            prefViewportHeight="450">
+    <FlowPane fx:id="roomCardsFlowPane" />
+</ScrollPane>
+        </VBox>
+        <VBox styleClass="main-table-panel">
+            <padding>
+                <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="15" VBox.vgrow="NEVER">
+                <Label styleClass="section-title" text="Assigned Tasks" />
+                <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="10">
+                    <Button fx:id="assignNewTaskButton" text="➕ Assign New Task" styleClass="action-button-primary" />
+                </HBox>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="filter-toggles-row" VBox.vgrow="NEVER">
+                <ToggleButton text="All" styleClass="task-filter-toggle" selected="true" userData="All" />
+                <ToggleButton text="Pending" styleClass="task-filter-toggle" userData="Pending" />
+                <ToggleButton text="In Progress" styleClass="task-filter-toggle" userData="In Progress" />
+                <ToggleButton text="Issue" styleClass="task-filter-toggle" userData="Issue" />
+                <ToggleButton text="Dirty" styleClass="task-filter-toggle" userData="Dirty" />
+                <ToggleButton text="Done" styleClass="task-filter-toggle" userData="Done" />
+            </HBox>
+            <TableView fx:id="taskTable" styleClass="task-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="roomNoColumn" text="Room No." />
+                    <TableColumn fx:id="staffColumn" text="Staff" />
+                    <TableColumn fx:id="taskTypeColumn" text="Task Type" />
+                    <TableColumn fx:id="statusColumn" text="Status" />
+                    <TableColumn fx:id="priorityColumn" text="Priority" />
+                    <TableColumn fx:id="assignedAtColumn" text="Assigned At" />
+                    <TableColumn fx:id="actionColumn" text="Actions" />
+                </columns>
+            </TableView>
+        </VBox>
+    </SplitPane>
+</VBox>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<VBox spacing="20" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" styleClass="payment-method-container" fx:controller="application.controllers.PaymentController">
+    <fx:define>
+        <ToggleGroup fx:id="paymentMethodToggleGroup"/>
+    </fx:define>
+    
+    <!-- Enhanced Payment Method Selection -->
+    <VBox styleClass="payment-method-card" spacing="15">
+        <Label text="💳 Choose Payment Method" styleClass="payment-header"/>
+        
+        <!-- Payment Method Toggle Buttons with Icons -->
+        <GridPane styleClass="payment-method-grid" hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            <ToggleButton fx:id="cashToggle" text="💵 Cash" userData="Cash" toggleGroup="$paymentMethodToggleGroup" 
+                         styleClass="payment-method-button" prefWidth="180" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <ToggleButton fx:id="upiToggle" text="📱 UPI" userData="UPI" toggleGroup="$paymentMethodToggleGroup" 
+                         styleClass="payment-method-button" prefWidth="180" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <ToggleButton fx:id="cardToggle" text="💳 Card" userData="Card" toggleGroup="$paymentMethodToggleGroup" 
+                         styleClass="payment-method-button" prefWidth="180" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <ToggleButton fx:id="netbankingToggle" text="🏦 Net Banking" userData="Netbanking" toggleGroup="$paymentMethodToggleGroup" 
+                         styleClass="payment-method-button" prefWidth="180" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        </GridPane>
+    </VBox>
+    
+    <!-- Enhanced Payment Details Container -->
+    <StackPane fx:id="paymentDetailsStackPane" alignment="TOP_CENTER" styleClass="payment-details-container">
+        
+        <!-- Cash Payment Details -->
+        <VBox fx:id="cashPane" styleClass="payment-details-pane cash-pane" spacing="15">
+            <Label text="💵 Cash Payment" styleClass="payment-method-title"/>
+            <VBox styleClass="payment-instructions" spacing="8">
+                <Label text="• Please collect the exact amount from the guest" styleClass="instruction-text"/>
+                <Label text="• Ensure to provide a proper receipt" styleClass="instruction-text"/>
+                <Label text="• Count the cash carefully before confirming" styleClass="instruction-text"/>
+            </VBox>
+        </VBox>
+        
+        <!-- UPI Payment Details -->
+        <VBox fx:id="upiPane" styleClass="payment-details-pane upi-pane" spacing="15" alignment="CENTER">
+            <Label text="📱 UPI Payment" styleClass="payment-method-title"/>
+            <VBox alignment="CENTER" spacing="10">
+                <ImageView fx:id="qrImageView" fitWidth="180" fitHeight="180" preserveRatio="true" styleClass="qr-code-image">
+                    <image><Image url="@/images/sample_qr_code.png"/></image>
+                </ImageView>
+                <Label text="Scan QR Code for Payment" styleClass="qr-instruction"/>
+                <Separator prefWidth="200"/>
+                <Label text="Or enter UPI Transaction Details:" styleClass="form-label"/>
+                <TextField fx:id="upiIdField" promptText="Enter UPI Transaction ID" styleClass="upi-field" prefWidth="250"/>
+            </VBox>
+        </VBox>
+        
+        <!-- Card Payment Details -->
+        <VBox fx:id="cardPane" styleClass="payment-details-pane card-pane" spacing="15">
+            <Label text="💳 Card Payment" styleClass="payment-method-title"/>
+            <VBox spacing="12" styleClass="card-form">
+                <TextField fx:id="cardNumberField" promptText="Card Number (16 digits)" styleClass="card-field"/>
+                <TextField fx:id="cardHolderNameField" promptText="Card Holder Name" styleClass="card-field"/>
+                <HBox spacing="10">
+                    <TextField fx:id="expiryDateField" promptText="MM/YY" styleClass="card-field" prefWidth="100" HBox.hgrow="NEVER"/>
+                    <TextField fx:id="cvvField" promptText="CVV" styleClass="card-field" prefWidth="80" HBox.hgrow="NEVER"/>
+                </HBox>
+                <Label text="💡 All card information is processed securely" styleClass="security-note"/>
+            </VBox>
+        </VBox>
+        
+        <!-- Net Banking Details -->
+        <VBox fx:id="netbankingPane" styleClass="payment-details-pane netbanking-pane" spacing="15">
+            <Label text="🏦 Net Banking Payment" styleClass="payment-method-title"/>
+            <VBox spacing="12" styleClass="netbanking-form">
+                <ComboBox fx:id="bankNameCombo" promptText="Select Bank" styleClass="bank-combo" prefWidth="250"/>
+                <TextField fx:id="accountNumberField" promptText="Account Number" styleClass="banking-field"/>
+                <TextField fx:id="ifscNetbankingField" promptText="IFSC Code" styleClass="banking-field"/>
+                <TextField fx:id="accountHolderNameNetbankingField" promptText="Account Holder Name" styleClass="banking-field"/>
+                <Label text="🔒 Your banking details are secure and encrypted" styleClass="security-note"/>
+            </VBox>
+        </VBox>
+    </StackPane>
+    
+    <!-- Payment Amount Section -->
+    <VBox styleClass="payment-amount-card" spacing="12">				
+        <Label text="💰 Payment Amount" styleClass="amount-section-title"/>
+        <HBox spacing="15" alignment="CENTER_LEFT" styleClass="amount-input-container">
+            <Label text="Amount to Pay:" styleClass="amount-label"/>
+            <TextField fx:id="amountPayingField" promptText="₹ 0.00" styleClass="amount-input-field" prefWidth="150"/>
+            <Button text="💯 Full Amount" styleClass="full-amount-button" onAction="#handleSetFullAmount"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="payment-summary">
+            <Label text="Selected Method:" styleClass="summary-label"/>
+            <Label fx:id="selectedPaymentMethodLabel" text="None" styleClass="selected-method-label"/>
+        </HBox>
+    </VBox>
+</VBox>

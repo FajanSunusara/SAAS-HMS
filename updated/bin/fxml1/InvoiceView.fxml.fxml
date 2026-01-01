@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="application.controllers.InvoiceViewController"
+            stylesheets="@/css/payment.css"
+            fitToWidth="true">
+    <content>
+        <VBox alignment="TOP_CENTER" spacing="15">
+            <padding><Insets top="20" right="30" bottom="20" left="30"/></padding>
+
+            <VBox alignment="CENTER" spacing="5" styleClass="invoice-header">
+                <ImageView fitWidth="150" preserveRatio="true">
+                    <image>
+                        <Image url="@/images/the_grand_hotel_logo.png"/>
+                    </image>
+                </ImageView>
+                <Label styleClass="invoice-hotel-name" text="The Grand Hotel" />
+                <Label styleClass="invoice-hotel-contact" text="123 Luxury Lane, City, State, 12345" />
+                <Label styleClass="invoice-hotel-contact" text="Phone: (123) 456-7890 | Email: info@grandhotel.com" />
+                <Line endX="400" startX="-400" style="-fx-stroke: #ccc; -fx-stroke-width: 1;"/>
+                <Label styleClass="invoice-title" text="INVOICE" />
+            </VBox>
+
+            <GridPane hgap="15" vgap="8" alignment="CENTER_LEFT" styleClass="invoice-details-grid">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                </columnConstraints>
+                <Label text="Invoice No:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <Label fx:id="invoiceNumberLabel" styleClass="value" text="INV-2023-001" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label text="Date:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                <Label fx:id="invoiceDateLabel" styleClass="value" text="YYYY-MM-DD" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+                <Label text="Guest Name:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label fx:id="guestNameLabel" styleClass="value" text="John Doe" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label text="Mobile:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                <Label fx:id="guestMobileLabel" styleClass="value" text="+91 9876543210" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+
+                <Label text="Room No(s):" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label fx:id="roomNumberLabel" styleClass="value" text="101, 102" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                <Label text="Room Type:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                <Label fx:id="roomTypeLabel" styleClass="value" text="Deluxe" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+
+                <Label text="Check-in:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Label fx:id="checkInDateLabel" styleClass="value" text="YYYY-MM-DD" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                <Label text="Check-out:" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                <Label fx:id="checkOutDateLabel" styleClass="value" text="YYYY-MM-DD" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+
+                <Label text="Nights:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <Label fx:id="numberOfNightsLabel" styleClass="value" text="3" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            </GridPane>
+            
+            <VBox spacing="10" styleClass="invoice-summary-table">
+                <Label styleClass="invoice-section-title" text="CHARGES" />
+                <GridPane hgap="15" vgap="5">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="60" />
+                        <ColumnConstraints percentWidth="40" />
+                    </columnConstraints>
+
+                    <Label text="Room Charges:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <Label fx:id="roomChargesBreakdownLabel" styleClass="amount-label" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                    <Label text="Service Charges:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <Label fx:id="serviceChargesBreakdownLabel" styleClass="amount-label" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                    <Label text="Discount:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <Label fx:id="discountBreakdownLabel" styleClass="amount-label" text="- ₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                    <Line endX="200" startX="0" style="-fx-stroke: #ccc; -fx-stroke-width: 1;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+
+                    <Label text="Subtotal:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                    <Label fx:id="subtotalLabel" styleClass="total-label" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                    <Label text="GST (18%):" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                    <Label fx:id="gstLabel" styleClass="amount-label" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                    <Line endX="200" startX="0" style="-fx-stroke: #ccc; -fx-stroke-width: 1;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6"/>
+
+                    <Label text="Total Payable:" styleClass="invoice-total-amount" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                    <Label fx:id="totalPayableLabel" styleClass="invoice-total-amount" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+                    <Label text="Advance Paid:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                    <Label fx:id="advancePaidInvoiceLabel" styleClass="amount-label" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+
+                    <Line endX="200" startX="0" style="-fx-stroke: #ccc; -fx-stroke-width: 1;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9"/>
+
+                    <Label text="Balance Due:" styleClass="balance-due-label" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                    <Label fx:id="balanceDueLabel" styleClass="balance-due-label" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                </GridPane>
+            </VBox>
+
+            <VBox spacing="5" styleClass="invoice-summary-table">
+                <Label styleClass="invoice-section-title" text="PAYMENT INFORMATION" />
+                <Label fx:id="paymentMethodLabel" text="Method: Cash" />
+                <Label fx:id="transactionIdLabel" text="Transaction ID: TRX-XYZ123" />
+            </VBox>
+
+            <VBox spacing="5" styleClass="notes-section">
+                <Label text="Notes:" styleClass="notes-title"/>
+                <Label text="1. All prices are inclusive of applicable taxes unless specified otherwise." />
+                <Label text="2. Please present this invoice for any inquiries." />
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

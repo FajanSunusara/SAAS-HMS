@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.layout.*?>
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="application.controllers.InvoiceViewController"
+            stylesheets="@/css/invoiceView.css"
+            styleClass="invoice-root">
+
+    <!-- PART 1: Top Navigation with Action Buttons -->
+    <top>
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="invoice-top-bar">
+            <tabs>
+                <Tab text="Invoice" closable="false">
+                    <content>
+                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="invoice-actions">
+                            <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+                            
+                            <Button text="Edit Invoice" onAction="#handleEditInvoice" styleClass="invoice-edit-button">
+                                <graphic>
+                                    <Label text="✏" styleClass="button-icon"/>
+                                </graphic>
+                            </Button>
+                            
+                            <Button text="Print" onAction="#handlePrintInvoice" styleClass="invoice-print-button">
+                                <graphic>
+                                    <Label text="🖨" styleClass="button-icon"/>
+                                </graphic>
+                            </Button>
+                            
+                            <Button text="Export PDF" onAction="#handleExportInvoice" styleClass="secondary-button">
+                                <graphic>
+                                    <Label text="📄" styleClass="button-icon"/>
+                                </graphic>
+                            </Button>
+                            
+                            <Region HBox.hgrow="ALWAYS"/>
+                            
+                            <Button text="Close" onAction="#handleCloseInvoice" styleClass="invoice-close-button">
+                                <graphic>
+                                    <Label text="✕" styleClass="button-icon"/>
+                                </graphic>
+                            </Button>
+                        </HBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </top>
+
+    <!-- CENTER: Main Invoice Content -->
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="invoice-scroll">
+            <content>
+                <VBox spacing="30" styleClass="invoice-container">
+                    <padding><Insets top="30" right="50" bottom="50" left="50"/></padding>
+
+                    <!-- PART 2: Hotel Header Information (Horizontal Layout) -->
+                    <VBox spacing="20" styleClass="invoice-header">
+                        <!-- Logo and Hotel Name -->
+                        <HBox spacing="20" alignment="CENTER_LEFT">
+                            <ImageView fx:id="hotelLogoImageView" fitWidth="80" preserveRatio="true">
+                                <image>
+                                    <Image url="@/images/the_grand_hotel_logo.png"/>
+                                </image>
+                            </ImageView>
+                            
+                            <VBox spacing="4">
+                                <Label fx:id="hotelNameLabel" styleClass="hotel-name" text="The Grand Hotel"/>
+                                <Label fx:id="hotelAddressLabel" styleClass="hotel-contact" text="123 Luxury Lane, City, State, 12345"/>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Contact Information and Invoice Details -->
+                        <HBox spacing="40" alignment="CENTER_LEFT">
+                            <!-- Left: Contact Info -->
+                            <VBox spacing="2">
+                                <HBox spacing="15">
+                                    <Label fx:id="hotelPhoneLabel" styleClass="hotel-contact" text="Phone: (123) 456-7890"/>
+                                    <Label styleClass="contact-separator" text="•"/>
+                                    <Label fx:id="hotelEmailLabel" styleClass="hotel-contact" text="Email: info@grandhotel.com"/>
+                                </HBox>
+                                <Label fx:id="hotelWebsiteLabel" styleClass="hotel-contact" text="www.grandhotel.com"/>
+                                <Label fx:id="hotelGstLabel" styleClass="hotel-contact" text="GST No: 22XXXXX1234X1ZX"/>
+                            </VBox>
+
+                            <Region HBox.hgrow="ALWAYS"/>
+
+                            <!-- Right: Invoice Details -->
+                            <VBox spacing="2" alignment="CENTER_RIGHT">
+                                <Label styleClass="invoice-title" text="INVOICE"/>
+                                <Label fx:id="invoiceSubtitleLabel" styleClass="invoice-subtitle" text="Tax Invoice"/>
+                                <Label fx:id="invoiceNumberLabel" styleClass="field-value" text="INV-2024-001"/>
+                                <Label fx:id="invoiceDateLabel" styleClass="field-value" text="DD-MM-YYYY"/>
+                                <Label fx:id="dueDateLabel" styleClass="field-value" text="Due: DD-MM-YYYY"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- PART 3: Guest Details (3x3 Grid Format) -->
+                    <VBox spacing="15" styleClass="info-section">
+                        <Label text="Bill To" styleClass="section-header"/>
+                        
+                        <GridPane hgap="30" vgap="10" styleClass="details-grid">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="20"/>
+                                <ColumnConstraints percentWidth="30"/>
+                                <ColumnConstraints percentWidth="20"/>
+                                <ColumnConstraints percentWidth="30"/>
+                            </columnConstraints>
+
+                            <!-- Row 1 -->
+                            <Label text="Guest Name:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="field-label"/>
+                            <Label fx:id="guestNameLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="field-value" text="N/A"/>
+                            <Label text="Persons:" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="field-label"/>
+                            <Label fx:id="guestCountLabel" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="field-value" text="1 Guest"/>
+
+                            <!-- Row 2 -->
+                            <Label text="Address:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="field-label"/>
+                            <Label fx:id="guestAddressLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="field-value" text="N/A"/>
+                            <Label text="Guest GST No:" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="field-label"/>
+                            <Label fx:id="guestGstLabel" GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="field-value" text="N/A"/>
+
+                            <!-- Row 3 -->
+                            <Label text="Phone:" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="field-label"/>
+                            <Label fx:id="guestMobileLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="field-value" text="N/A"/>
+                            <Label text="Email:" GridPane.columnIndex="2" GridPane.rowIndex="2" styleClass="field-label"/>
+                            <Label fx:id="guestEmailLabel" GridPane.columnIndex="3" GridPane.rowIndex="2" styleClass="field-value" text="N/A"/>
+
+                            <!-- Row 4: Room Details -->
+                            <Label text="Room No:" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="field-label"/>
+                            <Label fx:id="roomNumberLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="field-value" text="N/A"/>
+                            <Label text="Room Type:" GridPane.columnIndex="2" GridPane.rowIndex="3" styleClass="field-label"/>
+                            <Label fx:id="roomTypeLabel" GridPane.columnIndex="3" GridPane.rowIndex="3" styleClass="field-value" text="Standard"/>
+
+                            <!-- Row 5: Dates -->
+                            <Label text="Check-in:" GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="field-label"/>
+                            <Label fx:id="checkInDateLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" styleClass="field-value" text="DD-MM-YYYY"/>
+                            <Label text="Check-out:" GridPane.columnIndex="2" GridPane.rowIndex="4" styleClass="field-label"/>
+                            <Label fx:id="checkOutDateLabel" GridPane.columnIndex="3" GridPane.rowIndex="4" styleClass="field-value" text="DD-MM-YYYY"/>
+
+                            <!-- Hidden service details for compatibility -->
+                            <Label fx:id="serviceTypeLabel" visible="false" managed="false"/>
+                            <Label fx:id="serviceDurationLabel" visible="false" managed="false"/>
+                            <Label fx:id="serviceRateLabel" visible="false" managed="false"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- PART 4: Service Details with Rate × Quantity = Amount -->
+                    <VBox spacing="15" styleClass="services-table-section">
+                        <Label text="Itemized Services" styleClass="section-header"/>
+                        
+                        <TableView fx:id="servicesTableView" styleClass="services-table" prefHeight="200">
+                            <columns>
+                                <TableColumn text="Description" prefWidth="280"/>
+                                <TableColumn text="Rate" prefWidth="100"/>
+                                <TableColumn text="Quantity" prefWidth="80"/>
+                                <TableColumn text="Amount" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+                        
+                        <!-- Add Service Button (Edit Mode Only) -->
+                        <HBox alignment="CENTER_LEFT">
+                            <Button fx:id="addServiceButton" text="+ Add Service" onAction="#handleAddService" 
+                                    styleClass="add-service-button" visible="false" managed="false"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- PART 5: Financial Summary and Payment Details -->
+                    <HBox spacing="60" alignment="TOP_CENTER">
+                        <!-- Left: Payment History -->
+                        <VBox spacing="12" styleClass="payment-history-section" HBox.hgrow="ALWAYS">
+                            <Label text="Payment History" styleClass="section-header"/>
+                            <TableView fx:id="paymentHistoryTable" styleClass="payment-table" prefHeight="150">
+                                <columns>
+                                    <TableColumn text="Date" prefWidth="100"/>
+                                    <TableColumn text="Method" prefWidth="80"/>
+                                    <TableColumn text="Reference" prefWidth="120"/>
+                                    <TableColumn text="Amount" prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+
+                        <!-- Right: Financial Summary -->
+                        <VBox spacing="10" styleClass="financial-summary" minWidth="380">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            
+                            <Label text="Financial Summary" styleClass="section-header"/>
+                            
+                            <GridPane styleClass="summary-grid" vgap="8" hgap="15">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="65"/>
+                                    <ColumnConstraints percentWidth="35"/>
+                                </columnConstraints>
+
+                                <!-- Charges Breakdown -->
+                                <Label text="Room Charges:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="summary-label"/>
+                                <Label fx:id="roomChargesBreakdownLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="amount-value"/>
+
+                                <Label text="Service Charges:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="summary-label"/>
+                                <Label fx:id="serviceChargesBreakdownLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="amount-value"/>
+
+                                <Label text="Amenity Charges:" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="summary-label"/>
+                                <Label fx:id="amenityChargesLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="amount-value"/>
+
+                                <Label text="Discount Applied:" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="summary-label"/>
+                                <Label fx:id="discountBreakdownLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="discount-value"/>
+
+                                <Separator GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4" styleClass="summary-separator"/>
+                                
+                                <!-- Subtotal -->
+                                <Label text="Subtotal:" GridPane.columnIndex="0" GridPane.rowIndex="5" styleClass="summary-label subtotal"/>
+                                <Label fx:id="subtotalLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="5" styleClass="amount-value subtotal"/>
+
+                                <!-- Taxes -->
+                                <Label text="CGST (9%):" GridPane.columnIndex="0" GridPane.rowIndex="6" styleClass="tax-label"/>
+                                <Label fx:id="cgstLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="6" styleClass="tax-value"/>
+                                
+                                <Label text="SGST (9%):" GridPane.columnIndex="0" GridPane.rowIndex="7" styleClass="tax-label"/>
+                                <Label fx:id="sgstLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="7" styleClass="tax-value"/>
+
+                                <Separator GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8" styleClass="total-separator"/>
+                                
+                                <!-- Total Amount -->
+                                <Label text="Total Amount:" GridPane.columnIndex="0" GridPane.rowIndex="9" styleClass="total-label"/>
+                                <Label fx:id="totalPayableLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="9" styleClass="total-amount"/>
+
+                                <!-- Payment Status -->
+                                <Label text="Amount Paid:" GridPane.columnIndex="0" GridPane.rowIndex="10" styleClass="paid-label"/>
+                                <Label fx:id="advancePaidInvoiceLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="10" styleClass="paid-value"/>
+
+                                <Separator GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="11" styleClass="balance-separator"/>
+                                
+                                <Label text="Balance Due:" GridPane.columnIndex="0" GridPane.rowIndex="12" styleClass="balance-label"/>
+                                <Label fx:id="balanceDueLabel" text="₹0.00" GridPane.columnIndex="1" GridPane.rowIndex="12" styleClass="balance-amount"/>
+                            </GridPane>
+
+                            <!-- Amount in Words -->
+                            <VBox spacing="5" alignment="CENTER_LEFT">
+                                <padding><Insets top="15" right="0" bottom="0" left="0"/></padding>
+                                <Label text="Amount in Words:" styleClass="summary-label"/>
+                                <Label fx:id="amountInWordsLabel" text="Zero Rupees Only" styleClass="inwords" wrapText="true"/>
+                            </VBox>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Payment Information Section -->
+                    <VBox spacing="15" styleClass="payment-info-section">
+                        <Label text="Payment Information" styleClass="section-header"/>
+                        <GridPane styleClass="payment-info-grid" vgap="8" hgap="20">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="30"/>
+                                <ColumnConstraints percentWidth="35"/>
+                                <ColumnConstraints percentWidth="35"/>
+                            </columnConstraints>
+
+                            <Label text="Payment Method:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="info-label"/>
+                            <Label fx:id="paymentMethodLabel" text="Cash" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="info-value"/>
+
+                            <Label text="Transaction ID:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="info-label"/>
+                            <Label fx:id="transactionIdLabel" text="TRX-PENDING" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="info-value"/>
+
+                            <Label text="Payment Status:" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="info-label"/>
+                            <Label fx:id="paymentStatusLabel" text="Pending" GridPane.columnIndex="2" GridPane.rowIndex="0" 
+                                   GridPane.rowSpan="2" styleClass="status-label status-pending"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- Terms and Conditions -->
+                    <VBox spacing="12" styleClass="terms-section">
+                        <Label text="Terms / Conditions" styleClass="section-header"/>
+                        <VBox spacing="4" styleClass="terms-content">
+                            <Label text="• All prices are inclusive of applicable taxes unless specified otherwise." styleClass="terms-text"/>
+                            <Label text="• Check-out time is 11:00 AM. Late check-out charges may apply." styleClass="terms-text"/>
+                            <Label text="• Please present this invoice for any inquiries or refund requests." styleClass="terms-text"/>
+                            <Label text="• Cancellation policy applies as per hotel terms and conditions." styleClass="terms-text"/>
+                            <Label fx:id="customTermsLabel" text="" styleClass="terms-text" visible="false" managed="false"/>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Footer -->
+                    <VBox spacing="8" styleClass="invoice-footer" alignment="CENTER">
+                        <Separator styleClass="footer-separator"/>
+                        <Label fx:id="invoiceGeneratedLabel" text="Generated on: DD-MM-YYYY HH:MM" styleClass="footer-info"/>
+                        <Label text="Thank you for choosing us!" styleClass="footer-message"/>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+    <!-- Edit Mode Overlay - CHANGED FROM StackPane to VBox -->
+    <VBox fx:id="editModeOverlay" styleClass="edit-overlay" visible="false" managed="false" 
+          maxWidth="600" spacing="20" alignment="CENTER">
+        <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Label text="Edit Invoice" styleClass="edit-mode-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Save Changes" onAction="#handleSaveChanges" styleClass="save-button"/>
+            <Button text="Cancel" onAction="#handleCancelEdit" styleClass="cancel-button"/>
+        </HBox>
+
+        <GridPane styleClass="edit-grid" hgap="15" vgap="12">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+            </columnConstraints>
+
+            <Label text="Hotel Name:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="edit-label"/>
+            <TextField fx:id="editHotelNameField" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="edit-field"/>
+
+            <Label text="Service Type:" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="edit-label"/>
+            <ComboBox fx:id="editServiceTypeCombo" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="edit-field">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Accommodation"/>
+                        <String fx:value="Restaurant"/>
+                        <String fx:value="Spa Services"/>
+                        <String fx:value="Conference Room"/>
+                        <String fx:value="Event Services"/>
+                        <String fx:value="Transportation"/>
+                        <String fx:value="Other Services"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <Label text="Custom Terms:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="edit-label"/>
+            <TextField fx:id="editCustomTermsField" GridPane.columnIndex="1" GridPane.columnSpan="3" 
+                      GridPane.rowIndex="1" styleClass="edit-field" promptText="Enter custom terms and conditions"/>
+        </GridPane>
+    </VBox>
+</BorderPane>

@@ -1,0 +1,213 @@
+/* src/main/resources/css/sidebar.css */
+
+/* --- Variables --- */
+:root {
+  /* Main Sidebar Colors */
+  -fx-sidebar-bg: #1c2833;
+  -fx-border-color-subtle: #333;
+  -fx-shadow-color: rgba(0,0,0,0.5);
+
+  /* Text Colors */
+  -fx-text-color-light: #e0e0e0;
+  -fx-text-color-white: white;
+
+  /* Button Colors (General) */
+  -fx-button-default-bg: transparent;
+  -fx-button-hover-bg: #34495e;
+
+  /* Accent/Active Colors */
+  -fx-accent-color: #3498db;
+  -fx-active-hover-bg: #2980b9;
+
+  /* Hamburger Button Specific Colors */
+  -fx-hamburger-default-bg: transparent;
+  -fx-hamburger-pressed-bg: #34495e;
+}
+
+/* --- Sidebar Container (Main VBox) --- */
+.sidebar-container {
+  -fx-background-color: -fx-sidebar-bg;
+  -fx-padding: 20px 0px;
+  -fx-spacing: 8px;
+  -fx-alignment: top_center;
+  -fx-border-color: -fx-border-color-subtle;
+  -fx-border-width: 0 1px 0 0;
+  -fx-effect: dropshadow(gaussian, -fx-shadow-color, 10, 0, 0, 0);
+}
+
+/* Collapsed state for the sidebar container */
+.sidebar-container.collapsed {
+  -fx-pref-width: 70px;
+  -fx-max-width: 70px;
+  -fx-min-width: 70px;
+  -fx-padding: 20px 5px;
+}
+
+/* Expanded state for the sidebar container (default if .collapsed is not applied) */
+.sidebar-container:not(.collapsed) {
+  -fx-pref-width: 250px;
+  -fx-max-width: 250px;
+  -fx-min-width: 250px;
+  -fx-padding: 20px 10px;
+}
+
+/* --- Hamburger Menu Button --- */
+.sidebar-hamburger-button {
+  -fx-background-color: -fx-hamburger-default-bg;
+  -fx-alignment: CENTER;
+  -fx-pref-width: 60px;
+  -fx-min-width: 60px;
+  -fx-max-width: 60px;
+  -fx-padding: 5px;
+  -fx-background-radius: 5px;
+  -fx-border-radius: 5px;
+  -fx-transition: -fx-background-color 0.2s ease-in-out;
+  -fx-cursor: hand;
+}
+
+.sidebar-hamburger-button:hover {
+  -fx-background-color: -fx-button-hover-bg;
+}
+
+.sidebar-hamburger-button:pressed {
+  -fx-background-color: -fx-hamburger-pressed-bg;
+}
+
+/* --- Sidebar Navigation Buttons (Menu Items) --- */
+.sidebar-button {
+  -fx-background-color: -fx-button-default-bg;
+  -fx-text-fill: -fx-text-color-light;
+  -fx-font-size: 16px;
+  -fx-alignment: CENTER_LEFT;
+  -fx-pref-width: 100%;
+  -fx-min-width: 60px;
+  -fx-max-width: Infinity; /* ensure full width when expanded */
+  -fx-padding: 10px 15px;
+  -fx-graphic-text-gap: 10px; /* space between image and text */
+  -fx-border-radius: 5px;
+  -fx-background-radius: 5px;
+  -fx-transition: -fx-background-color 0.2s ease-in-out, -fx-text-fill 0.2s ease-in-out;
+  -fx-cursor: hand;
+}
+
+.sidebar-button:hover {
+  -fx-background-color: -fx-button-hover-bg;
+  -fx-text-fill: -fx-text-color-white;
+}
+
+/* --- Active (Selected) Sidebar Button --- */
+.active-sidebar-button {
+  -fx-background-color: -fx-accent-color;
+  -fx-text-fill: -fx-text-color-white;
+  -fx-font-weight: bold;
+}
+
+.active-sidebar-button:hover {
+  -fx-background-color: -fx-active-hover-bg;
+}
+
+/* --- Styles for Collapsed Sidebar State (buttons behavior) --- */
+.sidebar-container.collapsed .sidebar-button {
+  -fx-background-color: transparent;
+  -fx-alignment: CENTER; /* center the icon in collapsed state */
+  -fx-pref-width: 60px;
+  -fx-min-width: 60px;
+  -fx-max-width: 60px;
+  -fx-padding: 10px 0;
+  -fx-graphic-text-gap: 0;
+}
+
+.sidebar-container.collapsed .sidebar-button:hover {
+  -fx-background-color: -fx-button-hover-bg;
+}
+
+/* Ensure active button in collapsed state maintains its accent color */
+.sidebar-container.collapsed .active-sidebar-button {
+  -fx-background-color: -fx-accent-color;
+}
+
+/* --- Generic Regions inside sidebar --- */
+.sidebar-container Region {
+  -fx-min-height: 10px;
+}
+
+/* --- ScrollPane inside the sidebar: invisible but functional scrollbars --- */
+.sidebar-scroll {
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+  -fx-fit-to-width: true; /* ensure content fills width */
+}
+
+.sidebar-scroll > .viewport {
+  -fx-background-color: transparent;
+}
+
+/* Hide vertical scrollbar visuals but keep scrolling enabled */
+.sidebar-scroll .scroll-bar:vertical {
+  -fx-pref-width: 0;
+  -fx-min-width: 0;
+  -fx-max-width: 0;
+  -fx-opacity: 0;
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+}
+
+/* Hide horizontal scrollbar visuals as well (hbarPolicy is already NEVER) */
+.sidebar-scroll .scroll-bar:horizontal {
+  -fx-pref-height: 0;
+  -fx-min-height: 0;
+  -fx-max-height: 0;
+  -fx-opacity: 0;
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+}
+
+/* Hide track and thumb completely */
+.sidebar-scroll .scroll-bar:vertical .track,
+.sidebar-scroll .scroll-bar:vertical .thumb,
+.sidebar-scroll .scroll-bar:horizontal .track,
+.sidebar-scroll .scroll-bar:horizontal .thumb {
+  -fx-background-color: transparent;
+  -fx-background-insets: 0;
+  -fx-background-radius: 0;
+  -fx-padding: 0;
+}
+
+/* Remove increment/decrement buttons and arrows (if present in skin) */
+.sidebar-scroll .increment-button,
+.sidebar-scroll .decrement-button,
+.sidebar-scroll .increment-arrow,
+.sidebar-scroll .decrement-arrow {
+  -fx-padding: 0;
+  -fx-background-color: transparent;
+  -fx-shape: "";
+  -fx-opacity: 0;
+  -fx-min-width: 0;
+  -fx-min-height: 0;
+  -fx-max-width: 0;
+  -fx-max-height: 0;
+}
+
+/* Container inside the ScrollPane for buttons */
+.sidebar-button-container {
+  -fx-padding: 0 6 8 6; /* slight inner padding */
+}
+
+/* --- Optional: compact mode for smaller screens (toggle class in code if needed) --- */
+.sidebar-container.compact .sidebar-button {
+  -fx-font-size: 14px;
+  -fx-padding: 8 10;
+}
+.sidebar-container.compact .sidebar-hamburger-button {
+  -fx-padding: 4 6;
+}
+
+/* --- Optional: subtle fade hint to indicate scrollable content (disabled by default) --- */
+/*
+.sidebar-scroll {
+  -fx-background-insets: 0, 1;
+  -fx-background-color:
+    transparent,
+    linear-gradient(to bottom, rgba(28,40,51,0) 0%, rgba(28,40,51,0.85) 100%);
+}
+*/

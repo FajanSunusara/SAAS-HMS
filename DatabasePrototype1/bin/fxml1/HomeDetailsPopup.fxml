@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="application.controllers.HomeController"
+      spacing="20"
+      alignment="CENTER"
+      stylesheets="@../css/app.css"
+      prefWidth="800"
+      prefHeight="600"
+      padding="20">
+
+    <Label text="Home Details" styleClass="table-heading"/>
+
+    <!-- Pending Payments -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <Label text="Pending Payments" styleClass="table-heading"/>
+        <TableView fx:id="paymentTable" prefHeight="150">
+            <columns>
+                <TableColumn fx:id="paymentRoomCol" text="Room No." prefWidth="100"/>
+                <TableColumn fx:id="paymentGuestCol" text="Guest Name" prefWidth="200"/>
+                <TableColumn fx:id="paymentAmountCol" text="Pending Amount" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Today's Reservations -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <Label text="Today’s Reservations" styleClass="table-heading"/>
+        <TableView fx:id="upcomingTable" prefHeight="150">
+            <columns>
+                <TableColumn fx:id="upcomingRoomCol" text="Room No." prefWidth="100"/>
+                <TableColumn fx:id="upcomingGuestCol" text="Guest Name" prefWidth="200"/>
+                <TableColumn fx:id="upcomingCheckinCol" text="Check-in Time" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Canceled Bookings -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <Label text="Canceled Bookings" styleClass="table-heading"/>
+        <TableView fx:id="cancelTable" prefHeight="150">
+            <columns>
+                <TableColumn fx:id="cancelRoomCol" text="Room No." prefWidth="100"/>
+                <TableColumn fx:id="cancelGuestCol" text="Guest Name" prefWidth="200"/>
+                <TableColumn fx:id="cancelReasonCol" text="Reason" prefWidth="250"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Close Button -->
+    <Button text="Close" onAction="#closePopup"/>
+
+</VBox>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="mainBorderPane" styleClass="root" stylesheets="@/css/sidebar.css,@/css/Checkout.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.CheckoutController">
+
+    <!-- Left Sidebar -->
+      <!-- Sidebar Integration -->
+   <left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+
+    <!-- Center Content Area -->
+    <center>
+        <VBox spacing="20" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+            </padding>
+            
+            <!-- Statistics Section -->
+            <HBox spacing="25" alignment="CENTER">
+                <VBox alignment="CENTER" styleClass="stats-card">
+                    <padding>
+                        <Insets top="15.0" bottom="15.0" left="15.0" right="15.0" />
+                    </padding>
+                    <Label fx:id="availableRoomsLabel" styleClass="stats-number" text="0 Available"/>
+                    <Label styleClass="stats-label" text="Ready Rooms"/>
+                </VBox>
+                
+                <VBox alignment="CENTER" styleClass="stats-card">
+                    <padding>
+                        <Insets top="15.0" bottom="15.0" left="15.0" right="15.0" />
+                    </padding>
+                    <Label fx:id="totalPendingAmountLabel" styleClass="stats-number" text="₹0.00 Pending"/>
+                    <Label styleClass="stats-label" text="Outstanding"/>
+                </VBox>
+                
+                <VBox alignment="CENTER" styleClass="stats-card">
+                    <padding>
+                        <Insets top="15.0" bottom="15.0" left="15.0" right="15.0" />
+                    </padding>
+                    <Label fx:id="totalCheckoutsLabel" styleClass="stats-number" text="0 Checkouts"/>
+                    <Label styleClass="stats-label" text="Today"/>
+                </VBox>
+                
+                <VBox alignment="CENTER" styleClass="stats-card">
+                    <padding>
+                        <Insets top="15.0" bottom="15.0" left="15.0" right="15.0" />
+                    </padding>
+                    <Label fx:id="occupancyRateLabel" styleClass="stats-number" text="0% Occupied"/>
+                    <Label styleClass="stats-label" text="Current Rate"/>
+                </VBox>
+            </HBox>
+
+            <!-- Today's Scheduled Check-Outs Section -->
+            <VBox styleClass="card" VBox.vgrow="ALWAYS">
+                <children>
+                    <Label styleClass="section-title" text="Today's Scheduled Check-Outs">
+                        <padding>
+                            <Insets bottom="15.0" top="5.0" />
+                        </padding>
+                    </Label>
+                    
+                    <TableView fx:id="scheduledCheckOutsTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn prefWidth="80.0" text="Booking ID" fx:id="bookingIdCol">
+                                <cellValueFactory><PropertyValueFactory property="bookingId" /></cellValueFactory>
+                            </TableColumn>
+                            <TableColumn prefWidth="80.0" text="Room No." fx:id="roomNoCol">
+                                <cellValueFactory><PropertyValueFactory property="roomNo" /></cellValueFactory>
+                            </TableColumn>
+                            <TableColumn prefWidth="200.0" text="Guest Name" fx:id="guestNameCol">
+                                <cellValueFactory><PropertyValueFactory property="guestName" /></cellValueFactory>
+                            </TableColumn>
+                            <TableColumn prefWidth="130.0" text="Pending Payment" fx:id="pendingPaymentCol">
+                                <cellValueFactory><PropertyValueFactory property="pendingPayment" /></cellValueFactory>
+                            </TableColumn>
+                            <TableColumn prefWidth="100.0" text="Status" fx:id="statusCol">
+                                <cellValueFactory><PropertyValueFactory property="status" /></cellValueFactory>
+                            </TableColumn>
+                        </columns>
+                        <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                    </TableView>
+                    
+                    <Label styleClass="info-text" text="💡 Click on any row to view detailed billing summary and perform checkout actions">
+                        <padding>
+                            <Insets top="10.0" bottom="5.0" left="5.0" />
+                        </padding>
+                    </Label>
+                </children>
+                <padding>
+                    <Insets top="10.0" bottom="15.0" left="15.0" right="15.0" />
+                </padding>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

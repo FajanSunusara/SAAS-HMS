@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="application.controllers.GuestManagementController"
+            prefWidth="1400" prefHeight="800"
+            stylesheets="@/css/guest.css, @/css/sidebar.css">
+
+    <!-- Sidebar Integration -->
+   <left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+    <center>
+        <VBox spacing="15" styleClass="main-container">
+
+            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="header-bar">
+                <Label text="👤 Guest Management" styleClass="header-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField" promptText="Search by name, phone, booking ID..."
+                           styleClass="search-box"/>
+                <Button text="Search" onAction="#onSearch" styleClass="primary-btn"/>
+            </HBox>
+
+            <VBox styleClass="card">
+                <Label text="All Guest Records" styleClass="card-title"/>
+                <TableView fx:id="guestTable" prefHeight="650" styleClass="custom-table">
+                    <columns>
+                        <TableColumn fx:id="colGuestName" text="Guest Name" prefWidth="160"/>
+                        <TableColumn fx:id="colPhone" text="Phone" prefWidth="120"/>
+                        <TableColumn fx:id="colEmail" text="Email" prefWidth="200"/>
+                        <TableColumn fx:id="colAddress" text="Address" prefWidth="200"/>
+                        <TableColumn fx:id="colGuestNationality" text="Nationality" prefWidth="120"/>
+                        <TableColumn fx:id="colIdType" text="ID Type" prefWidth="120"/>
+                        <TableColumn fx:id="colIdNumber" text="ID Number" prefWidth="200"/>
+                        <TableColumn fx:id="colGstNumber" text="GST Number" prefWidth="120"/>
+
+                        <TableColumn fx:id="colBookingId" text="Booking ID" prefWidth="80"/>
+                        <TableColumn fx:id="colRoomNo" text="Room No" prefWidth="80"/>
+                        <TableColumn fx:id="colCheckIn" text="Check-In" prefWidth="120"/>
+                        <TableColumn fx:id="colCheckOut" text="Check-Out" prefWidth="120"/>
+                        <TableColumn fx:id="colRatePerNight" text="Rate Per Night" prefWidth="120"/>
+                        <TableColumn fx:id="colBaseAmount" text="Base Amount" prefWidth="120"/>
+                        <TableColumn fx:id="colGstRate" text="GST Rate" prefWidth="80"/>
+                        <TableColumn fx:id="colGstAmount" text="GST Amount" prefWidth="120"/>
+                        <TableColumn fx:id="colGstIncluded" text="GST Included" prefWidth="120"/>
+                        <TableColumn fx:id="colTotalAmount" text="Total Amount" prefWidth="120"/>
+                        <TableColumn fx:id="colAdvancePaid" text="Advance Paid" prefWidth="120"/>
+                        <TableColumn fx:id="colPaymentStatus" text="Payment Status" prefWidth="120"/>
+                        <TableColumn fx:id="colStatus" text="Booking Status" prefWidth="120"/>
+                        <TableColumn fx:id="colDocumentLink" text="Document Link" prefWidth="200"/>
+                        <TableColumn fx:id="colBookingNationality" text="Nationality" prefWidth="120"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

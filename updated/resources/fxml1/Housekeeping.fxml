@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="rootLayout" stylesheets="@/css/housekeeping.css, @/css/sidebar.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.HousekeepingController">
+  <!-- Sidebar Integration -->
+   <left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+    <center>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="top-bar-panel">
+                <padding>
+                    <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+                </padding>
+                <Label styleClass="page-title" text="Housekeeping Management System" />
+
+                <ComboBox fx:id="userRoleComboBox" prefWidth="120.0" promptText="Select Role" styleClass="manager-dropdown" />
+                <ComboBox fx:id="userNameComboBox" prefWidth="150.0" promptText="Select Name" styleClass="manager-dropdown" />
+                <PasswordField fx:id="passwordField" prefWidth="120.0" promptText="Password" styleClass="standard-input" />
+                <Button fx:id="loginButton" mnemonicParsing="false" styleClass="action-button-primary" text="Login" />
+
+                <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                    <Label fx:id="loggedInUserLabel" styleClass="logged-in-status-label" text="Not Logged In" />
+                </HBox>
+            </HBox>
+            <TabPane fx:id="dashboardTabPane" side="TOP" tabClosingPolicy="UNAVAILABLE" styleClass="main-tab-pane" VBox.vgrow="ALWAYS">
+                <tabs>
+                    <Tab fx:id="managerDashboardTab" text="Manager Dashboard" styleClass="tab-header">
+                        </Tab>
+                    <Tab fx:id="staffDashboardTab" text="Staff Dashboard" styleClass="tab-header">
+                        </Tab>
+                </tabs>
+            </TabPane>
+        </VBox>
+    </center>
+</BorderPane>

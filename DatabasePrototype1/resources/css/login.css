@@ -1,0 +1,65 @@
+/* Auth Screen Specific Styles */
+
+/* These styles use variables defined in app.css, so app.css must be loaded first or alongside this. */
+
+.auth-root {
+    -fx-background-color: -background-light; /* Light grey background */
+}
+
+.auth-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -primary-dark; /* Dark primary color for title */
+    -fx-padding: 0 0 10px 0;
+}
+
+.auth-input {
+    -fx-background-color: -background-card; /* White background */
+    -fx-border-color: -border-light;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 15px;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: -text-muted;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+.auth-input:focused {
+    -fx-border-color: -primary-dark;
+}
+
+.auth-button {
+    -fx-background-color: -primary-dark;
+    -fx-text-fill: -text-light;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+.auth-button:hover {
+    -fx-background-color: -primary-light;
+}
+
+.auth-link-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-dark;
+}
+
+.auth-hyperlink {
+    -fx-font-size: 13px;
+    -fx-text-fill: -accent-blue; /* A clickable blue for links */
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+.auth-hyperlink:hover {
+    -fx-text-fill: derive(-accent-blue, -20%);
+}
+
+.error-message {
+    -fx-font-size: 13px;
+    -fx-text-fill: #E74C3C; /* Red for error messages */
+    -fx-font-weight: bold;
+}

@@ -1,0 +1,27 @@
+2025-10-26T14:01:42.051500200 - Application starting...
+2025-10-26T14:01:43.532657600 - Database initialized successfully.
+2025-10-26T14:01:45.506524700 - Login page loaded successfully.
+2025-10-26T14:02:09.743508900 - Application stopping...
+2025-10-26T14:02:09.743508900 - Application stopped.
+2025-10-26T15:21:41.277634900 - Application starting...
+2025-10-26T15:21:41.279634100 - Working directory: D:\Eclipse_projects\DatabasePrototype1
+2025-10-26T15:21:41.286630500 - Database path: D:\Eclipse_projects\DatabasePrototype1/data/hms
+2025-10-26T15:21:41.568470200 - Startup error: Database initialization failed: Feature not supported: "AUTO_SERVER=TRUE && DB_CLOSE_ON_EXIT=FALSE" [50100-232]
+2025-10-26T15:21:59.827150400 - Application stopping...
+2025-10-26T15:21:59.846138800 - Application stopped.
+2025-10-26T15:26:14.833896500 - Application starting...
+2025-10-26T15:26:14.834893 - Working directory: D:\Eclipse_projects\DatabasePrototype1
+2025-10-26T15:26:14.840891200 - Database path: D:\Eclipse_projects\DatabasePrototype1/data/hms
+2025-10-26T15:26:16.026211300 - Database initialized successfully.
+2025-10-26T15:26:16.951684 - Warning: Could not load application icon: Input stream must not be null
+2025-10-26T15:26:17.588319 - Login page loaded successfully.
+2025-10-26T15:27:28.414388800 - Application stopping...
+2025-10-26T15:27:28.415388300 - Application stopped.
+2025-10-26T16:30:20.145158300 - Application starting...
+2025-10-26T16:30:20.163407300 - Working directory: D:\Eclipse_projects\DatabasePrototype1
+2025-10-26T16:30:20.167250800 - Database path: D:\Eclipse_projects\DatabasePrototype1/data/hms
+2025-10-26T16:30:22.533312700 - Database initialized successfully.
+2025-10-26T16:30:23.866157700 - Warning: Could not load application icon: Input stream must not be null
+2025-10-26T16:30:25.192058500 - Login page loaded successfully.
+2025-10-26T16:30:49.219828700 - Application stopping...
+2025-10-26T16:30:49.220827800 - Application stopped.

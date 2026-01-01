@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="rootLayout" styleClass="dashboard-panel" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.StaffDashboardController">
+    <HBox alignment="CENTER_LEFT" styleClass="dashboard-header-panel" spacing="20">
+        <padding>
+            <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+        </padding>
+        <VBox spacing="2" alignment="CENTER_LEFT">
+            <Label fx:id="staffNameLabel" styleClass="secondary-text" text="Logged in as: Staff Name" />
+            <Label fx:id="staffDesignationLabel" styleClass="secondary-text-small" text="Designation: Housekeeper" />
+            <Label fx:id="staffFloorShiftLabel" styleClass="secondary-text-small" text="Floor: Floor 1, Shift: Morning" />
+        </VBox>
+        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="10">
+            <TextField fx:id="searchField" promptText="Search tasks..." styleClass="search-field" />
+            <ToggleButton fx:id="darkModeToggle" styleClass="dark-mode-toggle" text="🌙" />
+        </HBox>
+    </HBox>
+
+    <TabPane fx:id="staffTabPane" side="TOP" tabClosingPolicy="UNAVAILABLE" styleClass="main-tab-pane" VBox.vgrow="ALWAYS">
+        <tabs>
+            <Tab text="My Assigned Tasks" styleClass="tab-header">
+                <content>
+                    <VBox styleClass="main-table-panel" spacing="10">
+                        <padding>
+                            <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
+                        </padding>
+                        <Label styleClass="section-title" text="Tasks Assigned To Me" />
+                        <TableView fx:id="assignedTaskTable" styleClass="task-table" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="roomNoColumn" text="Room No." />
+                                <TableColumn fx:id="taskTypeColumn" text="Task Type" />
+                                <TableColumn fx:id="statusColumn" text="Status" />
+                                <TableColumn fx:id="priorityColumn" text="Priority" />
+                                <TableColumn fx:id="assignedAtColumn" text="Assigned At" />
+                                <TableColumn fx:id="actionColumn" text="Actions" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </content>
+            </Tab>
+
+            <Tab text="My Task History" styleClass="tab-header">
+                <content>
+                    <VBox styleClass="main-table-panel" spacing="10">
+                        <padding>
+                            <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
+                        </padding>
+                        <Label styleClass="section-title" text="Completed Task History" />
+                        <TableView fx:id="taskHistoryTable" styleClass="task-table" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="historyRoomNoColumn" text="Room No." />
+                                <TableColumn fx:id="historyTaskTypeColumn" text="Task Type" />
+                                <TableColumn fx:id="historyStatusColumn" text="Status" />
+                                <TableColumn fx:id="historyAssignedAtColumn" text="Assigned At" />
+                                <TableColumn fx:id="historyCompletedAtColumn" text="Completed At" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </content>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

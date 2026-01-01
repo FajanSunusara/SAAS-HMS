@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10.0" styleClass="daily-sheet-window" stylesheets="@/css/financepage.css" 
+      xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="application.controllers.DailySheetDetailController">
+   
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   
+   <!-- Header Section -->
+   <VBox spacing="15.0" styleClass="header-section">
+      
+      <!-- Title Row -->
+      <HBox alignment="CENTER_LEFT" spacing="20.0">
+         <Label styleClass="page-title" text="📊 Daily Sheet Details" />
+         <Region HBox.hgrow="ALWAYS" />
+         <Label fx:id="dateRangeLabel" styleClass="live-indicator" text="Today" />
+      </HBox>
+      
+      <!-- Filter Row -->
+      <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="quick-filters">
+         <Label styleClass="filter-label" text="📅 Select Date:" />
+         <DatePicker fx:id="selectedDatePicker" prefWidth="150.0" styleClass="modern-date-picker" />
+         <Button fx:id="loadDataButton" onAction="#handleLoadData" styleClass="filter-btn" text="Load Data" />
+         
+         <!-- Spacer -->
+         <Region HBox.hgrow="ALWAYS" />
+         
+         <!-- Export Buttons -->
+         <Button fx:id="exportPdfButton" onAction="#handleExportPdf" styleClass="export-btn-pdf" text="📄 Export PDF" />
+         <Button fx:id="exportExcelButton" onAction="#handleExportExcel" styleClass="export-btn-excel" text="📊 Export Excel" />
+      </HBox>
+   </VBox>
+   
+   <!-- Main Table Section -->
+<!-- Main Table Section -->
+<VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+   <TableView fx:id="dailySheetDetailTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+      <columns>
+         <TableColumn fx:id="roomNoColumn" prefWidth="70.0" styleClass="table-column-room" text="Room" />
+         <TableColumn fx:id="roomStatusColumn" prefWidth="90.0" styleClass="table-column-name" text="Status" />
+         <TableColumn fx:id="guestNameColumn" prefWidth="140.0" styleClass="table-column-name" text="Guest Name" />
+         <TableColumn fx:id="checkInColumn" prefWidth="100.0" styleClass="table-column-date" text="Check-In" />
+         <TableColumn fx:id="checkOutColumn" prefWidth="100.0" styleClass="table-column-date" text="Check-Out" />
+         <TableColumn fx:id="todayAmountColumn" prefWidth="110.0" styleClass="table-column-amount" text="Today's Amount" />
+         <TableColumn fx:id="todayPaymentColumn" prefWidth="110.0" styleClass="table-column-amount" text="Payment Received" />
+         <TableColumn fx:id="paymentMethodsColumn" prefWidth="120.0" styleClass="table-column-method" text="Payment Mode" />
+         <TableColumn fx:id="pendingAmountColumn" prefWidth="110.0" styleClass="table-column-amount" text="Pending Amount" />
+         <TableColumn fx:id="totalAmountColumn" prefWidth="110.0" styleClass="table-column-amount" text="Total Amount" />
+      </columns>
+   </TableView>
+</VBox>
+
+   <!-- Summary Section -->
+   <HBox alignment="CENTER" spacing="20.0" styleClass="kpi-section">
+      <padding>
+         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+      </padding>
+      
+      <!-- Occupied Rooms -->
+      <VBox alignment="CENTER" spacing="5.0" styleClass="kpi-card-income">
+         <padding>
+            <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+         </padding>
+         <Label styleClass="kpi-title" text="🏠 Occupied Rooms" />
+         <Label fx:id="occupiedRoomsLabel" styleClass="kpi-value-income" text="0" />
+      </VBox>
+      
+      <!-- Today's Collection -->
+      <VBox alignment="CENTER" spacing="5.0" styleClass="kpi-card-balance">
+         <padding>
+            <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+         </padding>
+         <Label styleClass="kpi-title" text="💰 Today's Collection" />
+         <Label fx:id="todayCollectionLabel" styleClass="kpi-value-balance" text="₹0.00" />
+      </VBox>
+      
+      <!-- Pending Amount -->
+      <VBox alignment="CENTER" spacing="5.0" styleClass="kpi-card-pending">
+         <padding>
+            <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+         </padding>
+         <Label styleClass="kpi-title" text="⏳ Total Pending" />
+         <Label fx:id="totalPendingLabel" styleClass="kpi-value-pending" text="₹0.00" />
+      </VBox>
+      
+      <!-- Total Revenue -->
+      <VBox alignment="CENTER" spacing="5.0" styleClass="kpi-card-expense">
+         <padding>
+            <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+         </padding>
+         <Label styleClass="kpi-title" text="📈 Total Revenue" />
+         <Label fx:id="totalRevenueLabel" styleClass="kpi-value-expense" text="₹0.00" />
+      </VBox>
+   </HBox>
+   
+</VBox>

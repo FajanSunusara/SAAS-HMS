@@ -1,0 +1,431 @@
+
+:root {
+    -primary-color: #2D9CDB;
+    -accent-color: #27AE60;
+    -danger-color: #EB5757;
+    -text-color: #333333;
+    -muted-text-color: #666666;
+    -border-color: #E0E0E0;
+    -light-background: #FFFFFF;
+    -dark-background: #F0F2F5;
+
+    /* New colors for invoice preview to match image */
+    -invoice-text-color: #222222;
+    -invoice-header-color: #000000;
+    -invoice-line-color: #CCCCCC;
+}
+
+/* Root styling for the entire application */
+.root {
+    -fx-font-family: "Segoe UI", "Roboto", sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: -dark-background; /* Background for the overall scene */
+}
+
+/* --- General Styles --- */
+.label {
+    -fx-text-fill: -text-color;
+}
+
+.text-field, .date-picker, .combo-box {
+    -fx-background-color: -light-background;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 6px 8px; /* Reduced padding */
+    -fx-font-size: 12px; /*
+    
+}
+
+.text-field:focused, .date-picker:focused, .combo-box:focused {
+    -fx-border-color: -primary-color;
+    -fx-background-color: #EBF8FF; /* Light blue on focus */
+}
+
+/* --- Buttons --- */
+.button {
+    -fx-font-size: 13px; /* Slightly reduced font size */
+    -fx-padding: 7px 12px; /* Slightly reduced padding */
+    -fx-background-radius: 6px; /* Slightly reduced radius */
+    -fx-border-radius: 6px;
+    -fx-cursor: hand;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1); /* Reduced shadow */
+}
+
+.primary-button {
+    -fx-background-color: -primary-color;
+}
+.primary-button:hover {
+    -fx-background-color: derive(-primary-color, -10%);
+}
+
+.accent-button {
+    -fx-background-color: -accent-color;
+}
+.accent-button:hover {
+    -fx-background-color: derive(-accent-color, -10%);
+}
+
+.secondary-button {
+    -fx-background-color: #6C757D; /* Grayish */
+}
+.secondary-button:hover {
+    -fx-background-color: derive(#6C757D, -10%);
+}
+
+.delete-button {
+    -fx-background-color: -danger-color;
+    -fx-text-fill: white;
+    -fx-font-weight: normal;
+    -fx-padding: 3px 6px; /* Reduced padding */
+    -fx-font-size: 11px; /* Reduced font size */
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+    -fx-effect: none;
+}
+.delete-button:hover {
+    -fx-background-color: derive(-danger-color, -10%);
+}
+
+
+/* --- Left Panel --- */
+.left-panel {
+    -fx-background-color: -light-background;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 1px 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 8, 0, 0, 4);
+}
+
+/* Filter section (GridPane) */
+.filter-grid {
+    -fx-background-color: -dark-background;
+    -fx-padding: 10px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 3, 0, 0, 1);
+    -fx-alignment: TOP_LEFT;
+}
+
+/* Summary Grid (now includes Tax Percentage) */
+.summary-grid {
+    -fx-background-color: -dark-background;
+    -fx-padding: 10px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+
+.summary-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -muted-text-color;
+    -fx-font-weight: normal;
+}
+.summary-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -primary-color;
+}
+
+/* Style for the Tax Percentage TextField when it's inside the summary grid */
+.tax-field-in-summary {
+    -fx-background-color: -light-background;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 4px 6px;
+    -fx-font-size: 12px;
+    -fx-prompt-text-fill: #999999;
+    -fx-max-width: 80px;
+}
+.tax-field-in-summary:focused {
+    -fx-border-color: -primary-color;
+    -fx-background-color: #EBF8FF;
+}
+
+.section-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #444444;
+}
+
+
+/* --- TableView Styling --- */
+.invoice-table {
+    -fx-background-color: -light-background;
+    -fx-border-color: -border-color;
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-table-cell-border-color: #F0F0F0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 3, 0, 0, 1);
+}
+
+.invoice-table .column-header-background {
+    -fx-background-color: #E0E0E0;
+    -fx-background-radius: 6px 6px 0 0;
+}
+
+.invoice-table .column-header .label {
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.invoice-table .table-row-cell {
+    -fx-background-color: -light-background;
+    -fx-cell-size: 35px;
+}
+
+/* Zebra-striped rows */
+.invoice-table .table-row-cell:odd {
+    -fx-background-color: #F8F8F8;
+}
+
+/* Hover effect */
+.invoice-table .table-row-cell:hover {
+    -fx-background-color: #EBF5FF;
+}
+
+/* Selected row */
+.invoice-table .table-row-cell:selected {
+    -fx-background-color: -primary-color;
+    -fx-text-fill: white;
+}
+.invoice-table .table-row-cell:selected .text {
+    -fx-fill: white;
+}
+
+
+/* --- Right Panel (Invoice Preview) - COMPACTED & EDITABLE STYLES --- */
+.right-panel {
+    -fx-background-color: -light-background;
+    -fx-background-radius: 0px;
+    -fx-border-radius: 0px;
+    -fx-effect: none;
+    -fx-spacing: 10.0;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 0 0 1px;
+    -fx-padding: 20px; /* Adjusted padding slightly for overall balance */
+}
+
+/* Hotel Logo and Title */
+.hotel-name-main {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -invoice-header-color;
+    -fx-padding: 0;
+}
+
+.hotel-name-sub {
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #A0885D;
+    -fx-padding: 0 0 8px 0;
+}
+
+.invoice-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -invoice-header-color;
+    -fx-padding: 8px 0 0 0;
+}
+
+.invoice-separator {
+    -fx-background-color: -invoice-line-color;
+    -fx-pref-height: 1px;
+    -fx-max-width: 100%;
+    -fx-padding: 8px 0;
+}
+
+/* Section Headers (Guest Info, Room Details, Line Items) */
+.section-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -invoice-header-color;
+    -fx-padding: 0 0 3px 0;
+}
+
+/* Detail Labels and Values (Guest Info, Room Details) */
+.detail-label {
+    -fx-font-weight: normal;
+    -fx-text-fill: -invoice-text-color;
+    -fx-font-size: 12px;
+}
+
+.detail-value { /* For the Text elements when not editing */
+    -fx-text-fill: -invoice-text-color;
+    -fx-font-weight: normal;
+    -fx-font-size: 12px;
+}
+
+/* Container for editable fields */
+.editable-field-container {
+    -fx-pref-height: 25px; /* Give it a fixed height to prevent layout shifts */
+    -fx-min-height: 25px;
+    -fx-max-height: 25px;
+}
+
+/* Style for the actual editable input fields */
+.edit-input {
+    -fx-background-color: -light-background;
+    -fx-border-color: #DDDDDD; /* Lighter border for inline edit */
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 5px; /* Smaller padding for compactness */
+    -fx-font-size: 12px; /* Match text size */
+    -fx-prompt-text-fill: #999999;
+}
+.edit-input:focused {
+    -fx-border-color: -primary-color;
+    -fx-background-color: #EBF8FF;
+}
+
+
+.underline-separator {
+    -fx-background-color: -invoice-line-color;
+    -fx-pref-height: 1px;
+    -fx-max-width: 100%;
+    -fx-padding: 0;
+}
+
+/* Line Items Table Header */
+.line-item-header {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.line-item-header-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -invoice-header-color;
+    -fx-alignment: CENTER_LEFT;
+}
+.line-item-header-label:nth-child(n+2) {
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.line-item-header-separator {
+    -fx-background-color: -invoice-header-color;
+    -fx-pref-height: 1px;
+    -fx-max-width: 100%;
+    -fx-padding: 0;
+}
+
+/* Dynamic Line Item Rows */
+.line-item-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -invoice-text-color;
+    -fx-font-weight: normal;
+}
+.line-item-text:nth-child(n+2) {
+    -fx-text-alignment: right;
+}
+
+.line-item-row-separator {
+    -fx-background-color: -invoice-line-color;
+    -fx-pref-height: 1px;
+    -fx-max-width: 100%;
+    -fx-padding: 0;
+}
+
+
+/* Totals Section */
+.total-label-small {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -invoice-header-color;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.total-value-small {
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: -invoice-text-color;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.total-label-large {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -invoice-header-color;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.total-value-large {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -invoice-header-color;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+/* Print Button */
+.preview-buttons {
+    -fx-padding: 8px 0;
+    -fx-alignment: CENTER_RIGHT;
+}
+/* Enhanced styles for redesigned invoice page */
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-color;
+}
+
+.results-count {
+    -fx-font-size: 12px;
+    -fx-text-fill: -muted-text-color;
+}
+
+.invoice-main-panel {
+    -fx-background-color: -light-background;
+    -fx-padding: 0;
+}
+
+/* Dialog styles */
+.invoice-edit-dialog {
+    -fx-background-color: -light-background;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);
+}
+
+.dialog-hotel-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -primary-color;
+}
+
+.dialog-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-color;
+}
+
+.dialog-separator {
+    -fx-background-color: -border-color;
+    -fx-pref-height: 1px;
+}
+
+.section-separator {
+    -fx-background-color: -border-color;
+    -fx-pref-height: 1px;
+    -fx-opacity: 0.5;
+}
+
+.invoice-details-grid {
+    -fx-background-color: -dark-background;
+    -fx-padding: 10px;
+    -fx-background-radius: 5px;
+}
+
+.detail-value-bold {
+    -fx-font-weight: bold;
+    -fx-text-fill: -primary-color;
+}
+
+.section-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-color;
+    -fx-padding: 5 0 0 0;
+}
+

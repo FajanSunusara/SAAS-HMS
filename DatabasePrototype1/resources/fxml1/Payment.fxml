@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.DatePicker?>
+<?import java.net.URL?>
+<ScrollPane fitToWidth="true" fitToHeight="true" styleClass="root" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.PaymentController">
+    <stylesheets>
+        <URL value="@/css/payment.css" />
+    </stylesheets>
+    
+    <content>
+        <VBox spacing="40" alignment="TOP_CENTER" styleClass="root">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            
+            <!-- REFUND MODE HEADER (Hidden by default) -->
+            <HBox fx:id="refundModeHeader" spacing="15" alignment="CENTER" styleClass="refund-header" managed="false" visible="false">
+                <Label text="🔄 REFUND MODE" styleClass="refund-mode-title"/>
+                <Label fx:id="refundModeSubtitle" text="Processing payment refund for cancelled booking" styleClass="refund-mode-subtitle"/>
+            </HBox>
+
+            <!-- GROUP BOOKING HEADER (Hidden by default) -->
+            <HBox fx:id="groupBookingHeader" spacing="15" alignment="CENTER" styleClass="group-booking-header" managed="false" visible="false">
+                <Label text="🏢 GROUP BOOKING" styleClass="group-booking-title"/>
+                <Label fx:id="groupBookingSubtitle" text="Processing payment for multiple rooms" styleClass="group-booking-subtitle"/>
+            </HBox>
+            
+            <HBox spacing="40">
+                <fx:define>
+                    <ToggleGroup fx:id="paymentMethodToggleGroup"/>
+                </fx:define>
+                
+                <!-- LEFT SIDE - Two Sections -->
+                <VBox spacing="25" prefWidth="450">
+                    <!-- Section 1: Booking & Invoice Summary -->
+                    <VBox spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🧾 Booking &amp; Invoice Summary" styleClass="card-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="📄 View Invoice" styleClass="invoice-badge-button" onAction="#handleViewInvoice"/>
+                        </HBox>
+                        <VBox styleClass="card" spacing="15">
+                            <Label text="Guest Details" styleClass="card-subtitle"/>
+                            <GridPane styleClass="booking-grid">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="35"/>
+                                    <ColumnConstraints percentWidth="65"/>
+                                </columnConstraints>
+                                <Label text="Guest Name" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <TextField fx:id="guestNameTextField" promptText="Enter Guest Name" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="text-field"/>
+                                
+                                <!-- Group Booking Info -->
+                                <Label fx:id="groupInfoLabel" text="Group/Company:" GridPane.columnIndex="0" GridPane.rowIndex="1" managed="false" visible="false"/>
+                                <Label fx:id="groupNameLabel" text="" styleClass="value-label highlight-label" GridPane.columnIndex="1" GridPane.rowIndex="1" managed="false" visible="false"/>
+                                
+                                <Label text="Room Number" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <Label fx:id="roomNumberLabel" text="200, 100" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                <Label text="Room Type" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <Label fx:id="roomTypeLabel" text="Deluxe Suite" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                <Label text="Check-in Date" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                <DatePicker fx:id="checkInDatePicker" promptText="Select Date" GridPane.columnIndex="1" GridPane.rowIndex="4" styleClass="date-picker"/>
+                                <Label text="Check-out Date" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                                <DatePicker fx:id="checkOutDatePicker" promptText="Select Date" GridPane.columnIndex="1" GridPane.rowIndex="5" styleClass="date-picker"/>
+                                <Label text="Number of Nights" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                                <Label fx:id="numNightsLabel" text="-" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                                <Label text="Room Price/Night" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                                <Label fx:id="roomPricePerNightLabel" text="₹0.00" styleClass="highlight-label" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+                            </GridPane>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Section 2: Invoice Breakdown -->
+                    <VBox styleClass="card" spacing="15">
+                        <Label text="Invoice Breakdown" styleClass="card-subtitle"/>
+                        <VBox styleClass="invoice-breakdown-panel">
+                            <GridPane hgap="10" vgap="5">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="60"/>
+                                    <ColumnConstraints percentWidth="40"/>
+                                </columnConstraints>
+                                <Label text="Room Charges:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <Label fx:id="roomChargesLabel" text="₹0.00" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                <Label text="Service Charges:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <Label fx:id="serviceChargesLabel" text="₹0.00" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                <Label text="Discount Applied:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <Label fx:id="discountAppliedLabel" text="₹0.00" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                <Label text="Subtotal:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <Label fx:id="subtotalLabel" text="₹0.00" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                <Label text="GST:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                <Label text="GST Rate:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                                <Label fx:id="gstBreakdownLabel" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                <Label fx:id="gstLabel" text="₹0.00" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            </GridPane>
+
+                            <GridPane hgap="10" vgap="5">
+                            </GridPane>
+                            <Region styleClass="separator">
+                                <VBox.margin>
+                                    <Insets top="5" right="0" bottom="5" left="0"/>
+                                </VBox.margin>
+                            </Region>
+                            <GridPane hgap="10" vgap="5">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="60"/>
+                                    <ColumnConstraints percentWidth="40"/>
+                                </columnConstraints>
+                                <Label text="Total Amount Payable:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="total-payable-label"/>
+                                <Label fx:id="totalAmountLabel" text="₹0.00" styleClass="total-payable-label" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                <Label text="Advance Paid:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <Label fx:id="advancePaidLabel" text="₹0.00" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                <Label text="Amount Due:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <Label fx:id="amountDueLabel" text="₹0.00" styleClass="highlight-label" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            </GridPane>
+                        </VBox>
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <TextField fx:id="discountTextField" promptText="Enter Discount Amount" styleClass="text-field" prefWidth="200"/>
+                            <Button text="Apply Discount" onAction="#handleApplyDiscount" styleClass="secondary-button"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Group Room Breakdown Section -->
+                    <VBox fx:id="groupRoomBreakdownSection" styleClass="card" spacing="15" managed="false" visible="false">
+                        <Label text="🏢 Room Breakdown" styleClass="card-subtitle"/>
+                        <TableView fx:id="groupRoomsTable" prefHeight="200" styleClass="service-table">
+                            <columns>
+                                <TableColumn fx:id="colGroupRoomNo" text="Room No" prefWidth="80"/>
+                                <TableColumn fx:id="colGroupRoomType" text="Room Type" prefWidth="120"/>
+                                <TableColumn fx:id="colGroupRoomRate" text="Rate/Night" prefWidth="100"/>
+                                <TableColumn fx:id="colGroupRoomNights" text="Nights" prefWidth="60"/>
+                                <TableColumn fx:id="colGroupRoomTotal" text="Room Total" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                        <Label fx:id="groupRoomsTotalLabel" text="Total Rooms: 0" styleClass="highlight-label" />
+                    </VBox>
+                </VBox>
+                
+                <!-- RIGHT SIDE - Two Sections -->
+                <VBox spacing="25" prefWidth="450">
+                    <!-- Section 1: Payment Method / Refund Details -->
+                    <VBox spacing="15">
+                        <!-- Normal Payment Mode -->
+                        <VBox fx:id="paymentModeSection" spacing="15">
+                            <Label text="Choose Payment Method" styleClass="card-title"/>
+                            <HBox styleClass="payment-toggle-group" alignment="CENTER">
+                                <ToggleButton fx:id="cashToggle" text="Cash" userData="Cash" toggleGroup="$paymentMethodToggleGroup" styleClass="payment-toggle-button"/>
+                                <ToggleButton fx:id="upiToggle" text="UPI" userData="UPI" toggleGroup="$paymentMethodToggleGroup" styleClass="payment-toggle-button"/>
+                                <ToggleButton fx:id="cardToggle" text="Card" userData="Card" toggleGroup="$paymentMethodToggleGroup" styleClass="payment-toggle-button"/>
+                                <ToggleButton fx:id="netbankingToggle" text="Netbanking" userData="Netbanking" toggleGroup="$paymentMethodToggleGroup" styleClass="payment-toggle-button"/>
+                            </HBox>
+                            <StackPane fx:id="paymentDetailsStackPane" alignment="TOP_LEFT">
+                                <VBox fx:id="cashPane" styleClass="payment-details-pane" spacing="15">
+                                    <Label text="Cash Payment" styleClass="card-subtitle"/>
+                                    <Label text="Please collect the exact amount from the guest."/>
+                                </VBox>
+                                <VBox fx:id="upiPane" styleClass="payment-details-pane" spacing="15">
+                                    <Label text="UPI Payment" styleClass="card-subtitle"/>
+                                    <ImageView fx:id="qrImageView" fitWidth="150" fitHeight="150" preserveRatio="true" styleClass="qr-image-view">
+                                        <image><Image url="@/images/sample_qr_code.png"/></image>
+                                    </ImageView>
+                                    <Label text="Scan the QR code or enter UPI ID:"/>
+                                    <TextField fx:id="upiIdField" promptText="Enter UPI Transaction ID (Optional)" styleClass="text-field"/>
+                                </VBox>
+                                <VBox fx:id="cardPane" styleClass="payment-details-pane" spacing="15">
+                                    <Label text="Card Payment" styleClass="card-subtitle"/>
+                                    <TextField fx:id="cardNumberField" promptText="Card Number" styleClass="text-field"/>
+                                    <TextField fx:id="cardHolderNameField" promptText="Card Holder Name" styleClass="text-field"/>
+                                    <HBox spacing="10">
+                                        <TextField fx:id="expiryDateField" promptText="MM/YY" styleClass="text-field" HBox.hgrow="ALWAYS"/>
+                                        <TextField fx:id="cvvField" promptText="CVV" styleClass="text-field" prefWidth="80"/>
+                                    </HBox>
+                                </VBox>
+                                <VBox fx:id="netbankingPane" styleClass="payment-details-pane" spacing="15">
+                                    <Label text="Netbanking Payment" styleClass="card-subtitle"/>
+                                    <TextField fx:id="bankNameField" promptText="Bank Name" styleClass="text-field"/>
+                                    <TextField fx:id="accountNumberField" promptText="Account Number" styleClass="text-field"/>
+                                    <TextField fx:id="ifscNetbankingField" promptText="IFSC Code" styleClass="text-field"/>
+                                    <TextField fx:id="accountHolderNameNetbankingField" promptText="Account Holder Name" styleClass="text-field"/>
+                                </VBox>
+                            </StackPane>
+                        </VBox>
+                        
+                        <!-- Refund Mode Section (Hidden by default) -->
+                        <VBox fx:id="refundModeSection" spacing="15" managed="false" visible="false">
+                            <Label text="🔄 Refund Processing" styleClass="card-title refund-title"/>
+                            <VBox styleClass="card refund-card" spacing="15">
+                                <Label text="Refund Details" styleClass="card-subtitle"/>
+                                
+                                <!-- Original Payment Info -->
+                                <VBox styleClass="original-payment-info" spacing="8">
+                                    <Label text="Original Payment Information:" styleClass="info-subtitle"/>
+                                    <GridPane hgap="10" vgap="5">
+                                        <columnConstraints>
+                                            <ColumnConstraints percentWidth="50"/>
+                                            <ColumnConstraints percentWidth="50"/>
+                                        </columnConstraints>
+                                        <Label text="Payment ID:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                        <Label fx:id="originalPaymentIdLabel" text="N/A" styleClass="value-label" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                        <Label text="Original Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                        <Label fx:id="originalPaymentAmountLabel" text="₹0.00" styleClass="highlight-label" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    </GridPane>
+                                </VBox>
+                                
+                                <!-- Refund Type Selection -->
+                                <VBox spacing="8">
+                                    <Label text="Refund Type:" styleClass="info-subtitle"/>
+                                    <ComboBox fx:id="refundTypeComboBox" prefWidth="300" styleClass="combo-box"/>
+                                </VBox>
+                                
+                                <!-- Refund Amount Calculation -->
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <Label text="Refund Amount:" minWidth="100"/>
+                                    <TextField fx:id="refundAmountField" prefWidth="120" promptText="0.00" styleClass="refund-amount-field"/>
+                                    <Button fx:id="calculateRefundButton" text="📊 Calculate" onAction="#calculateRefundAmount" styleClass="calculate-button"/>
+                                </HBox>
+                                
+                                <!-- Processing Fee Option -->
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <CheckBox fx:id="applyProcessingFeeCheckBox" text="Apply Processing Fee"/>
+                                    <TextField fx:id="processingFeeField" prefWidth="80" promptText="0.00" styleClass="text-field"/>
+                                    <Label text="₹"/>
+                                </HBox>
+                                
+                                <!-- Refund Reason -->
+                                <VBox spacing="5">
+                                    <Label text="Refund Reason:" styleClass="info-subtitle"/>
+                                    <TextArea fx:id="refundReasonTextArea" prefRowCount="3" wrapText="true" 
+                                              promptText="Please provide the reason for refund..." styleClass="refund-reason-area"/>
+                                </VBox>
+                                
+                                <!-- Calculation Details Display -->
+                                <VBox fx:id="refundCalculationBox" spacing="5" styleClass="calculation-box">
+                                    <Label text="Refund Calculation:" styleClass="info-subtitle"/>
+                                    <Label fx:id="refundCalculationLabel" wrapText="true" styleClass="calculation-details" 
+                                           text="Click 'Calculate' to see refund breakdown"/>
+                                </VBox>
+                            </VBox>
+                        </VBox>
+                        
+                        <!-- Payment Amount Field (for both modes) -->
+                        <HBox styleClass="action-buttons-hbox" alignment="CENTER" spacing="20">
+                            <HBox fx:id="paymentAmountBox" spacing="10" alignment="CENTER_RIGHT">
+                                <Label fx:id="amountPayingLabel" text="Amount Paying Now:"/>
+                                <TextField fx:id="amountPayingField" promptText="Enter amount to pay" styleClass="text-field" prefWidth="120"/>
+                            </HBox>
+                            
+                            <!-- Action Buttons -->
+                            <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancelPayment" styleClass="danger-button"/>
+                            
+                            <!-- Normal Payment Button -->
+                            <Button fx:id="submitPaymentButton" text="Submit Payment" onAction="#handleSubmitPayment" 
+                                    styleClass="primary-button"/>
+                            
+                            <!-- Refund Button (Hidden by default) -->
+                            <Button fx:id="processRefundButton" text="🔄 Process Refund" onAction="#handleRefundPayment" 
+                                    styleClass="refund-button" managed="false" visible="false"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Section 2: Service Charges & Details -->
+                    <VBox styleClass="card" spacing="15">
+                        <Label text="Service Charges &amp; Details" styleClass="card-subtitle"/>
+                        <TableView fx:id="serviceDetailsTable" prefHeight="200" styleClass="service-table">
+                            <columns>
+                                <TableColumn fx:id="colServiceName" text="Service" prefWidth="150"/>
+                                <TableColumn fx:id="colServiceQty" text="Qty" prefWidth="50"/>
+                                <TableColumn fx:id="colServiceUnitPrice" text="Unit Price" prefWidth="100"/>
+                                <TableColumn fx:id="colServiceAmount" text="Amount" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                        <Label fx:id="serviceTotalLabel" text="Total Services: ₹0.00" styleClass="highlight-label" />
+                    </VBox>
+                </VBox>
+            </HBox>
+        </VBox>
+    </content>
+</ScrollPane>

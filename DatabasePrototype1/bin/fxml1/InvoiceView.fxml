@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="900.0" prefWidth="750.0" styleClass="main-container" stylesheets="@/css/invoiceView.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.InvoiceViewController">
+   <top>
+      <!-- Action Buttons -->
+      <VBox fx:id="actionContainer" styleClass="action-container">
+         <children>
+            <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="action-bar">
+               <children>
+                  <Button fx:id="printButton" mnemonicParsing="false" onAction="#handlePrint" styleClass="action-button" text="🖨 Print All" />
+                  <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEdit" styleClass="action-button" text="✏ Edit" />
+                  <Button fx:id="submitButton" mnemonicParsing="false" onAction="#handleSubmit" styleClass="action-button,submit-button" text="✓ Submit" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+               </padding>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+   
+   <center>
+      <!-- MAIN SCROLLABLE AREA -->
+      <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="main-scroll-pane">
+         <content>
+            <!-- Main Invoice Container -->
+            <VBox fx:id="invoiceContainer" prefWidth="620.0" spacing="8.0" styleClass="invoice-container">
+               <children>
+                  <!-- Header Section with Hotel Logo -->
+                  <HBox alignment="CENTER" spacing="20.0" styleClass="header-section">
+                     <children>
+                        
+                        <!-- Hotel Info -->
+                        <VBox alignment="CENTER_LEFT" spacing="2.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label styleClass="hotel-name" text="THE GRAND HOTEL" />
+                              <Label styleClass="hotel-address" text="123 Luxury Avenue, Business District, Mumbai - 400001">
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin></Label>
+                              <Label styleClass="hotel-contact" text="Phone: +91 22 2345 6789 | Email: info@thegrandhotel.com" />
+                              <Label styleClass="hotel-gst" text="GST No: 27AABCH1234C1Z5" />
+                           </children>
+                           <HBox.margin>
+                              <Insets left="3.0" />
+                           </HBox.margin>
+                        </VBox>
+                        
+                        <!-- Invoice Details -->
+                        <VBox alignment="TOP_RIGHT" spacing="2.0" HBox.hgrow="NEVER">
+                           <children>
+                              <Label styleClass="invoice-title" text="TAX INVOICE" />
+                              <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                 <children>
+                                    <Label prefHeight="15.0" prefWidth="76.0" styleClass="label-bold" text="Invoice No:" />
+                                    <Label fx:id="invoiceNoLabel" styleClass="label-normal" text="INV-2024-001" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Date:" />
+                                    <Label fx:id="invoiceDateLabel" styleClass="label-normal" text="15-09-2024" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Time:" />
+                                    <Label fx:id="invoiceTimeLabel" styleClass="label-normal" text="14:30" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  
+                  <!-- Customer and Stay Info -->
+                  <HBox spacing="8.0" styleClass="info-section">
+                     <children>
+                        <!-- Bill To -->
+                        <VBox spacing="3.0" styleClass="info-box" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label styleClass="section-title" text="BILL TO:" />
+                              <Label fx:id="customerNameLabel" styleClass="info-text" text="Mr. Rajesh Kumar Sharma" />
+                              <Label fx:id="customerAddressLabel" styleClass="info-text" text="B-504, Silver Oak Apartments, Andheri West" />
+                              <Label fx:id="customerGstLabel" styleClass="info-text" text="GST: 27AABCS1234D1Z6" />
+                              <Label fx:id="customerMobileLabel" styleClass="info-text" text="Mobile: +91 98765 43210" />
+                           </children>
+                        </VBox>
+                        
+                        <!-- Stay Details -->
+                        <VBox spacing="3.0" styleClass="info-box" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label styleClass="section-title" text="STAY DETAILS:" />
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Room:" />
+                                    <Label fx:id="roomNoLabel" styleClass="info-text" text="Deluxe - 301" />
+                                    <Label styleClass="label-bold" text="Nights:" />
+                                    <Label fx:id="nightsLabel" styleClass="info-text" text="3" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Check-in:" />
+                                    <Label fx:id="checkinLabel" styleClass="info-text" text="12-09-2024" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Check-out:" />
+                                    <Label fx:id="checkoutLabel" styleClass="info-text" text="15-09-2024" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Guests:" />
+                                    <Label fx:id="guestsLabel" styleClass="info-text" text="2 Adults" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  
+                  <!-- Services Table - ALL ENTRIES VISIBLE -->
+                  <VBox spacing="6.0" styleClass="table-section">
+                     <children>
+                        <Label styleClass="table-section-title" text="DESCRIPTION OF SERVICES" />
+                        <TableView fx:id="servicesTable" styleClass="invoice-table-complete">
+                           <columns>
+                              <TableColumn fx:id="srNoColumn" prefWidth="50.0" text="Sr." />
+                              <TableColumn fx:id="descriptionColumn" prefWidth="234.0" text="Description of Services" />
+                              <TableColumn fx:id="quantityColumn" text="Qty" />
+                              <TableColumn fx:id="rateColumn" minWidth="0.0" prefWidth="76.0" text="Rate (₹)" />
+                              <TableColumn fx:id="amountColumn" prefWidth="160.0" text="Amount (₹)" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Subtotal Section -->
+                  <HBox styleClass="subtotal-section">
+                     <children>
+                        <Label styleClass="subtotal-label" text="Subtotal:" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="subtotalLabel" styleClass="subtotal-value" text="₹ 24,150.00" />
+                     </children>
+                  </HBox>
+                  
+                  <!-- Tax Summary Table - ALL ENTRIES VISIBLE -->
+                  <VBox spacing="6.0" styleClass="table-section">
+                     <children>
+                        <Label styleClass="table-section-title" text="TAX SUMMARY" />
+                        <TableView fx:id="taxesTable" styleClass="invoice-table-complete">
+                           <columns>
+                              <TableColumn fx:id="taxableAmountColumn" prefWidth="150.0" text="Taxable Amount (₹)" />
+                              <TableColumn fx:id="cgstColumn" prefWidth="150.0" text="CGST @ 9% (₹)" />
+                              <TableColumn fx:id="sgstColumn" prefWidth="150.0" text="SGST @ 9% (₹)" />
+                              <TableColumn fx:id="totalAmountColumn" prefWidth="150.0" text="Total Amount (₹)" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Total Section -->
+                  <HBox prefWidth="584.0" styleClass="total-section">
+                     <children>
+                        <Label styleClass="total-label" text="TOTAL AMOUNT:" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="totalLabel" styleClass="total-value" text="₹ 28,497.00" />
+                     </children>
+                  </HBox>
+                  
+                  <!-- Amount in Words -->
+                  <HBox spacing="8.0" styleClass="amount-words-section">
+                     <children>
+                        <Label styleClass="label-bold" text="Amount in Words:" />
+                        <Label fx:id="amountWordsLabel" styleClass="amount-words-text" text="Twenty Eight Thousand Four Hundred Ninety Seven Only" HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+                  
+                  <!-- Payment Info -->
+                  <HBox spacing="8.0" styleClass="payment-section">
+                     <children>
+                        <VBox spacing="3.0" styleClass="payment-box" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label styleClass="section-title" text="PAYMENT DETAILS:" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Mode:" />
+                                    <Label fx:id="paymentModeLabel" styleClass="info-text" text="Credit Card" />
+                                    <Label styleClass="label-bold" text="ID:" />
+                                    <Label fx:id="transactionIdLabel" prefHeight="15.0" prefWidth="157.0" styleClass="info-text" text="TXN123456789" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Status:" />
+                                    <Label fx:id="paymentStatusLabel" styleClass="info-text,status-paid" text="PAID" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                        
+                        <VBox spacing="3.0" styleClass="payment-box" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label styleClass="section-title" text="BANK DETAILS:" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="Bank:" />
+                                    <Label styleClass="info-text" text="State Bank of India" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Label styleClass="label-bold" text="A/c:" />
+                                    <Label styleClass="info-text" text="1234567890" />
+                                    <Label styleClass="label-bold" text="IFSC:" />
+                                    <Label styleClass="info-text" text="SBIN0001234" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  
+                  <!-- Footer -->
+                  <HBox spacing="30.0" styleClass="footer-section">
+                     <children>
+                        <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label styleClass="footer-text" text="Thank you for choosing The Grand Hotel!" />
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER_RIGHT">
+                           <children>
+                              <Label styleClass="signature-line" text="_________________________" />
+                              <Label styleClass="signature-text" text="Authorized Signatory" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+               </padding>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </center>
+</BorderPane>

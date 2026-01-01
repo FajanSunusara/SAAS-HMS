@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="application.controllers.AddEditInventoryDialogController"
+      prefWidth="600" prefHeight="700" styleClass="dialog-container" 
+      stylesheets="@../../css/inventory.css,@../../css/dialogs.css">
+
+    <padding>
+        <Insets top="20" bottom="20" left="20" right="20"/>
+    </padding>
+
+    <!-- Header Section -->
+    <HBox alignment="CENTER_LEFT" spacing="15" styleClass="dialog-header">
+        <Label fx:id="lblDialogTitle" text="Add New Inventory Item" styleClass="dialog-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblItemId" text="" styleClass="item-id-label" visible="false"/>
+    </HBox>
+
+    <Separator styleClass="header-separator">
+        <VBox.margin>
+            <Insets top="15" bottom="20"/>
+        </VBox.margin>
+    </Separator>
+
+    <!-- Main Form Content -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="form-scroll">
+        <VBox spacing="20">
+            
+            <!-- Basic Information Section -->
+            <VBox spacing="15" styleClass="form-section">
+                <Label text="Basic Information" styleClass="section-title"/>
+                
+                <GridPane hgap="15" vgap="15" styleClass="form-grid">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                    </columnConstraints>
+
+                    <!-- Row 0: Item Name and SKU -->
+                    <Label text="Item Name *" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtItemName" promptText="Enter item name" styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    
+                    <Label text="SKU" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtSKU" promptText="Auto-generated or custom" styleClass="form-field" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                    <!-- Row 1: Category and Location -->
+                    <Label text="Category *" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="cmbCategory" promptText="Select category" styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity"/>
+                    
+                    <Label text="Location *" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="cmbLocation" editable="true" promptText="Select or enter location" styleClass="form-field" GridPane.columnIndex="3" GridPane.rowIndex="1" maxWidth="Infinity"/>
+
+                    <!-- Row 2: Unit and Description -->
+                    <Label text="Unit" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <ComboBox fx:id="cmbUnit" editable="true" promptText="pieces, kg, liters, etc." styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="Infinity"/>
+                    
+                    <Label text="Barcode" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    <TextField fx:id="txtBarcode" promptText="Barcode (optional)" styleClass="form-field" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                </GridPane>
+
+                <!-- Description -->
+                <VBox spacing="8">
+                    <Label text="Description" styleClass="form-label"/>
+                    <TextArea fx:id="txtDescription" promptText="Enter item description..." prefRowCount="3" wrapText="true" styleClass="form-field"/>
+                </VBox>
+            </VBox>
+
+            <!-- Stock Information Section -->
+            <VBox spacing="15" styleClass="form-section">
+                <Label text="Stock Information" styleClass="section-title"/>
+                
+                <GridPane hgap="15" vgap="15" styleClass="form-grid">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="150" prefWidth="150"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="100"/>
+                        <ColumnConstraints minWidth="150" prefWidth="150"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="100"/>
+                    </columnConstraints>
+
+                    <!-- Row 0: Available and Reserved Quantity -->
+                    <Label text="Available Quantity *" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtAvailableQty" promptText="0" styleClass="form-field numeric-field" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    
+                    <Label text="Reserved Quantity" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtReservedQty" promptText="0" styleClass="form-field numeric-field" GridPane.columnIndex="3" GridPane.rowIndex="0" editable="false"/>
+
+                    <!-- Row 1: Min and Max Stock Levels -->
+                    <Label text="Minimum Stock *" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtMinStock" promptText="10" styleClass="form-field numeric-field" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    
+                    <Label text="Maximum Stock" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtMaxStock" promptText="1000" styleClass="form-field numeric-field" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                </GridPane>
+
+                <!-- Stock Alert Level Indicator -->
+                <HBox spacing="10" alignment="CENTER_LEFT" styleClass="alert-indicator">
+                    <Label fx:id="lblStockStatus" text="Stock Status: " styleClass="status-label"/>
+                    <Label fx:id="lblStockStatusValue" text="Good" styleClass="status-value"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblTotalValue" text="Total Value: ₹0.00" styleClass="value-label"/>
+                </HBox>
+            </VBox>
+
+            <!-- Pricing Information Section -->
+            <VBox spacing="15" styleClass="form-section">
+                <Label text="Pricing Information" styleClass="section-title"/>
+                
+                <GridPane hgap="15" vgap="15" styleClass="form-grid">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="150"/>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="150"/>
+                    </columnConstraints>
+
+                    <!-- Row 0: Unit Price -->
+                    <Label text="Unit Price *" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtUnitPrice" promptText="0.00" styleClass="form-field currency-field" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    
+                    <Label text="Currency" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="cmbCurrency" value="INR" styleClass="form-field" GridPane.columnIndex="3" GridPane.rowIndex="0" maxWidth="Infinity"/>
+                </GridPane>
+            </VBox>
+
+            <!-- Supplier Information Section -->
+            <VBox spacing="15" styleClass="form-section">
+                <Label text="Supplier Information" styleClass="section-title"/>
+                
+                <GridPane hgap="15" vgap="15" styleClass="form-grid">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                    </columnConstraints>
+
+                    <!-- Row 0: Supplier and Contact -->
+                    <Label text="Supplier" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="cmbSupplier" editable="true" promptText="Select or enter supplier" styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="0" maxWidth="Infinity"/>
+                    
+                    <Label text="Contact" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtSupplierContact" promptText="Supplier contact number" styleClass="form-field" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                </GridPane>
+            </VBox>
+
+            <!-- System Information Section (for editing) -->
+            <VBox fx:id="systemInfoSection" spacing="15" styleClass="form-section" visible="false">
+                <Label text="System Information" styleClass="section-title"/>
+                
+                <GridPane hgap="15" vgap="15" styleClass="form-grid">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                        <ColumnConstraints minWidth="120" prefWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+                    </columnConstraints>
+
+                    <!-- Row 0: Last Updated and Updated By -->
+                    <Label text="Last Updated" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Label fx:id="lblLastUpdated" text="" styleClass="info-label" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    
+                    <Label text="Updated By" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <Label fx:id="lblUpdatedBy" text="" styleClass="info-label" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                    <!-- Row 1: Created Date -->
+                    <Label text="Created Date" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Label fx:id="lblCreatedDate" text="" styleClass="info-label" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    
+                    <Label text="Status" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <CheckBox fx:id="chkActive" text="Active" styleClass="form-field" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                </GridPane>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <!-- Action Buttons -->
+    <Separator styleClass="footer-separator">
+        <VBox.margin>
+            <Insets top="20" bottom="15"/>
+        </VBox.margin>
+    </Separator>
+
+    <HBox spacing="15" alignment="CENTER_RIGHT" styleClass="button-bar">
+        <Button fx:id="btnGenerateSKU" text="Generate SKU" styleClass="secondary-button" onAction="#handleGenerateSKU"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnClear" text="Clear Form" styleClass="secondary-button" onAction="#handleClearForm"/>
+        <Button fx:id="btnCancel" text="Cancel" styleClass="cancel-button" onAction="#handleCancel"/>
+        <Button fx:id="btnSave" text="Save Item" styleClass="primary-button" onAction="#handleSave" defaultButton="true"/>
+    </HBox>
+
+    <!-- Status Bar -->
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="status-bar">
+        <VBox.margin>
+            <Insets top="10"/>
+        </VBox.margin>
+        <Label text="*" styleClass="required-indicator"/>
+        <Label text="Required fields" styleClass="status-text"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblValidationStatus" text="" styleClass="validation-status"/>
+    </HBox>
+</VBox>

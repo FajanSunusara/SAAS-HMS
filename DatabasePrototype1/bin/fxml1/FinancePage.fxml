@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane styleClass="main-container" stylesheets="@/css/financepage.css,@/css/sidebar.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controllers.FinanceController">
+   
+   <!-- Sidebar Integration -->
+   <left>
+<fx:include source="/fxml1/Sidebar.fxml"/>
+</left>
+   
+   
+   <!-- Main Content Area -->
+   <center>
+      <VBox spacing="0" styleClass="content-wrapper">
+         
+         <!-- Modern Header Section -->
+         <VBox styleClass="finance-header">
+            <padding>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+            
+            <!-- Title Row -->
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+               <VBox.margin>
+                  <Insets bottom="25.0" />
+               </VBox.margin>
+               <Label styleClass="page-title" text="💰 Finance Dashboard" />
+               <Region HBox.hgrow="ALWAYS" />
+               <Label styleClass="live-indicator" text="● LIVE" />
+            </HBox>
+            
+            <!-- Quick Filters Row -->
+            <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="quick-filters">
+               <VBox.margin>
+                  <Insets bottom="20.0" />
+               </VBox.margin>
+               
+               <!-- Date Range -->
+               <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="date-filter">
+                  <Label styleClass="filter-label" text="📅" />
+                  <DatePicker fx:id="fromDatePicker" prefWidth="130.0" styleClass="modern-date-picker" />
+                  <Label styleClass="date-separator" text="→" />
+                  <DatePicker fx:id="toDatePicker" prefWidth="130.0" styleClass="modern-date-picker" />
+                  <Button fx:id="filterButton" onAction="#handleFilter" styleClass="filter-btn" text="Filter" />
+               </HBox>
+               
+               <!-- Search -->
+               <TextField fx:id="searchField" onKeyReleased="#handleSearch" prefWidth="350.0" promptText="Search transactions, guests..." styleClass="search-field" />
+               
+               <!-- Spacer -->
+               <Region HBox.hgrow="ALWAYS" />
+               
+               <!-- Export Buttons -->
+               <HBox spacing="10.0">
+                  <Button fx:id="exportExcelButton" onAction="#handleExportExcel" styleClass="export-btn-excel" text="📊 Excel" />
+                  <Button fx:id="exportPdfButton" onAction="#handleExportPdf" styleClass="export-btn-pdf" text="📄 PDF" />
+               </HBox>
+            </HBox>
+            
+            <!-- KPI Cards -->
+            <HBox alignment="CENTER" spacing="20.0" styleClass="kpi-section">
+               
+               <!-- Total Income -->
+               <HBox alignment="CENTER" spacing="8.0" styleClass="kpi-card-income">
+                  <HBox.hgrow>ALWAYS</HBox.hgrow>
+                  <padding>
+                     <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+                  </padding>
+                  <Label styleClass="kpi-icon" text="💰" />
+                  <Label styleClass="kpi-title" text="Total Income" />
+                  <Label fx:id="totalIncomeLabel" styleClass="kpi-value-income" text="₹0.00" />
+                  <!--  Rectangle height="3.0" styleClass="kpi-accent-income" width="40.0" /-->
+               </HBox>
+               
+               <!-- Total Expenses -->
+               <HBox alignment="CENTER" spacing="8.0" styleClass="kpi-card-expense">
+                  <HBox.hgrow>ALWAYS</HBox.hgrow>
+                  <padding>
+                     <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+                  </padding>
+                  <Label styleClass="kpi-icon" text="📉" />
+                  <Label styleClass="kpi-title" text="Total Expenses" />
+                  <Label fx:id="totalExpensesLabel" styleClass="kpi-value-expense" text="₹0.00" />
+                  <!--  Rectangle height="3.0" styleClass="kpi-accent-expense" width="40.0" /-->
+               </HBox>
+               
+               <!-- Net Balance -->
+               <HBox alignment="CENTER" spacing="8.0" styleClass="kpi-card-balance">
+                  <HBox.hgrow>ALWAYS</HBox.hgrow>
+                  <padding>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </padding>
+                  <Label styleClass="kpi-icon" text="⚖️" />
+                  <Label styleClass="kpi-title" text="Net Balance" />
+                  <Label fx:id="netBalanceLabel" styleClass="kpi-value-balance" text="₹0.00" />
+                  <!--  -Rectangle height="3.0" styleClass="kpi-accent-balance" width="40.0" /-->
+               </HBox>
+               
+               <!-- Pending Amount -->
+               <HBox alignment="CENTER" spacing="8.0" styleClass="kpi-card-pending">
+                  <HBox.hgrow>ALWAYS</HBox.hgrow>
+                  <padding>
+                     <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+                  </padding>
+                  <Label styleClass="kpi-icon" text="⏳" />
+                  <Label styleClass="kpi-title" text="Pending Amount" />
+                  <Label fx:id="pendingAmountLabel" styleClass="kpi-value-pending" text="₹0.00" />
+                  <!--  >Rectangle height="3.0" styleClass="kpi-accent-pending" width="40.0" /-->
+               </HBox>
+            </HBox>
+         </VBox>
+         
+         <!-- Content Area -->
+         <VBox styleClass="content-area" VBox.vgrow="ALWAYS">
+            <padding>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+            
+            <!-- Tab Pane -->
+            <TabPane fx:id="mainTabPane" styleClass="modern-tab-pane" VBox.vgrow="ALWAYS">
+               <tabs>
+                  
+                  <!-- Payment History -->
+                  <Tab fx:id="paymentHistoryTab" closable="false" styleClass="finance-tab" text="💳 Payments">
+                     <content>
+                        <VBox spacing="10.0" styleClass="tab-content">
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                           </padding>
+                           
+                           <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="paymentHistoryTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="paymentIdColumn" prefWidth="70.0" styleClass="table-column-id" text="ID" />
+                                    <TableColumn fx:id="guestNameColumn" prefWidth="160.0" styleClass="table-column-name" text="Guest" />
+                                    <TableColumn fx:id="roomNoColumn" prefWidth="60.0" styleClass="table-column-room" text="Room" />
+                                    <TableColumn fx:id="amountColumn" prefWidth="100.0" styleClass="table-column-amount" text="Amount" />
+                                    <TableColumn fx:id="methodColumn" prefWidth="100.0" styleClass="table-column-method" text="Method" />
+                                    <TableColumn fx:id="transactionIdColumn" prefWidth="120.0" styleClass="table-column-transaction" text="Transaction" />
+                                    <TableColumn fx:id="paymentDateColumn" prefWidth="110.0" styleClass="table-column-date" text="Date" />
+                                 </columns>
+                                 <contextMenu>
+                                    <ContextMenu fx:id="paymentContextMenu" styleClass="modern-context-menu">
+                                       <items>
+                                          <MenuItem fx:id="exportPaymentRowMenuItem" onAction="#handleExportRow" text="📊 Export Row" />
+                                          <MenuItem fx:id="printPaymentReceiptMenuItem" onAction="#handlePrintReceipt" text="🖨️ Print Receipt" />
+                                       </items>
+                                    </ContextMenu>
+                                 </contextMenu>
+                              </TableView>
+                           </VBox>
+                           
+                           <!-- Summary -->
+                           <HBox alignment="CENTER_RIGHT" styleClass="summary-footer">
+                              <padding>
+                                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                              </padding>
+                              <Label fx:id="totalReceivedLabel" styleClass="summary-label-income" text="Total Received: ₹0.00" />
+                           </HBox>
+                        </VBox>
+                     </content>
+                  </Tab>
+                  
+                  <!-- Reservations -->
+                  <Tab fx:id="reservationPaymentTab" closable="false" styleClass="finance-tab" text="📋 Reservations">
+                     <content>
+                        <VBox spacing="10.0" styleClass="tab-content">
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                           </padding>
+                           
+                           <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="reservationPaymentTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="reservationIdColumn" prefWidth="90.0" styleClass="table-column-id" text="Res ID" />
+                                    <TableColumn fx:id="resGuestNameColumn" prefWidth="160.0" styleClass="table-column-name" text="Guest" />
+                                    <TableColumn fx:id="resRoomNoColumn" prefWidth="60.0" styleClass="table-column-room" text="Room" />
+                                    <TableColumn fx:id="resAmountColumn" prefWidth="100.0" styleClass="table-column-amount" text="Amount" />
+                                    <TableColumn fx:id="resMethodColumn" prefWidth="100.0" styleClass="table-column-method" text="Method" />
+                                    <TableColumn fx:id="resNotesColumn" prefWidth="180.0" styleClass="table-column-notes" text="Notes" />
+                                    <TableColumn fx:id="resDateColumn" prefWidth="110.0" styleClass="table-column-date" text="Date" />
+                                 </columns>
+                                 <contextMenu>
+                                    <ContextMenu fx:id="reservationContextMenu" styleClass="modern-context-menu">
+                                       <items>
+                                          <MenuItem fx:id="exportReservationRowMenuItem" onAction="#handleExportRow" text="📊 Export Row" />
+                                          <MenuItem fx:id="printReservationReceiptMenuItem" onAction="#handlePrintReceipt" text="🖨️ Print Receipt" />
+                                       </items>
+                                    </ContextMenu>
+                                 </contextMenu>
+                              </TableView>
+                           </VBox>
+                           
+                           <HBox alignment="CENTER_RIGHT" styleClass="summary-footer">
+                              <padding>
+                                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                              </padding>
+                              <Label fx:id="totalReservationLabel" styleClass="summary-label-income" text="Total Reservations: ₹0.00" />
+                           </HBox>
+                        </VBox>
+                     </content>
+                  </Tab>
+                  
+                  <!-- Returns -->
+                  <Tab fx:id="returnPaymentTab" closable="false" styleClass="finance-tab" text="↩️ Returns">
+                     <content>
+                        <VBox spacing="10.0" styleClass="tab-content">
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                           </padding>
+                           
+                           <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="returnPaymentTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="returnIdColumn" prefWidth="70.0" styleClass="table-column-id" text="ID" />
+                                    <TableColumn fx:id="returnGuestNameColumn" prefWidth="160.0" styleClass="table-column-name" text="Guest" />
+                                    <TableColumn fx:id="returnRoomNoColumn" prefWidth="60.0" styleClass="table-column-room" text="Room" />
+                                    <TableColumn fx:id="returnAmountColumn" prefWidth="100.0" styleClass="table-column-amount" text="Amount" />
+                                    <TableColumn fx:id="returnMethodColumn" prefWidth="100.0" styleClass="table-column-method" text="Method" />
+                                    <TableColumn fx:id="returnDateColumn" prefWidth="110.0" styleClass="table-column-date" text="Date" />
+                                 </columns>
+                                 <contextMenu>
+                                    <ContextMenu fx:id="returnContextMenu" styleClass="modern-context-menu">
+                                       <items>
+                                          <MenuItem fx:id="exportReturnRowMenuItem" onAction="#handleExportRow" text="📊 Export Row" />
+                                          <MenuItem fx:id="printReturnReceiptMenuItem" onAction="#handlePrintReceipt" text="🖨️ Print Receipt" />
+                                       </items>
+                                    </ContextMenu>
+                                 </contextMenu>
+                              </TableView>
+                           </VBox>
+                           
+                           <HBox alignment="CENTER_RIGHT" styleClass="summary-footer">
+                              <padding>
+                                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                              </padding>
+                              <Label fx:id="totalReturnedLabel" styleClass="summary-label-expense" text="Total Returned: ₹0.00" />
+                           </HBox>
+                        </VBox>
+                     </content>
+                  </Tab>
+                  
+                  <!-- Expenses -->
+                  <Tab fx:id="expenseHistoryTab" closable="false" styleClass="finance-tab" text="💸 Expenses">
+                     <content>
+                        <VBox spacing="10.0" styleClass="tab-content">
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                           </padding>
+                           
+                           <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="expenseHistoryTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="expenseDateColumn" prefWidth="110.0" styleClass="table-column-date" text="Date" />
+                                    <TableColumn fx:id="expenseCategoryColumn" prefWidth="120.0" styleClass="table-column-category" text="Category" />
+                                    <TableColumn fx:id="expenseDescColumn" prefWidth="220.0" styleClass="table-column-desc" text="Description" />
+                                    <TableColumn fx:id="expenseAmountColumn" prefWidth="100.0" styleClass="table-column-amount" text="Amount" />
+                                    <TableColumn fx:id="expensePaidByColumn" prefWidth="130.0" styleClass="table-column-paidby" text="Paid By" />
+                                 </columns>
+                                 <contextMenu>
+                                    <ContextMenu fx:id="expenseContextMenu" styleClass="modern-context-menu">
+                                       <items>
+                                          <MenuItem fx:id="exportExpenseRowMenuItem" onAction="#handleExportRow" text="📊 Export Row" />
+                                          <MenuItem fx:id="printExpenseReceiptMenuItem" onAction="#handlePrintReceipt" text="🖨️ Print Receipt" />
+                                       </items>
+                                    </ContextMenu>
+                                 </contextMenu>
+                              </TableView>
+                           </VBox>
+                           
+                           <HBox alignment="CENTER_RIGHT" styleClass="summary-footer">
+                              <padding>
+                                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                              </padding>
+                              <Label fx:id="totalExpenseLabel" styleClass="summary-label-expense" text="Total Expenses: ₹0.00" />
+                           </HBox>
+                        </VBox>
+                     </content>
+                  </Tab>
+                  
+                  <!-- Daily Sheet -->
+                  <!-- Daily Sheet -->
+<Tab fx:id="dailySheetTab" closable="false" styleClass="finance-tab" text="📊 Daily Sheet">
+   <content>
+      <VBox spacing="10.0" styleClass="tab-content">
+         <padding>
+            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+         </padding>
+         
+         <!-- Action Buttons Row -->
+         <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="action-buttons">
+            <Button fx:id="openDailySheetDetailBtn" onAction="#openDailySheetDetailWindow" 
+                    styleClass="primary-btn" text="📊 Open Daily Sheet Detail" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="refreshDailyBtn" onAction="#handleFilter" 
+                    styleClass="refresh-btn" text="🔄 Refresh" />
+         </HBox>
+         
+         <!-- Daily Sheet Table Container -->
+         <VBox styleClass="table-container" VBox.vgrow="ALWAYS">
+            <TableView fx:id="dailySheetTable" styleClass="modern-table daily-sheet-table" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="dailyRoomNoColumn" prefWidth="60.0" styleClass="table-column-room" text="Room" />
+                  <TableColumn fx:id="dailyDateColumn" prefWidth="110.0" styleClass="table-column-date" text="Date" />
+                  <TableColumn fx:id="dailyOccupiedColumn" prefWidth="80.0" styleClass="table-column-status" text="Status" />
+                  <TableColumn fx:id="dailyReceivedColumn" prefWidth="120.0" styleClass="table-column-amount" text="Received" />
+                  <TableColumn fx:id="dailyPendingColumn" prefWidth="120.0" styleClass="table-column-amount" text="Pending" />
+                  <TableColumn fx:id="dailyTotalColumn" prefWidth="120.0" styleClass="table-column-amount" text="Total" />
+               </columns>
+               <contextMenu>
+                  <ContextMenu fx:id="dailySheetContextMenu" styleClass="modern-context-menu">
+                     <items>
+                        <MenuItem fx:id="exportDailyRowMenuItem" onAction="#handleExportRow" text="📊 Export Row" />
+                        <MenuItem fx:id="printDailyReceiptMenuItem" onAction="#handlePrintReceipt" text="🖨️ Print Receipt" />
+                     </items>
+                  </ContextMenu>
+               </contextMenu>
+            </TableView>
+         </VBox>
+         
+         <!-- Summary Cards -->
+         <HBox alignment="CENTER" spacing="15.0" styleClass="daily-summary">
+            <padding>
+               <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+            </padding>
+            
+            <VBox alignment="CENTER" spacing="5.0" styleClass="summary-card-received">
+               <padding>
+                  <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+               </padding>
+               <Label styleClass="summary-card-title" text="💰 Received" />
+               <Label fx:id="dailyReceivedSummary" styleClass="summary-card-value-income" text="₹0.00" />
+            </VBox>
+            
+            <VBox alignment="CENTER" spacing="5.0" styleClass="summary-card-pending">
+               <padding>
+                  <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+               </padding>
+               <Label styleClass="summary-card-title" text="⏳ Pending" />
+               <Label fx:id="dailyPendingSummary" styleClass="summary-card-value-pending" text="₹0.00" />
+            </VBox>
+            
+            <VBox alignment="CENTER" spacing="5.0" styleClass="summary-card-total">
+               <padding>
+                  <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+               </padding>
+               <Label styleClass="summary-card-title" text="📈 Total" />
+               <Label fx:id="dailyTotalSummary" styleClass="summary-card-value-balance" text="₹0.00" />
+            </VBox>
+         </HBox>
+      </VBox>
+   </content>
+</Tab>
+
+               </tabs>
+            </TabPane>
+         </VBox>
+      </VBox>
+   </center>
+</BorderPane>

@@ -1,0 +1,423 @@
+/* Complete invoice styles with logo support */
+.root {
+    -fx-font-family: "Arial", sans-serif;
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+}
+
+.main-container {
+    -fx-background-color: #ffffff;
+    -fx-padding: 0;
+}
+
+.main-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 20px;
+    -fx-hbar-policy: as_needed;
+    -fx-vbar-policy: as_needed;
+}
+
+.main-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Action Buttons */
+.action-container {
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px 0;
+}
+
+.action-bar {
+    -fx-min-height: 40px;
+    -fx-pref-height: 40px;
+}
+
+.action-button {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #2980b9;
+    -fx-border-width: 2px;
+    -fx-text-fill: #2980b9;
+    -fx-padding: 8px 15px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-min-width: 90px;
+}
+
+.action-button:hover {
+    -fx-background-color: #e8f4f8;
+    -fx-border-color: #1c5a7a;
+    -fx-text-fill: #1c5a7a;
+}
+
+.submit-button {
+    -fx-background-color: #27ae60;
+    -fx-border-color: #27ae60;
+    -fx-text-fill: #ffffff;
+}
+
+.submit-button:hover {
+    -fx-background-color: #229954;
+    -fx-border-color: #229954;
+}
+
+/* Invoice Container with Black Border */
+.invoice-container {
+    -fx-background-color: #ffffff;
+    -fx-spacing: 8px;
+    -fx-max-width: 620px;
+    -fx-pref-width: 620px;
+    
+    /* BLACK BORDER */
+    -fx-border-color: #000000;
+    -fx-border-width: 3px;
+    -fx-border-style: solid;
+    -fx-border-radius: 0px;
+    -fx-background-radius: 0px;
+    
+    /* Professional shadow */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 6, 0.3, 1, 1);
+}
+
+/* Header Section */
+.header-section {
+    -fx-padding: 12px 0;
+    -fx-border-color: #000000;
+    -fx-border-width: 0 0 2px 0;
+}
+
+/* Hotel Logo Styling */
+.hotel-logo {
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0.2, 1, 1);
+}
+
+.hotel-name {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.hotel-address, .hotel-contact {
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+}
+
+.hotel-gst {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.invoice-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+/* Labels */
+.label-bold {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+}
+
+.label-normal {
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+}
+
+/* Information Sections */
+.info-section {
+    -fx-padding: 0;
+}
+
+.info-box {
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+    -fx-padding: 10px;
+    -fx-background-color: #ffffff;
+}
+
+.section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-padding: 0 0 4px 0;
+}
+
+.info-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+}
+
+/* Table Sections */
+.table-section {
+    -fx-spacing: 6px;
+}
+
+.table-section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-padding: 0 0 4px 0;
+}
+
+/* ============================================
+   COMPLETE TABLES - ALL ENTRIES VISIBLE
+   ============================================ */
+.invoice-table-complete {
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+    -fx-background-color: #ffffff;
+    -fx-table-cell-border-color: #000000;
+    -fx-font-size: 12px;
+}
+
+/* HIDE ALL SCROLLBARS */
+.invoice-table-complete .scroll-bar {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-min-width: 0;
+    -fx-max-width: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+    -fx-background-color: transparent;
+}
+
+.invoice-table-complete .scroll-bar:vertical {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-min-width: 0;
+    -fx-max-width: 0;
+}
+
+.invoice-table-complete .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.invoice-table-complete .scroll-pane {
+    -fx-hbar-policy: never;
+    -fx-vbar-policy: never;
+    -fx-fit-to-width: true;
+    -fx-fit-to-height: true;
+}
+
+.invoice-table-complete .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.invoice-table-complete .column-header {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8px 6px;
+    -fx-alignment: center;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+
+.invoice-table-complete .table-row-cell {
+    -fx-border-color: #000000;
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-color: #ffffff;
+    -fx-min-height: 30px;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+}
+
+.invoice-table-complete .table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
+}
+
+.invoice-table-complete .table-row-cell:selected {
+    -fx-background-color: #e3f2fd;
+}
+
+.invoice-table-complete .table-cell {
+    -fx-padding: 6px;
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+    -fx-alignment: center;
+    -fx-border-color: #000000;
+    -fx-border-width: 0 1px 0 0;
+    -fx-wrap-text: true;
+}
+
+/* Subtotal and Total Sections */
+.subtotal-section {
+    -fx-padding: 10px 15px;
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+
+.subtotal-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-alignment: center-right;
+}
+
+.subtotal-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-min-width: 140px;
+    -fx-alignment: center-right;
+}
+
+.total-section {
+    -fx-padding: 12px 15px;
+    -fx-background-color: #2c3e50;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.total-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+    -fx-alignment: center-right;
+}
+
+.total-value {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+    -fx-min-width: 160px;
+    -fx-alignment: center-right;
+}
+
+/* Other Sections */
+.amount-words-section {
+    -fx-padding: 10px;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+    -fx-background-color: #ecf0f1;
+}
+
+.amount-words-text {
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.payment-section {
+    -fx-padding: 0;
+}
+
+.payment-box {
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+    -fx-padding: 10px;
+    -fx-background-color: #ffffff;
+}
+
+.status-paid {
+    -fx-text-fill: #27ae60;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.footer-section {
+    -fx-padding: 12px 0 0 0;
+}
+
+.footer-text {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.signature-line {
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+    -fx-padding: 0 0 4px 0;
+}
+
+.signature-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+    -fx-alignment: center;
+}
+/* File: css/invoiceView.css (Additional styles) */
+
+/* Invoice Type Specific Styles */
+.booking-invoice {
+    -fx-background-color: #ffffff;
+}
+
+.service-invoice {
+    -fx-border-color: #4CAF50;
+    -fx-border-width: 2px;
+}
+
+.reservation-invoice {
+    -fx-border-color: #2196F3;
+    -fx-border-width: 2px;
+}
+
+.refund-invoice {
+    -fx-border-color: #f44336;
+    -fx-border-width: 2px;
+}
+
+.expenditure-invoice {
+    -fx-border-color: #FF9800;
+    -fx-border-width: 2px;
+}
+
+/* Highlight Services */
+.highlight-services {
+    -fx-background-color: #FFF9C4;
+    -fx-border-color: #FBC02D;
+    -fx-border-width: 1px;
+    -fx-padding: 10px;
+}
+
+/* Negative Amount Styling (for refunds) */
+.negative-amount {
+    -fx-text-fill: #d32f2f;
+    -fx-font-weight: bold;
+}
+
+/* Advance Section */
+.advance-section {
+    -fx-background-color: #E3F2FD;
+    -fx-padding: 10px;
+    -fx-border-color: #2196F3;
+    -fx-border-width: 1px;
+}
+
+.advance-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1976D2;
+}
+
+.advance-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1565C0;
+}
+
+/* Refund Section */
+.refund-section {
+    -fx-background-color: #FFEBEE;
+    -fx-padding: 10px;
+    -fx-border-color: #f44336;
+    -fx-border-width: 1px;
+}

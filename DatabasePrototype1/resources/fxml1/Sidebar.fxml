@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox fx:id="sidebar"
+      alignment="TOP_CENTER"
+      spacing="8"
+      styleClass="sidebar-container"
+      xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="application.controllers.SidebarController"
+      stylesheets="@/css/sidebar.css">
+
+    <!-- Pinned header with hamburger -->
+    <HBox alignment="CENTER_LEFT" spacing="8" maxWidth="Infinity">
+        <Button fx:id="hamburgerButton"
+                styleClass="sidebar-hamburger-button"
+                onAction="#toggleSidebar"
+                maxWidth="Infinity"
+                alignment="CENTER_LEFT">
+            <graphic>
+                <ImageView fx:id="hamburgerIconView"/>
+            </graphic>
+        </Button>
+    </HBox>
+
+    <!-- Scrollable menu area -->
+    <ScrollPane fx:id="menuScroll"
+                fitToWidth="true"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS"
+                styleClass="sidebar-scroll">
+        <VBox fx:id="buttonContainer" spacing="10" fillWidth="true" maxWidth="Infinity" styleClass="sidebar-button-container">
+            <!-- Buttons get icon/text from controller -->
+            <Button fx:id="homeButton" styleClass="sidebar-button"/>
+            <Button fx:id="bookingButton" styleClass="sidebar-button"/>
+            <Button fx:id="checkoutButton" styleClass="sidebar-button"/>
+            <Button fx:id="reservationButton" styleClass="sidebar-button"/>
+            <Button fx:id="invoiceButton" styleClass="sidebar-button"/>
+            <Button fx:id="housekeepingButton" styleClass="sidebar-button"/>
+            <Button fx:id="guestManagementButton" styleClass="sidebar-button"/>
+            <Button fx:id="staffManagementButton" styleClass="sidebar-button"/>
+            <Button fx:id="reportsButton" styleClass="sidebar-button"/>
+            <Button fx:id="inventoryButton" styleClass="sidebar-button"/>
+            <Button fx:id="servicesButton" styleClass="sidebar-button"/>
+             <Button fx:id="financesButton" styleClass="sidebar-button"/>
+			<Button fx:id="laundryButton" styleClass="sidebar-button"/>
+            <Button fx:id="channelManagerButton" styleClass="sidebar-button"/>
+             <Button fx:id="RestauentButton" styleClass="sidebar-button"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <!-- Keep settings/logout at bottom within scrollable area -->
+            <Button fx:id="settingsButton" styleClass="sidebar-button"/>
+            <Button fx:id="logoutButton" styleClass="sidebar-button"/>
+        </VBox>
+    </ScrollPane>
+
+</VBox>

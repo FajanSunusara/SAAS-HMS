@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="application.controllers.SignupController"
+           stylesheets="@../css/app.css, @../css/auth.css">
+
+    <!-- Background -->
+    <Rectangle fill="linear-gradient(to bottom, #2c3e50, #34495e)"
+               width="950" height="560" />
+
+    <!-- Main Container -->
+    <HBox alignment="CENTER" maxWidth="820" maxHeight="500"
+          style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 0);">
+
+        <!-- Form Panel (Left) -->
+        <VBox alignment="CENTER" spacing="15" prefWidth="520"
+              style="-fx-background-color: white; -fx-background-radius: 10 10 10 10;">
+            <children>
+                <Label text="Create Account"
+                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label text="Sign up to start managing your hotel"
+                       style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+
+                <VBox spacing="6" maxWidth="320">
+                    <Label text="Full Name" style="-fx-font-size: 12px;"/>
+                    <TextField fx:id="fullNameField" promptText="Your full name" styleClass="auth-input"/>
+                </VBox>
+
+                <VBox spacing="6" maxWidth="320">
+                    <Label text="Email" style="-fx-font-size: 12px;"/>
+                    <TextField fx:id="emailField" promptText="you@example.com" styleClass="auth-input"/>
+                </VBox>
+
+                <VBox spacing="6" maxWidth="320">
+                    <Label text="Username" style="-fx-font-size: 12px;"/>
+                    <TextField fx:id="usernameField" promptText="Choose username" styleClass="auth-input"/>
+                </VBox>
+
+                <VBox spacing="6" maxWidth="320">
+                    <Label text="Password" style="-fx-font-size: 12px;"/>
+                    <PasswordField fx:id="passwordField" promptText="Create password" styleClass="auth-input"/>
+                </VBox>
+
+                <VBox spacing="6" maxWidth="320">
+                    <Label text="Confirm Password" style="-fx-font-size: 12px;"/>
+                    <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" styleClass="auth-input"/>
+                </VBox>
+
+                <Button text="Create Account" onAction="#handleSignup" maxWidth="320"
+                        styleClass="auth-button" style="-fx-padding: 8 0;"/>
+
+                <HBox alignment="CENTER" spacing="5">
+                    <Label text="Already have an account?" style="-fx-font-size: 12px; -fx-text-fill: #6c757d;"/>
+                    <Hyperlink text="Login" onAction="#handleLoginLink" styleClass="auth-hyperlink"/>
+                </HBox>
+            </children>
+            <padding><Insets top="20"/></padding>
+        </VBox>
+
+        <!-- Right Branding -->
+        <VBox alignment="CENTER" prefWidth="300"
+              style="-fx-background-color: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); -fx-background-radius: 10 10 10 10;">
+            <children>
+                <Label text="🏨" style="-fx-font-size: 48px;"/>
+                <Label text="WELCOME" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="TO GRAND HOTEL" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.8);"/>
+            </children>
+        </VBox>
+    </HBox>
+</StackPane>

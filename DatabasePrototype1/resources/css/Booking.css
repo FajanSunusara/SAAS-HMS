@@ -1,0 +1,247 @@
+/* ==========================
+   Light & Contrast Modern Booking Page
+========================== */
+
+/* --------------------------
+   Page Layout
+-------------------------- */
+.main-container {
+    -fx-background-color: #f9fafb; /* very light background */
+    -fx-spacing: 0;
+    -fx-padding: 20;
+}
+
+.main-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.content-container {
+    -fx-background-color: transparent;
+}
+
+/* --------------------------
+   Search Section
+-------------------------- */
+.youtube-search-section {
+    -fx-background-color: #ffffff; /* light card background */
+    -fx-background-radius: 25;
+    -fx-padding: 25;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 6);
+    -fx-spacing: 10;
+}
+
+.search-header {
+    -fx-padding: 0 0 10 0;
+}
+
+.search-icon {
+    -fx-font-size: 22px;
+    -fx-text-fill: #4a5568; /* dark but soft */
+}
+
+.search-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2d3748; /* dark text */
+}
+
+.search-hint {
+    -fx-font-size: 13px;
+    -fx-text-fill: #718096; /* softer gray for hint */
+    -fx-font-style: italic;
+}
+
+/* --------------------------
+   Search Field & Button
+-------------------------- */
+.youtube-search-container {
+    -fx-background-color: transparent;
+    -fx-spacing: 0;
+    -fx-padding: 10 0 0 0;
+}
+
+.youtube-search-field {
+    -fx-background-color: #f0f4f8; /* light gray input */
+    -fx-background-radius: 25 0 0 25;
+    -fx-border-radius: 25 0 0 25;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1.5;
+    -fx-padding: 14 18;
+    -fx-font-size: 15px;
+    -fx-prompt-text-fill: #a0aec0;
+    -fx-text-fill: #2d3748;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 3);
+}
+
+.youtube-search-field:focused {
+    -fx-border-color: #667eea;
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(102,126,234,0.15), 10, 0, 0, 4);
+}
+
+.youtube-search-btn {
+    -fx-background-color: #2d3748; /* dark button for contrast */
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-padding: 14 22;
+    -fx-background-radius: 0 25 25 0;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 3);
+}
+
+.youtube-search-btn:hover {
+    -fx-background-color: #1a202c; /* darker hover */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 10, 0, 0, 5);
+}
+
+/* --------------------------
+   Suggestions List
+-------------------------- */
+.youtube-suggestions-list {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);
+    -fx-padding: 8;
+}
+
+.youtube-suggestions-list .list-cell {
+    -fx-padding: 12 18;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #2d3748;
+    -fx-font-size: 14px;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+}
+
+.youtube-suggestions-list .list-cell:hover {
+    -fx-background-color: #edf2f7; /* subtle hover contrast */
+    -fx-cursor: hand;
+}
+
+.youtube-suggestions-list .list-cell:selected {
+    -fx-background-color: #667eea; /* blue contrast */
+    -fx-text-fill: white;
+}
+
+/* --------------------------
+   Modern Cards
+-------------------------- */
+.modern-info-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 28;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 12, 0, 0, 6);
+}
+
+.modern-summary-card {
+    -fx-background-color: #f7fafc;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 24;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 8, 0, 0, 4);
+}
+
+/* --------------------------
+   Card Titles
+-------------------------- */
+.modern-card-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2d3748;
+}
+
+.modern-subsection-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4a5568;
+    -fx-padding: 15 0 8 0;
+}
+
+/* --------------------------
+   Inputs
+-------------------------- */
+.modern-input-field,
+.modern-text-area,
+.modern-combo-field,
+.modern-date-field {
+    -fx-font-size: 14px;
+    -fx-padding: 14 18;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1.5;
+    -fx-background-color: #f8fafc;
+    -fx-prompt-text-fill: #a0aec0;
+    -fx-text-fill: #2d3748;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 4, 0, 0, 2);
+}
+
+.modern-input-field:focused,
+.modern-text-area:focused,
+.modern-combo-field:focused,
+.modern-date-field:focused {
+    -fx-border-color: #667eea;
+    -fx-border-width: 2;
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(102,126,234,0.1), 8, 0, 0, 3);
+}
+
+/* --------------------------
+   Buttons
+-------------------------- */
+.modern-primary-action-btn {
+    -fx-background-color: #2d3748; /* dark contrast */
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 16 28;
+    -fx-background-radius: 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 14, 0, 0, 6);
+}
+
+.modern-primary-action-btn:hover {
+    -fx-background-color: #1a202c;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 16, 0, 0, 8);
+}
+
+.modern-secondary-btn {
+    -fx-background-color: #edf2f7; /* light contrast button */
+    -fx-text-fill: #4a5568;
+    -fx-padding: 12 22;
+    -fx-background-radius: 14;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1.5;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+.modern-cancel-btn {
+    -fx-background-color: #fed7d7; /* soft red */
+    -fx-text-fill: #c53030;
+    -fx-padding: 12 22;
+    -fx-background-radius: 14;
+    -fx-border-color: #fc8181;
+    -fx-border-width: 1.5;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+/* --------------------------
+   Scrollbar
+-------------------------- */
+.main-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #667eea;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);
+}

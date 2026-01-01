@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.text.Font?>
+
+<DialogPane fx:id="dialogPane" prefWidth="800" prefHeight="500" stylesheets="@/css/photo-id-verification.css" 
+            xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="application.controllers.PhotoIdVerificationController">
+    
+    <header>
+        <VBox spacing="8" style="-fx-padding: 0 0 10 0;">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="📷 PHOTO ID VERIFICATION" styleClass="dialog-header-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="statusLabel" text="Status: Pending" styleClass="status-pending"/>
+            </HBox>
+            <Label text="Complete identity verification for all persons staying in the room" 
+                   styleClass="dialog-header-subtitle"/>
+        </VBox>
+    </header>
+    
+    <content>
+        <ScrollPane fitToWidth="true" vbarPolicy="AS_NEEDED" style="-fx-background-color: transparent;">
+            <VBox spacing="20" style="-fx-padding: 5;">
+                
+                <!-- Basic Information Section -->
+                <VBox spacing="12" styleClass="info-section">
+                    <Label text="📋 BASIC INFORMATION" styleClass="section-title"/>
+                    <GridPane hgap="15" vgap="12" style="-fx-padding: 0 0 10 0;">
+                        <columnConstraints>
+                            <ColumnConstraints prefWidth="140"/>
+                            <ColumnConstraints/>
+                        </columnConstraints>
+                        
+                        <Label text="Total Persons:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <ComboBox fx:id="totalPersonsComboBox" prefWidth="120" styleClass="modern-combo" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        
+                        <Label text="Main Guest Photo:" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Button fx:id="captureMainGuestBtn" text="📸 CAPTURE PHOTO" 
+                                        onAction="#handleCaptureMainGuestPhoto" styleClass="capture-primary-btn"/>
+                                <Label text="Required for main guest" styleClass="hint-label"/>
+                            </HBox>
+                            <HBox spacing="15" alignment="CENTER_LEFT">
+                                <ImageView fx:id="mainGuestImageView" fitWidth="120" fitHeight="90" styleClass="photo-preview-large"/>
+                                <VBox spacing="4" style="-fx-padding: 5 0 0 0;">
+                                    <Label text="Photo Requirements:" styleClass="hint-title"/>
+                                    <Label text="• Clear face visibility" styleClass="hint-text"/>
+                                    <Label text="• Good lighting" styleClass="hint-text"/>
+                                    <Label text="• No glasses/sunglasses" styleClass="hint-text"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </GridPane>
+                </VBox>
+
+                <!-- Person Details Section -->
+                <VBox fx:id="personsContainer" spacing="15" styleClass="persons-section">
+                    <Label text="👥 PERSON DETAILS" styleClass="section-title"/>
+                    <Label text="Fill details for each person staying in the room" styleClass="section-subtitle"/>
+                    <!-- Dynamic content will be added here -->
+                </VBox>
+
+                <!-- Verification Notes -->
+                <VBox spacing="10" styleClass="notes-section">
+                    <Label text="📝 VERIFICATION NOTES" styleClass="section-title"/>
+                    <TextArea fx:id="notesTextArea" promptText="Add any additional verification notes, observations, or special requirements..." 
+                              prefRowCount="2" wrapText="true" styleClass="modern-text-area"/>
+                    <Label text="Optional: Add any special notes about the verification process" styleClass="hint-label"/>
+                </VBox>
+
+                <!-- Quick Actions -->
+                <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+                    <Button text="🔄 RESET ALL" onAction="#handleResetAll" styleClass="secondary-button"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Complete all sections to proceed" styleClass="completion-hint"/>
+                </HBox>
+                
+            </VBox>
+        </ScrollPane>
+    </content>
+    
+    <buttonTypes>
+        <ButtonType buttonData="OK_DONE" text="✅ COMPLETE VERIFICATION"/>
+        <ButtonType buttonData="CANCEL_CLOSE" text="❌ CANCEL"/>
+    </buttonTypes>
+</DialogPane>

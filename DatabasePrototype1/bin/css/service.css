@@ -1,0 +1,244 @@
+
+.root {
+    /* Primary Theme Colors - Muted Soft Blue-Green Theme */
+    -primary-color: #4BA6A6;       /* Muted Teal */
+    -primary-dark: #357F7F;        /* Deeper Teal */
+    -primary-light: #A8DADC;       /* Light Aqua Blue */
+
+    /* Accent Colors */
+    -accent-color: #F4A261;        /* Soft Orange */
+    -accent-color-light: #FFE5B4;  /* Pastel Orange-Beige */
+
+    /* Backgrounds */
+    -background-light: #F9FAFB;    /* Very Light Grayish Blue */
+    -background-dark: #E8EEF1;     /* Light Cool Gray */
+
+    /* Text Colors */
+    -text-color-dark: #2F2F2F;     /* Almost Black for Primary Text */
+    -text-color-light: #FFFFFF;    /* White for Dark Background Text */
+
+    /* Borders and Cards */
+    -border-color: #D0D7DE;        /* Soft Gray Border */
+    -card-background: #FFFFFF;     /* White Cards */
+
+    /* Shadow */
+    -shadow-color: rgba(0, 0, 0, 0.08); /* Soft shadow for modern UI */
+}
+
+/* Main Background */
+.main-background {
+    -fx-background-color: -background-light;
+}
+
+/* Card Styling (for main sections) */
+.card {
+    -fx-background-color: -card-background;
+    -fx-background-radius: 10px; /* Rounded corners */
+    -fx-border-color: -border-color;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(gaussian, -shadow-color, 10, 0.5, 0, 5); /* Subtle shadow */
+    -fx-padding: 15px; /* Internal padding */
+}
+
+/* Sub-Card Styling (for nested sections like item details) */
+.sub-card {
+    -fx-background-color: -background-dark; /* Slightly different background */
+    -fx-background-radius: 8px;
+    -fx-border-color: derive(-border-color, -10%); /* Slightly darker border */
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-padding: 10px;
+}
+
+/* Section Titles */
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-fill: -primary-dark; /* Using primary color for titles */
+    -fx-text-fill: -primary-dark;
+    -fx-padding: 0 0 10px 0; /* Add some space below titles */
+}
+
+.subsection-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-fill: -text-color-dark;
+    -fx-text-fill: -text-color-dark;
+    -fx-padding: 0 0 5px 0;
+}
+
+/* Labels for info/form fields */
+.label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-color-dark;
+}
+
+.info-label {
+     -fx-font-size: 14px;
+     -fx-font-weight: bold;
+     -fx-text-fill: -text-color-dark;
+}
+
+/* Text Fields and ComboBoxes */
+.text-field, .combo-box {
+    -fx-font-size: 13px;
+    -fx-background-color: -card-background; /* Match card background */
+    -fx-border-color: -border-color;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-padding: 5px 8px;
+}
+
+.text-field:focused, .combo-box:focused {
+    -fx-border-color: -primary-color; /* Highlight on focus */
+    -fx-effect: dropshadow(gaussian, derive(-primary-color, 30%), 5, 0.0, 0, 0);
+}
+
+.text-field:disabled {
+    -fx-opacity: 0.7;
+    -fx-background-color: -background-dark;
+}
+
+.info-text-field {
+    -fx-background-color: transparent; /* Transparent for non-editable info */
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-color-dark;
+}
+
+
+/* Buttons */
+.button {
+    -fx-background-color: -primary-color;
+    -fx-text-fill: -text-color-light;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, -shadow-color, 5, 0.5, 0, 2);
+}
+
+.button:hover {
+    -fx-background-color: -primary-dark;
+    -fx-effect: dropshadow(gaussian, derive(-shadow-color, 20%), 8, 0.5, 0, 3);
+}
+
+.button:pressed {
+    -fx-background-color: derive(-primary-dark, -10%);
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.2), 5, 0.0, 0, 0);
+}
+
+/* Specific Button Styles */
+.add-service-button {
+    -fx-background-color: -primary-color;
+}
+.add-item-button {
+    -fx-background-color: -accent-color;
+    -fx-text-fill: -text-color-dark;
+}
+.add-item-button:hover {
+    -fx-background-color: derive(-accent-color, -10%);
+}
+.print-button {
+    -fx-background-color: #2196F3; /* Blue */
+}
+.print-button:hover {
+    -fx-background-color: #1976D2; /* Darker Blue */
+}
+.clear-button {
+    -fx-background-color: #F44336; /* Red */
+    -fx-text-fill: -text-color-light;
+}
+.clear-button:hover {
+    -fx-background-color: #D32F2F; /* Darker Red */
+}
+
+
+/* ListView */
+.list-view {
+    -fx-background-color: -card-background;
+    -fx-border-color: -border-color;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-padding: 0; /* Remove default padding */
+}
+
+.list-view .list-cell {
+    -fx-background-color: transparent; /* Cells have transparent background */
+    -fx-text-fill: -text-color-dark;
+    -fx-padding: 8px 10px;
+    -fx-font-size: 13px;
+}
+
+.list-view .list-cell:filled:hover {
+    -fx-background-color: -background-dark; /* Hover effect */
+}
+
+.list-view .list-cell:filled:selected {
+    -fx-background-color: -primary-light; /* Selected item background */
+    -fx-text-fill: -text-color-dark;
+    -fx-font-weight: bold;
+}
+
+/* TableView */
+.table-view {
+    -fx-background-color: -card-background;
+    -fx-border-color: -border-color;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -primary-color;
+    -fx-background-radius: 5px 5px 0 0; /* Rounded top corners */
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 35px; /* Header height */
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -text-color-light;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.table-view .table-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-color-dark;
+    -fx-padding: 8px 10px;
+    -fx-font-size: 12px;
+    -fx-border-color: transparent -border-color transparent transparent; /* Right border */
+    -fx-border-width: 0 1px 0 0;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: derive(-card-background, -3%); /* Subtle alternating row color */
+}
+
+.table-view .table-row-cell:even {
+    -fx-background-color: -card-background;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: -primary-light;
+    -fx-text-fill: -text-color-dark;
+}
+
+/* Total Label */
+.total-label-text {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-color-dark;
+}
+
+.total-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -primary-dark; /* Highlight total amount */
+}
