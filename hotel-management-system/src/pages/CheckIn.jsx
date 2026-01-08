@@ -1,11 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, X, Check } from 'lucide-react';
+import { Plus, Search, Filter, X, Check, Loader } from 'lucide-react';
+import { bookingService } from '../api/bookingService';
+import { checkinService } from '../api/checkinService';
+import { roomService } from '../api/roomService';
 
 const CheckIn = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [arrivals, setArrivals] = useState([]);
+  const [stats, setStats] = useState([
+    { label: "Today's Check-ins", value: 0, subtext: '/ 0 Total' },
+    { label: 'Occupied Rooms', value: 0, subtext: '0% Occupancy' },
+    { label: "Today's Arrivals", value: 0, subtext: '0 Pending' },
+    { label: 'Canceled Arrivals', value: 0, subtext: 'Action Required' },
+  ]);
   
   // Advanced filter states
   const [roomTypeFilters, setRoomTypeFilters] = useState([]);
@@ -15,171 +26,234 @@ const CheckIn = () => {
   
   // Available filter options
   const roomTypes = ['Standard Room', 'Deluxe Suite', 'Executive Suite', 'Presidential Suite'];
-  const statusOptions = ['Pending', 'Checked In', 'Payment Due', 'Late Arrival'];
-  const bookingSources = ['Website', 'OTA', 'Direct Call', 'Travel Agent', 'Corporate'];
-  const guestTypes = ['VIP', 'New Guest', 'Returning Guest', 'Corporate'];
+  const statusOptions = ['PENDING', 'CHECKED_IN', 'PAYMENT_DUE', 'LATE_ARRIVAL'];
+  const bookingSources = ['WEBSITE', 'OTA', 'DIRECT_CALL', 'TRAVEL_AGENT', 'CORPORATE'];
+  const guestTypes = ['VIP', 'NEW_GUEST', 'RETURNING_GUEST', 'CORPORATE'];
 
-  // API: GET /api/checkins/today - Get today's check-ins
-  // API: POST /api/checkins - Process check-in
-  // API: GET /api/checkins/arrivals - Get expected arrivals
-  // API: PATCH /api/checkins/{id}/cancel - Cancel check-in
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const stats = [
-    { label: "Today's Check-ins", value: 3, subtext: '/ 15 Total' },
-    { label: 'Occupied Rooms', value: 85, subtext: '85% Occupancy' },
-    { label: "Today's Arrivals", value: 15, subtext: '12 Pending' },
-    { label: 'Canceled Arrivals', value: 2, subtext: 'Action Required' },
-  ];
+const fetchDashboardData = async () => {
+  setLoading(true);
+  try {
+    console.log('Fetching dashboard data...');
+    
+    // Fetch today's check-ins
+    const checkinsResponse = await checkinService.getTodayCheckIns();
+    console.log('Check-ins API response:', checkinsResponse);
+    const checkins = checkinsResponse.data || [];
+    console.log('Check-ins data:', checkins);
+    
+    // Fetch today's expected arrivals
+    const arrivalsResponse = await bookingService.getAllBookings();
+    console.log('Arrivals API response:', arrivalsResponse);
+    const allArrivals = arrivalsResponse.data || [];
+    console.log('All arrivals data:', allArrivals);
+    
+    // Filter for today's arrivals
+    const today = new Date().toISOString().split('T')[0];
+    console.log('Today:', today);
+    
+    const todayArrivals = allArrivals.filter(arrival => {
+      const arrivalDate = new Date(arrival.checkInDate).toISOString().split('T')[0];
+      console.log('Arrival checkInDate:', arrival.checkInDate, 'Converted:', arrivalDate);
+      return arrivalDate === today;
+    });
+    
+    console.log('Today\'s arrivals:', todayArrivals);
+    
+    // Update arrivals state
+    const mappedArrivals = mapBookingToArrival(todayArrivals);
+    console.log('Mapped arrivals:', mappedArrivals);
+    setArrivals(mappedArrivals);
+    
+    // Fetch room status for occupancy calculation
+    const roomSummaryResponse = await roomService.getRoomStatusSummary();
+    console.log('Room summary response:', roomSummaryResponse);
+    const roomSummary = roomSummaryResponse.data || {};
+    console.log('Room summary data:', roomSummary);
+    
+    // Update stats
+    updateStats(checkins, todayArrivals, roomSummary);
+    
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    showToast('Failed to load dashboard data', 'error');
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const arrivals = [
-    {
-      id: 1,
-      guestName: 'John Anderson',
-      bookingId: 'BK-847291',
-      roomType: 'Deluxe Suite',
-      roomNo: '301',
-      arrivalTime: '09:00 AM',
-      status: 'Pending',
-      nights: 3,
-      amount: '$450.00',
-      phone: '+1 (555) 123-4567',
-      email: 'john.anderson@email.com',
-      bookingSource: 'Website',
-      guestType: 'Returning Guest'
-    },
-    {
-      id: 2,
-      guestName: 'Sarah Williams',
-      bookingId: 'BK-736482',
-      roomType: 'Standard Room',
-      roomNo: '205',
-      arrivalTime: '11:30 AM',
-      status: 'Checked In',
-      nights: 2,
-      amount: '$240.00',
-      phone: '+1 (555) 987-6543',
-      email: 'sarah.williams@email.com',
-      bookingSource: 'OTA',
-      guestType: 'New Guest'
-    },
-    {
-      id: 3,
-      guestName: 'Michael Brown',
-      bookingId: 'BK-619384',
-      roomType: 'Executive Suite',
-      roomNo: '412',
-      arrivalTime: '02:00 PM',
-      status: 'Payment Due',
-      nights: 5,
-      amount: '$1,250.00',
-      phone: '+1 (555) 456-7890',
-      email: 'michael.brown@email.com',
-      bookingSource: 'Corporate',
-      guestType: 'Corporate'
-    },
-    {
-      id: 4,
-      guestName: 'Emily Davis',
-      bookingId: 'BK-527491',
-      roomType: 'Standard Room',
-      roomNo: '108',
-      arrivalTime: '03:30 PM',
-      status: 'Pending',
-      nights: 1,
-      amount: '$120.00',
-      phone: '+1 (555) 321-0987',
-      email: 'emily.davis@email.com',
-      bookingSource: 'Direct Call',
-      guestType: 'VIP'
-    },
-    {
-      id: 5,
-      guestName: 'Robert Johnson',
-      bookingId: 'BK-402837',
-      roomType: 'Presidential Suite',
-      roomNo: '502',
-      arrivalTime: '04:45 PM',
-      status: 'Late Arrival',
-      nights: 7,
-      amount: '$2,800.00',
-      phone: '+1 (555) 654-3210',
-      email: 'robert.johnson@email.com',
-      bookingSource: 'Travel Agent',
-      guestType: 'VIP'
-    },
-  ];
+
+  const updateStats = (checkins, todayArrivals, roomSummary) => {
+    const totalRooms = roomSummary.TOTAL || 100;
+    const occupiedRooms = roomSummary.OCCUPIED || 0;
+    const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+    
+    const pendingArrivals = todayArrivals.filter(a => a.status === 'PENDING').length;
+    const checkedInCount = checkins.length;
+    const canceledCount = todayArrivals.filter(a => a.status === 'CANCELLED').length;
+    
+    setStats([
+      { 
+        label: "Today's Check-ins", 
+        value: checkedInCount, 
+        subtext: `/ ${todayArrivals.length} Total` 
+      },
+      { 
+        label: 'Occupied Rooms', 
+        value: occupiedRooms, 
+        subtext: `${occupancyRate}% Occupancy` 
+      },
+      { 
+        label: "Today's Arrivals", 
+        value: todayArrivals.length, 
+        subtext: `${pendingArrivals} Pending` 
+      },
+      { 
+        label: 'Canceled Arrivals', 
+        value: canceledCount, 
+        subtext: 'Action Required' 
+      },
+    ]);
+  };
+
+  const mapBookingToArrival = (bookings) => {
+    return bookings.map(booking => ({
+      id: booking.id,
+      guestName: booking.guestName || `${booking.guest?.firstName} ${booking.guest?.lastName}`,
+      bookingId: booking.bookingCode,
+      roomType: booking.roomType || booking.room?.type,
+      roomNo: booking.roomNumber || booking.room?.number,
+      arrivalTime: formatTime(booking.checkInDate),
+      status: booking.status,
+      nights: calculateNights(booking.checkInDate, booking.checkOutDate),
+      amount: `$${booking.totalAmount || 0}`,
+      phone: booking.guest?.phoneNumber,
+      email: booking.guest?.email,
+      bookingSource: booking.source,
+      guestType: booking.guestType
+    }));
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
+  const calculateNights = (checkInDate, checkOutDate) => {
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    const diffTime = Math.abs(checkOut - checkIn);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Checked In':
+    switch (status?.toUpperCase()) {
+      case 'CHECKED_IN':
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'Pending':
+      case 'PENDING':
+      case 'CONFIRMED':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'Payment Due':
+      case 'PAYMENT_DUE':
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      case 'Late Arrival':
+      case 'LATE_ARRIVAL':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
   };
 
-  const handleCheckIn = (arrivalId) => {
-    // API: POST /api/checkins
-    navigate('/checkin-confirmation');
+  const getDisplayStatus = (status) => {
+    const statusMap = {
+      'CHECKED_IN': 'Checked In',
+      'PENDING': 'Pending',
+      'CONFIRMED': 'Confirmed',
+      'PAYMENT_DUE': 'Payment Due',
+      'LATE_ARRIVAL': 'Late Arrival',
+      'CANCELLED': 'Cancelled'
+    };
+    return statusMap[status] || status;
   };
 
-  const handleFilterChange = (filterType, value) => {
-    switch (filterType) {
-      case 'roomType':
-        setRoomTypeFilters(prev =>
-          prev.includes(value)
-            ? prev.filter(item => item !== value)
-            : [...prev, value]
-        );
-        break;
-      case 'status':
-        setStatusFilters(prev =>
-          prev.includes(value)
-            ? prev.filter(item => item !== value)
-            : [...prev, value]
-        );
-        break;
-      case 'bookingSource':
-        setBookingSourceFilters(prev =>
-          prev.includes(value)
-            ? prev.filter(item => item !== value)
-            : [...prev, value]
-        );
-        break;
-      case 'guestType':
-        setGuestTypeFilters(prev =>
-          prev.includes(value)
-            ? prev.filter(item => item !== value)
-            : [...prev, value]
-        );
-        break;
+  const handleCheckIn = async (arrivalId) => {
+    try {
+      setLoading(true);
+      // First, update booking status to CHECKED_IN
+      await bookingService.updateBookingStatus(arrivalId, 'CHECKED_IN');
+      
+      // Then, update room status to OCCUPIED
+      const arrival = arrivals.find(a => a.id === arrivalId);
+      if (arrival.roomId) {
+        await roomService.updateRoomStatus(arrival.roomId, 'OCCUPIED');
+      }
+      
+      showToast('Check-in processed successfully', 'success');
+      
+      // Refresh data
+      fetchDashboardData();
+      
+      // Navigate to check-in confirmation with data
+      navigate(`/checkin-confirmation/${arrivalId}`);
+      
+    } catch (error) {
+      console.error('Error processing check-in:', error);
+      showToast('Failed to process check-in', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const applyFilters = () => {
-    setShowFilterModal(false);
-    // Show confirmation toast
-    showToast('Filters applied successfully');
+  const handleCancelCheckIn = async (arrivalId) => {
+    try {
+      const reason = prompt('Please enter reason for cancellation:');
+      if (reason) {
+        setLoading(true);
+        await checkinService.cancelCheckIn(arrivalId, reason);
+        showToast('Check-in cancelled', 'success');
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error('Error cancelling check-in:', error);
+      showToast('Failed to cancel check-in', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const resetFilters = () => {
-    setRoomTypeFilters([]);
-    setStatusFilters([]);
-    setBookingSourceFilters([]);
-    setGuestTypeFilters([]);
-    setSearchQuery('');
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      const response = await checkinService.searchBookingsForCheckIn(searchQuery, {
+        roomType: roomTypeFilters.join(','),
+        status: statusFilters.join(','),
+        source: bookingSourceFilters.join(','),
+        guestType: guestTypeFilters.join(',')
+      });
+      
+      if (response.data) {
+        setArrivals(mapBookingToArrival(response.data.content || response.data));
+      }
+    } catch (error) {
+      console.error('Error searching bookings:', error);
+      showToast('Search failed', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const showToast = (message) => {
-    // In a real app, you would use a toast library or context
+  const showToast = (message, type = 'success') => {
+    // Using a toast library or custom toast implementation
     const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
+    toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in ${
+      type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+    }`;
     toast.textContent = message;
     document.body.appendChild(toast);
     
@@ -189,16 +263,34 @@ const CheckIn = () => {
     }, 3000);
   };
 
+  // Add keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        document.querySelector('input[type="text"]')?.focus();
+      }
+      if (e.key === 'Enter' && searchQuery) {
+        handleSearch();
+      }
+      if (e.key === 'Escape' && showFilterModal) {
+        setShowFilterModal(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showFilterModal, searchQuery]);
+
   const filteredArrivals = arrivals.filter(arrival => {
-    // Global search filter
+    // Client-side filtering as fallback
     const matchesSearch = searchQuery === '' ||
       arrival.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       arrival.bookingId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       arrival.roomNo.includes(searchQuery) ||
       arrival.roomType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      arrival.status.toLowerCase().includes(searchQuery.toLowerCase());
+      getDisplayStatus(arrival.status).toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Advanced filters
     const matchesRoomType = roomTypeFilters.length === 0 || 
       roomTypeFilters.includes(arrival.roomType);
     const matchesStatus = statusFilters.length === 0 || 
@@ -212,57 +304,46 @@ const CheckIn = () => {
            matchesBookingSource && matchesGuestType;
   });
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Ctrl+F or Cmd+F for search focus
-      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-        e.preventDefault();
-        document.querySelector('input[type="text"]')?.focus();
-      }
-      // Escape to close modal
-      if (e.key === 'Escape' && showFilterModal) {
-        setShowFilterModal(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showFilterModal]);
+  if (loading && arrivals.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader className="animate-spin text-primary-600" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Add CSS animations for toast */}
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fade-out {
-          from { opacity: 1; transform: translateY(0); }
-          to { opacity: 0; transform: translateY(-10px); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-        .animate-fade-out {
-          animation: fade-out 0.3s ease-out;
-        }
-      `}</style>
+      {/* Loading overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Loader className="animate-spin text-white" size={48} />
+        </div>
+      )}
 
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Check-In Command Center</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Overview of today's operations</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Overview of today's operations • Last updated: {new Date().toLocaleTimeString()}
+          </p>
         </div>
-        <button
-          onClick={() => navigate('/walk-in')}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus size={20} />
-          New Walk-In
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={fetchDashboardData}
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg font-medium transition-colors"
+          >
+            Refresh
+          </button>
+          <button
+            onClick={() => navigate('/walk-in')}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus size={20} />
+            New Walk-In
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -288,12 +369,16 @@ const CheckIn = () => {
               placeholder="Search by guest name, booking ID, room number, room type, or status..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="input-field pl-10"
               aria-label="Search arrivals"
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  fetchDashboardData();
+                }}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 aria-label="Clear search"
               >
@@ -302,226 +387,40 @@ const CheckIn = () => {
             )}
           </div>
           
-          {/* Filter Button */}
+          <button
+            onClick={handleSearch}
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+          >
+            Search
+          </button>
+          
           <button
             onClick={() => setShowFilterModal(true)}
             className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg font-medium transition-colors flex items-center gap-2"
-            aria-label="Open filters"
           >
             <Filter size={18} />
             Filter
-            {(roomTypeFilters.length > 0 || statusFilters.length > 0 || 
-              bookingSourceFilters.length > 0 || guestTypeFilters.length > 0) && (
-              <span className="bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {roomTypeFilters.length + statusFilters.length + 
-                 bookingSourceFilters.length + guestTypeFilters.length}
-              </span>
-            )}
           </button>
-
-          {/* Reset Filters Button */}
-          {(roomTypeFilters.length > 0 || statusFilters.length > 0 || 
-            bookingSourceFilters.length > 0 || guestTypeFilters.length > 0 || searchQuery) && (
-            <button
-              onClick={resetFilters}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium"
-            >
-              Reset All
-            </button>
-          )}
         </div>
-
-        {/* Active Filters Display */}
-        {(roomTypeFilters.length > 0 || statusFilters.length > 0 || 
-          bookingSourceFilters.length > 0 || guestTypeFilters.length > 0) && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {roomTypeFilters.map(type => (
-              <span key={type} className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 rounded-full text-sm flex items-center gap-1">
-                {type}
-                <button onClick={() => handleFilterChange('roomType', type)} className="ml-1 hover:text-blue-600">
-                  <X size={14} />
-                </button>
-              </span>
-            ))}
-            {statusFilters.map(status => (
-              <span key={status} className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${getStatusColor(status)}`}>
-                {status}
-                <button onClick={() => handleFilterChange('status', status)} className="ml-1 hover:opacity-75">
-                  <X size={14} />
-                </button>
-              </span>
-            ))}
-            {bookingSourceFilters.map(source => (
-              <span key={source} className="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded-full text-sm flex items-center gap-1">
-                {source}
-                <button onClick={() => handleFilterChange('bookingSource', source)} className="ml-1 hover:text-purple-600">
-                  <X size={14} />
-                </button>
-              </span>
-            ))}
-            {guestTypeFilters.map(type => (
-              <span key={type} className="px-3 py-1 bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 rounded-full text-sm flex items-center gap-1">
-                {type}
-                <button onClick={() => handleFilterChange('guestType', type)} className="ml-1 hover:text-amber-600">
-                  <X size={14} />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
       </div>
-
-      {/* Filter Modal */}
-      {showFilterModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b dark:border-gray-700">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Advanced Filters</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Filter arrivals by multiple criteria
-                </p>
-              </div>
-              <button
-                onClick={() => setShowFilterModal(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                aria-label="Close modal"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 space-y-8">
-              {/* Room Type Filter */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Room Type</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {roomTypes.map(type => (
-                    <button
-                      key={type}
-                      onClick={() => handleFilterChange('roomType', type)}
-                      className={`px-4 py-3 rounded-lg border-2 transition-all ${
-                        roomTypeFilters.includes(type)
-                          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{type}</span>
-                        {roomTypeFilters.includes(type) && <Check size={18} />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Arrival Status</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {statusOptions.map(status => (
-                    <button
-                      key={status}
-                      onClick={() => handleFilterChange('status', status)}
-                      className={`px-4 py-3 rounded-lg border-2 transition-all ${
-                        statusFilters.includes(status)
-                          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{status}</span>
-                        {statusFilters.includes(status) && <Check size={18} />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Booking Source Filter */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Booking Source</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {bookingSources.map(source => (
-                    <button
-                      key={source}
-                      onClick={() => handleFilterChange('bookingSource', source)}
-                      className={`px-4 py-3 rounded-lg border-2 transition-all ${
-                        bookingSourceFilters.includes(source)
-                          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{source}</span>
-                        {bookingSourceFilters.includes(source) && <Check size={18} />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Guest Type Filter */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Guest Type</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {guestTypes.map(type => (
-                    <button
-                      key={type}
-                      onClick={() => handleFilterChange('guestType', type)}
-                      className={`px-4 py-3 rounded-lg border-2 transition-all ${
-                        guestTypeFilters.includes(type)
-                          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{type}</span>
-                        {guestTypeFilters.includes(type) && <Check size={18} />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-6 border-t dark:border-gray-700 flex justify-between">
-              <button
-                onClick={resetFilters}
-                className="px-6 py-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium"
-              >
-                Reset All Filters
-              </button>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowFilterModal(false)}
-                  className="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={applyFilters}
-                  className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
-                >
-                  Apply Filters
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Arrivals Table */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Today's Expected Arrivals</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {filteredArrivals.length} of {arrivals.length} arrivals
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Showing {filteredArrivals.length} of {arrivals.length} arrivals
+            </p>
+            <button
+              onClick={fetchDashboardData}
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Refresh Data
+            </button>
+          </div>
         </div>
+        
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700/50">
@@ -542,14 +441,6 @@ const CheckIn = () => {
                     <div>
                       <p className="font-medium">{arrival.guestName}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">{arrival.email}</p>
-                      <div className="flex gap-2 mt-1">
-                        <span className="text-xs px-2 py-1 bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 rounded">
-                          {arrival.guestType}
-                        </span>
-                        <span className="text-xs px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded">
-                          {arrival.bookingSource}
-                        </span>
-                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm font-mono">{arrival.bookingId}</td>
@@ -558,20 +449,35 @@ const CheckIn = () => {
                   <td className="px-4 py-3 text-sm">{arrival.arrivalTime}</td>
                   <td className="px-4 py-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(arrival.status)}`}>
-                      {arrival.status}
+                      {getDisplayStatus(arrival.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      {arrival.status !== 'Checked In' && (
-                        <button
-                          onClick={() => handleCheckIn(arrival.id)}
-                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                          Check In
-                        </button>
-                      )}
-                      <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                      {arrival.status === 'PENDING' || arrival.status === 'CONFIRMED' ? (
+                        <>
+                          <button
+                            onClick={() => handleCheckIn(arrival.id)}
+                            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Check In
+                          </button>
+                          <button
+                            onClick={() => handleCancelCheckIn(arrival.id)}
+                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : arrival.status === 'CHECKED_IN' ? (
+                        <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-lg text-sm">
+                          Checked In
+                        </span>
+                      ) : null}
+                      <button
+                        onClick={() => navigate(`/bookings/${arrival.id}`)}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      >
                         View
                       </button>
                     </div>
@@ -580,23 +486,20 @@ const CheckIn = () => {
               ))}
             </tbody>
           </table>
-        </div>
-
-        {filteredArrivals.length === 0 && (
-          <div className="text-center py-12">
-            <Search size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">No arrivals found matching your criteria</p>
-            {(searchQuery || roomTypeFilters.length > 0 || statusFilters.length > 0 || 
-              bookingSourceFilters.length > 0 || guestTypeFilters.length > 0) && (
+          
+          {filteredArrivals.length === 0 && (
+            <div className="text-center py-12">
+              <Search size={48} className="mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500">No arrivals found</p>
               <button
-                onClick={resetFilters}
+                onClick={fetchDashboardData}
                 className="mt-4 text-primary-600 hover:text-primary-700 font-medium"
               >
-                Clear all filters
+                Refresh data
               </button>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

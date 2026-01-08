@@ -1,271 +1,173 @@
 package com.hotel.reception.controller;
 
-import com.hotel.reception.model.entity.Booking;
-import com.hotel.reception.model.entity.Guest;
-import com.hotel.reception.repository.BookingRepository;
-import com.hotel.reception.repository.GuestRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.hotel.reception.model.dto.request.BookingRequest;
+import com.hotel.reception.model.dto.request.CheckoutRequest;
+import com.hotel.reception.model.dto.response.ApiResponse;
+import com.hotel.reception.model.dto.response.BookingBillResponse;
+import com.hotel.reception.model.dto.response.BookingResponse;
+import com.hotel.reception.service.BookingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/v1/bookings")
+@RequiredArgsConstructor
+@Tag(name = "Booking Management", description = "APIs for managing bookings (Walk-in, Group, Company)")
+
 public class BookingController {
     
-    @Autowired
-    private BookingRepository bookingRepository;
+    private final BookingService bookingService;
     
-    @Autowired
-    private GuestRepository guestRepository;
-    
-    // GET all bookings
-    @GetMapping
-    public ResponseEntity<List<Booking>> getAllBookings() {
-        List<Booking> bookings = bookingRepository.findAll();
-        return ResponseEntity.ok(bookings);
-    }
-    
-    // GET booking by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getBookingById(@PathVariable Long id) {
-        Optional<Booking> booking = bookingRepository.findById(id);
-        if (booking.isPresent()) {
-            return ResponseEntity.ok(booking.get());
-        } else {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Booking not found with ID: " + id);
-            return ResponseEntity.status(404).body(error);
-        }
-    }
-    
-    // GET booking by code
-    @GetMapping("/code/{code}")
-    public ResponseEntity<?> getBookingByCode(@PathVariable String code) {
-        Optional<Booking> booking = bookingRepository.findByBookingCode(code);
-        if (booking.isPresent()) {
-            return ResponseEntity.ok(booking.get());
-        } else {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Booking not found with code: " + code);
-            return ResponseEntity.status(404).body(error);
-        }
-    }
-    
-    // POST create new booking
+    @Operation(summary = "Create new booking", description = "Supports SINGLE, GROUP, and COMPANY bookings")
     @PostMapping
-    public ResponseEntity<?> createBooking(@RequestBody Booking bookingRequest) {
-        try {
-            // Validate guest exists
-            if (bookingRequest.getGuest() == null || bookingRequest.getGuest().getGuestId() == null) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Guest ID is required");
-                return ResponseEntity.status(400).body(error);
-            }
-            
-            Optional<Guest> guest = guestRepository.findById(bookingRequest.getGuest().getGuestId());
-            if (guest.isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Guest not found with ID: " + bookingRequest.getGuest().getGuestId());
-                return ResponseEntity.status(404).body(error);
-            }
-            
-            // Calculate nights
-            if (bookingRequest.getCheckInDate() != null && bookingRequest.getCheckOutDate() != null) {
-                long nights = ChronoUnit.DAYS.between(
-                    bookingRequest.getCheckInDate(), 
-                    bookingRequest.getCheckOutDate()
-                );
-                bookingRequest.setNights((int) nights);
-            }
-            
-            // Generate unique booking code
-            String bookingCode = "BK" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-            bookingRequest.setBookingCode(bookingCode);
-            
-            // Set default values
-            if (bookingRequest.getStatus() == null) {
-                bookingRequest.setStatus("CONFIRMED");
-            }
-            if (bookingRequest.getPaymentStatus() == null) {
-                bookingRequest.setPaymentStatus("PENDING");
-            }
-            if (bookingRequest.getAdults() == null) {
-                bookingRequest.setAdults(1);
-            }
-            if (bookingRequest.getChildren() == null) {
-                bookingRequest.setChildren(0);
-            }
-            if (bookingRequest.getInfants() == null) {
-                bookingRequest.setInfants(0);
-            }
-            if (bookingRequest.getTaxPercentage() == null) {
-                bookingRequest.setTaxPercentage(BigDecimal.valueOf(10));
-            }
-            if (bookingRequest.getIncludeTax() == null) {
-                bookingRequest.setIncludeTax(true);
-            }
-            
-            // Set guest object
-            bookingRequest.setGuest(guest.get());
-            
-            // Set timestamps
-            bookingRequest.setCreatedAt(LocalDateTime.now());
-            bookingRequest.setUpdatedAt(LocalDateTime.now());
-            
-            // Save to database
-            Booking savedBooking = bookingRepository.save(bookingRequest);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Booking created successfully");
-            response.put("bookingId", savedBooking.getBookingId());
-            response.put("bookingCode", savedBooking.getBookingCode());
-            response.put("booking", savedBooking);
-            
-            return ResponseEntity.status(201).body(response);
-            
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to create booking: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    public ResponseEntity<ApiResponse<BookingResponse>> createBooking(
+            @Valid @RequestBody BookingRequest request) {
+        BookingResponse response = bookingService.createBooking(request);
+        return new ResponseEntity<>(
+                ApiResponse.success("Booking created successfully", response),
+                HttpStatus.CREATED
+        );
     }
     
-    // PUT update booking
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateBooking(@PathVariable Long id, @RequestBody Booking bookingUpdates) {
-        try {
-            Optional<Booking> existingBooking = bookingRepository.findById(id);
-            if (existingBooking.isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Booking not found with ID: " + id);
-                return ResponseEntity.status(404).body(error);
-            }
-            
-            Booking booking = existingBooking.get();
-            
-            // Update fields if provided
-            if (bookingUpdates.getCheckInDate() != null) booking.setCheckInDate(bookingUpdates.getCheckInDate());
-            if (bookingUpdates.getCheckOutDate() != null) booking.setCheckOutDate(bookingUpdates.getCheckOutDate());
-            if (bookingUpdates.getCheckInTime() != null) booking.setCheckInTime(bookingUpdates.getCheckInTime());
-            if (bookingUpdates.getCheckOutTime() != null) booking.setCheckOutTime(bookingUpdates.getCheckOutTime());
-            if (bookingUpdates.getStatus() != null) booking.setStatus(bookingUpdates.getStatus());
-            if (bookingUpdates.getPaymentStatus() != null) booking.setPaymentStatus(bookingUpdates.getPaymentStatus());
-            if (bookingUpdates.getAdults() != null) booking.setAdults(bookingUpdates.getAdults());
-            if (bookingUpdates.getChildren() != null) booking.setChildren(bookingUpdates.getChildren());
-            if (bookingUpdates.getInfants() != null) booking.setInfants(bookingUpdates.getInfants());
-            if (bookingUpdates.getSpecialInstructions() != null) booking.setSpecialInstructions(bookingUpdates.getSpecialInstructions());
-            if (bookingUpdates.getPurposeOfVisit() != null) booking.setPurposeOfVisit(bookingUpdates.getPurposeOfVisit());
-            
-            // Recalculate nights if dates changed
-            if (bookingUpdates.getCheckInDate() != null || bookingUpdates.getCheckOutDate() != null) {
-                long nights = ChronoUnit.DAYS.between(
-                    booking.getCheckInDate(), 
-                    booking.getCheckOutDate()
-                );
-                booking.setNights((int) nights);
-            }
-            
-            booking.setUpdatedAt(LocalDateTime.now());
-            
-            Booking updatedBooking = bookingRepository.save(booking);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Booking updated successfully");
-            response.put("booking", updatedBooking);
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to update booking: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    @Operation(summary = "Get booking by ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<BookingResponse>> getBookingById(@PathVariable Long id) {
+        BookingResponse response = bookingService.getBookingById(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
     
-    // DELETE booking
+    @Operation(summary = "Get booking by booking code")
+    @GetMapping("/code/{code}")
+    public ResponseEntity<ApiResponse<BookingResponse>> getBookingByCode(@PathVariable String code) {
+        BookingResponse response = bookingService.getBookingByCode(code);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+    
+    @Operation(summary = "Get all bookings")
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getAllBookings() {
+        List<BookingResponse> responses = bookingService.getAllBookings();
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+    @Operation(summary = "Search bookings")
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<Page<BookingResponse>>> searchBookings(
+            @RequestParam String keyword,
+            Pageable pageable) {
+        Page<BookingResponse> responses = bookingService.searchBookings(keyword, pageable);
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+    @Operation(summary = "Get today's check-ins")
+    @GetMapping("/checkins/today")
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getTodayCheckIns() {
+        List<BookingResponse> responses = bookingService.getTodayCheckIns();
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+    @Operation(summary = "Get today's check-outs")
+    @GetMapping("/checkouts/today")
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getTodayCheckOuts() {
+        List<BookingResponse> responses = bookingService.getTodayCheckOuts();
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+    @Operation(summary = "Update booking status")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<BookingResponse>> updateBookingStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        
+        BookingResponse response = bookingService.updateBookingStatus(id, status);
+        return ResponseEntity.ok(ApiResponse.success("Booking status updated", response));
+    }
+    
+    @Operation(summary = "Cancel booking")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBooking(@PathVariable Long id) {
-        try {
-            Optional<Booking> booking = bookingRepository.findById(id);
-            if (booking.isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Booking not found with ID: " + id);
-                return ResponseEntity.status(404).body(error);
-            }
-            
-            bookingRepository.deleteById(id);
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Booking deleted successfully");
-            response.put("bookingId", id.toString());
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to delete booking: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    public ResponseEntity<ApiResponse<Void>> cancelBooking(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason) {
+        
+        bookingService.cancelBooking(id, reason);
+        return ResponseEntity.ok(ApiResponse.success("Booking cancelled successfully", null));
     }
     
-    // GET today's check-ins
-//    @GetMapping("/today/checkins")
-//    public ResponseEntity<?> getTodayCheckIns() {
-//        try {
-//            LocalDate today = LocalDate.now();
-////            List<Booking> checkIns = bookingRepository.findByCheckInDate(today);
-////            return ResponseEntity.ok(checkIns);
-////        } catch (Exception e) {
-//            Map<String, String> error = new HashMap<>();
-//            error.put("error", "Failed to get today's check-ins: " + e.getMessage());
-//            return ResponseEntity.status(500).body(error);
-//        }
-//    }
-//    
-    // GET today's check-outs
-//    @GetMapping("/today/checkouts")
-//    public ResponseEntity<?> getTodayCheckOuts() {
-//        try {
-//            LocalDate today = LocalDate.now();
-//            List<Booking> checkOuts = bookingRepository.findByCheckOutDate(today);
-//            return ResponseEntity.ok(checkOuts);
-//        } catch (Exception e) {
-//            Map<String, String> error = new HashMap<>();
-//            error.put("error", "Failed to get today's check-outs: " + e.getMessage());
-//            return ResponseEntity.status(500).body(error);
-//        }
-//    }
     
-    // GET booking statistics
-    @GetMapping("/stats")
-    public ResponseEntity<?> getBookingStatistics() {
-        try {
-            long totalBookings = bookingRepository.count();
-            long confirmedBookings = bookingRepository.countByStatus("CONFIRMED");
-            long checkedInBookings = bookingRepository.countByStatus("CHECKED_IN");
-            long cancelledBookings = bookingRepository.countByStatus("CANCELLED");
-            
-            Map<String, Object> stats = new HashMap<>();
-            stats.put("totalBookings", totalBookings);
-            stats.put("confirmedBookings", confirmedBookings);
-            stats.put("checkedInBookings", checkedInBookings);
-            stats.put("cancelledBookings", cancelledBookings);
-            
-            return ResponseEntity.ok(stats);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to get booking statistics: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    @Operation(summary = "Process check-in for booking")
+    @PatchMapping("/{id}/checkin")
+    public ResponseEntity<ApiResponse<BookingResponse>> processCheckIn(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> checkinData) {
+        
+        BookingResponse response = bookingService.processCheckIn(id, checkinData);
+        return ResponseEntity.ok(ApiResponse.success("Check-in processed successfully", response));
+    }
+    
+    @Operation(summary = "Process check-out for booking")
+    @PostMapping("/{id}/checkout")
+    public ResponseEntity<ApiResponse<BookingResponse>> processCheckOut(
+            @PathVariable Long id,
+            @RequestBody CheckoutRequest checkoutRequest) {
+        
+        BookingResponse response = bookingService.processCheckOut(id, checkoutRequest);
+        return ResponseEntity.ok(ApiResponse.success("Check-out processed successfully", response));
+    }
+
+    @Operation(summary = "Get today's expected departures")
+    @GetMapping("/departures/today")
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getTodayDepartures() {
+        List<BookingResponse> responses = bookingService.getTodayDepartures();
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+
+    @Operation(summary = "Get booking bill summary")
+    @GetMapping("/{id}/bill")
+    public ResponseEntity<ApiResponse<BookingBillResponse>> getBookingBill(@PathVariable Long id) {
+        BookingBillResponse response = bookingService.getBookingBill(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "Search departures")
+    @GetMapping("/search/departures")
+    public ResponseEntity<ApiResponse<Page<BookingResponse>>> searchDepartures(
+            @RequestParam String keyword,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String paymentMethod,
+            @PageableDefault(size = 20) Pageable pageable) {
+        
+        Page<BookingResponse> responses = bookingService.searchDepartures(keyword, roomType, status, paymentMethod, pageable);
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+
+    @Operation(summary = "Cancel check-in")
+    @PatchMapping("/{id}/checkin/cancel")
+    public ResponseEntity<ApiResponse<BookingResponse>> cancelCheckIn(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        
+        String reason = request.get("reason");
+        BookingResponse response = bookingService.cancelCheckIn(id, reason);
+        return ResponseEntity.ok(ApiResponse.success("Check-in cancelled", response));
+    }
+
+    @Operation(summary = "Get today's expected arrivals")
+    @GetMapping("/arrivals/today")
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getTodayArrivals() {
+        List<BookingResponse> responses = bookingService.getTodayArrivals();
+        return ResponseEntity.ok(ApiResponse.success(responses));
     }
 }

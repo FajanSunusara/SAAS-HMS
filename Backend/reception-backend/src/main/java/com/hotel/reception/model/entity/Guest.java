@@ -1,7 +1,9 @@
 package com.hotel.reception.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,241 +13,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "guests")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Guest {
     
-    public Long getGuestId() {
-		return guestId;
-	}
-
-	public void setGuestId(Long guestId) {
-		this.guestId = guestId;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	public String getCountryCode() {
-		return countryCode;
-	}
-
-	public void setCountryCode(String countryCode) {
-		this.countryCode = countryCode;
-	}
-
-	public String getNationality() {
-		return nationality;
-	}
-
-	public void setNationality(String nationality) {
-		this.nationality = nationality;
-	}
-
-	public LocalDate getDateOfBirth() {
-		return dateOfBirth;
-	}
-
-	public void setDateOfBirth(LocalDate dateOfBirth) {
-		this.dateOfBirth = dateOfBirth;
-	}
-
-	public String getGender() {
-		return gender;
-	}
-
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	public String getCity() {
-		return city;
-	}
-
-	public void setCity(String city) {
-		this.city = city;
-	}
-
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
-
-	public String getCountry() {
-		return country;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
-	public String getZipCode() {
-		return zipCode;
-	}
-
-	public void setZipCode(String zipCode) {
-		this.zipCode = zipCode;
-	}
-
-	public String getIdType() {
-		return idType;
-	}
-
-	public void setIdType(String idType) {
-		this.idType = idType;
-	}
-
-	public String getIdNumber() {
-		return idNumber;
-	}
-
-	public void setIdNumber(String idNumber) {
-		this.idNumber = idNumber;
-	}
-
-	public String getPassportNumber() {
-		return passportNumber;
-	}
-
-	public void setPassportNumber(String passportNumber) {
-		this.passportNumber = passportNumber;
-	}
-
-	public LocalDate getPassportExpiry() {
-		return passportExpiry;
-	}
-
-	public void setPassportExpiry(LocalDate passportExpiry) {
-		this.passportExpiry = passportExpiry;
-	}
-
-	public String getLoyaltyNumber() {
-		return loyaltyNumber;
-	}
-
-	public void setLoyaltyNumber(String loyaltyNumber) {
-		this.loyaltyNumber = loyaltyNumber;
-	}
-
-	public String getVipStatus() {
-		return vipStatus;
-	}
-
-	public void setVipStatus(String vipStatus) {
-		this.vipStatus = vipStatus;
-	}
-
-	public String getCompany() {
-		return company;
-	}
-
-	public void setCompany(String company) {
-		this.company = company;
-	}
-
-	public String getBusinessEmail() {
-		return businessEmail;
-	}
-
-	public void setBusinessEmail(String businessEmail) {
-		this.businessEmail = businessEmail;
-	}
-
-	public String getEmergencyContact() {
-		return emergencyContact;
-	}
-
-	public void setEmergencyContact(String emergencyContact) {
-		this.emergencyContact = emergencyContact;
-	}
-
-	public String getSpecialRequests() {
-		return specialRequests;
-	}
-
-	public void setSpecialRequests(String specialRequests) {
-		this.specialRequests = specialRequests;
-	}
-
-	public Boolean getMarketingOptIn() {
-		return marketingOptIn;
-	}
-
-	public void setMarketingOptIn(Boolean marketingOptIn) {
-		this.marketingOptIn = marketingOptIn;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-
-	public String getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public String getUpdatedBy() {
-		return updatedBy;
-	}
-
-	public void setUpdatedBy(String updatedBy) {
-		this.updatedBy = updatedBy;
-	}
-
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "guest_id")
     private Long guestId;
@@ -256,10 +28,10 @@ public class Guest {
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
     
-    @Column(name = "email", unique = true, length = 150)
+    @Column(name = "email", length = 150)
     private String email;
     
-    @Column(name = "phone", nullable = false, unique = true, length = 20)
+    @Column(name = "phone", nullable = false, length = 20)
     private String phone;
     
     @Column(name = "country_code", length = 5)
@@ -300,6 +72,12 @@ public class Guest {
     
     @Column(name = "passport_expiry")
     private LocalDate passportExpiry;
+    
+    @Column(name = "id_proof_url", length = 500)
+    private String idProofUrl;
+    
+    @Column(name = "guest_photo_url", length = 500)
+    private String guestPhotoUrl;
     
     @Column(name = "loyalty_number", length = 50)
     private String loyaltyNumber;

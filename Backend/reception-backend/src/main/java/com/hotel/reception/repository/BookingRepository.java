@@ -1,17 +1,23 @@
 package com.hotel.reception.repository;
 
 import com.hotel.reception.model.entity.Booking;
+import com.hotel.reception.model.enums.BookingStatus;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, Long> {
+public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpecificationExecutor<Booking> {
     
     Optional<Booking> findByBookingCode(String bookingCode);
     
@@ -19,21 +25,52 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     
     List<Booking> findByStatus(String status);
     
-    List<Booking> findByBookingSource(String bookingSource);
+    Page<Booking> findByStatus(String status, Pageable pageable);
     
-    List<Booking> findByCheckInDateBetween(LocalDate start, LocalDate end);
+    List<Booking> findByCheckInDate(LocalDate checkInDate);
     
-    List<Booking> findByCheckOutDateBetween(LocalDate start, LocalDate end);
+    List<Booking> findByCheckOutDate(LocalDate checkOutDate);
     
-    @Query("SELECT b FROM Booking b WHERE b.checkInDate <= :date AND b.checkOutDate >= :date")
-    List<Booking> findActiveBookingsOnDate(@Param("date") LocalDate date);
+    @Query("SELECT b FROM Booking b WHERE b.checkInDate = :date AND b.status = 'CONFIRMED'")
+    List<Booking> findTodayCheckIns(@Param("date") LocalDate date);
     
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
-    Long countByStatus(@Param("status") String status);
+    @Query("SELECT b FROM Booking b WHERE b.checkOutDate = :date AND b.status = 'CHECKED_IN'")
+    List<Booking> findTodayCheckOuts(@Param("date") LocalDate date);
     
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.checkInDate = :date")
-    Long countCheckInsToday(@Param("date") LocalDate date);
+    @Query("SELECT b FROM Booking b WHERE b.checkInDate BETWEEN :start AND :end")
+    List<Booking> findBookingsBetweenDates(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
     
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.checkOutDate = :date")
-    Long countCheckOutsToday(@Param("date") LocalDate date);
+    @Query("SELECT b FROM Booking b WHERE DATE(b.checkInDate) = :date AND b.status != :status")
+    List<Booking> findByCheckInDateAndStatusNot(
+        @Param("date") LocalDate date, 
+        @Param("status") BookingStatus status
+    );
+    
+    @Query("SELECT b FROM Booking b WHERE " +
+           "b.checkInDate <= :date AND b.checkOutDate >= :date AND b.status = 'CHECKED_IN'")
+    List<Booking> findOccupiedRoomsByDate(@Param("date") LocalDate date);
+    
+    Long countByStatus(String status);
+    
+    Long countByCheckInDateAndStatus(LocalDate date, String status);
+    
+    Long countByCheckOutDateAndStatus(LocalDate date, String status);
+    
+    
+    
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.createdAt BETWEEN :start AND :end")
+    Long countBookingsInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    
+    @Query("SELECT b FROM Booking b WHERE " +
+           "LOWER(b.guest.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(b.guest.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "b.bookingCode LIKE CONCAT('%', :keyword, '%')")
+    Page<Booking> searchBookings(@Param("keyword") String keyword, Pageable pageable);
+    
+    
+    
+    
 }

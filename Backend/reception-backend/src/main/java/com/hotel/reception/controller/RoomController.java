@@ -1,185 +1,118 @@
 package com.hotel.reception.controller;
 
-import com.hotel.reception.model.entity.Room;
-import com.hotel.reception.repository.RoomRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.hotel.reception.model.dto.request.RoomRequest;
+import com.hotel.reception.model.dto.response.ApiResponse;
+import com.hotel.reception.model.dto.response.RoomResponse;
+import com.hotel.reception.service.RoomService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/rooms")
+@RequestMapping("/v1/rooms")
+@RequiredArgsConstructor
+@Tag(name = "Room Management", description = "APIs for managing hotel rooms with Redis caching")
+
 public class RoomController {
     
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomService roomService;
     
-    // GET all rooms
-    @GetMapping
-    public ResponseEntity<List<Room>> getAllRooms() {
-        List<Room> rooms = roomRepository.findAll();
-        return ResponseEntity.ok(rooms);
-    }
-    
-    // GET room by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getRoomById(@PathVariable Long id) {
-        Optional<Room> room = roomRepository.findById(id);
-        if (room.isPresent()) {
-            return ResponseEntity.ok(room.get());
-        } else {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Room not found with ID: " + id);
-            return ResponseEntity.status(404).body(error);
-        }
-    }
-    
-    // GET available rooms
-    @GetMapping("/available")
-    public ResponseEntity<?> getAvailableRooms() {
-        List<Room> availableRooms = roomRepository.findByStatus("AVAILABLE");
-        return ResponseEntity.ok(availableRooms);
-    }
-    
-    // POST create new room
+    @Operation(summary = "Create new room")
     @PostMapping
-    public ResponseEntity<?> createRoom(@RequestBody Room roomRequest) {
-        try {
-            // Check if room number already exists
-            Optional<Room> existingRoom = roomRepository.findByRoomNumber(roomRequest.getRoomNumber());
-            if (existingRoom.isPresent()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Room with number already exists: " + roomRequest.getRoomNumber());
-                return ResponseEntity.status(400).body(error);
-            }
-            
-            // Set default values if not provided
-            if (roomRequest.getStatus() == null) {
-                roomRequest.setStatus("AVAILABLE");
-            }
-            if (roomRequest.getBaseRate() == null) {
-                roomRequest.setBaseRate(BigDecimal.valueOf(5000.00));
-            }
-            if (roomRequest.getCapacity() == null) {
-                roomRequest.setCapacity(2);
-            }
-            
-            // Set timestamps
-            roomRequest.setCreatedAt(LocalDateTime.now());
-            roomRequest.setUpdatedAt(LocalDateTime.now());
-            
-            // Save to database
-            Room savedRoom = roomRepository.save(roomRequest);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Room created successfully");
-            response.put("roomId", savedRoom.getRoomId());
-            response.put("room", savedRoom);
-            
-            return ResponseEntity.status(201).body(response);
-            
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to create room: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    public ResponseEntity<ApiResponse<RoomResponse>> createRoom(@Valid @RequestBody RoomRequest request) {
+        RoomResponse response = roomService.createRoom(request);
+        return new ResponseEntity<>(
+                ApiResponse.success("Room created successfully", response),
+                HttpStatus.CREATED
+        );
     }
     
-    // PUT update room
+    @Operation(summary = "Get room by ID (Redis cached)")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<RoomResponse>> getRoomById(@PathVariable Long id) {
+        RoomResponse response = roomService.getRoomById(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+    
+    @Operation(summary = "Get all rooms (Redis cached)")
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getAllRooms() {
+        List<RoomResponse> responses = roomService.getAllRooms();
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+    @Operation(summary = "Get rooms by status (Redis cached)")
+    @GetMapping("/status/{status}")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getRoomsByStatus(@PathVariable String status) {
+        List<RoomResponse> responses = roomService.getRoomsByStatus(status);
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+    @Operation(summary = "Get available rooms (Redis cached)")
+    @GetMapping("/available")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getAvailableRooms(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
+            @RequestParam(required = false) String roomType) {
+        
+        List<RoomResponse> responses = roomService.getAvailableRooms(checkIn, checkOut, roomType);
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+    
+    @Operation(summary = "Update room status (triggers cache eviction & Redis Pub/Sub)")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<RoomResponse>> updateRoomStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        
+        RoomResponse response = roomService.updateRoomStatus(id, status);
+        return ResponseEntity.ok(ApiResponse.success("Room status updated and broadcasted", response));
+    }
+    
+    @Operation(summary = "Update room details")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRoom(@PathVariable Long id, @RequestBody Room roomUpdates) {
-        try {
-            Optional<Room> existingRoom = roomRepository.findById(id);
-            if (existingRoom.isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Room not found with ID: " + id);
-                return ResponseEntity.status(404).body(error);
-            }
-            
-            Room room = existingRoom.get();
-            
-            // Update fields if provided
-            if (roomUpdates.getRoomNumber() != null) room.setRoomNumber(roomUpdates.getRoomNumber());
-            if (roomUpdates.getRoomType() != null) room.setRoomType(roomUpdates.getRoomType());
-            if (roomUpdates.getFloorNumber() != null) room.setFloorNumber(roomUpdates.getFloorNumber());
-            if (roomUpdates.getBaseRate() != null) room.setBaseRate(roomUpdates.getBaseRate());
-            if (roomUpdates.getStatus() != null) room.setStatus(roomUpdates.getStatus());
-            if (roomUpdates.getCapacity() != null) room.setCapacity(roomUpdates.getCapacity());
-            if (roomUpdates.getFeatures() != null) room.setFeatures(roomUpdates.getFeatures());
-            if (roomUpdates.getDescription() != null) room.setDescription(roomUpdates.getDescription());
-            if (roomUpdates.getSmoking() != null) room.setSmoking(roomUpdates.getSmoking());
-            if (roomUpdates.getAccessible() != null) room.setAccessible(roomUpdates.getAccessible());
-            if (roomUpdates.getVip() != null) room.setVip(roomUpdates.getVip());
-            
-            room.setUpdatedAt(LocalDateTime.now());
-            
-            Room updatedRoom = roomRepository.save(room);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Room updated successfully");
-            response.put("room", updatedRoom);
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to update room: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    public ResponseEntity<ApiResponse<RoomResponse>> updateRoom(
+            @PathVariable Long id,
+            @Valid @RequestBody RoomRequest request) {
+        
+        RoomResponse response = roomService.updateRoom(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Room updated successfully", response));
     }
     
-    // DELETE room
+    @Operation(summary = "Delete room")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRoom(@PathVariable Long id) {
-        try {
-            Optional<Room> room = roomRepository.findById(id);
-            if (room.isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Room not found with ID: " + id);
-                return ResponseEntity.status(404).body(error);
-            }
-            
-            roomRepository.deleteById(id);
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Room deleted successfully");
-            response.put("roomId", id.toString());
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to delete room: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    public ResponseEntity<ApiResponse<Void>> deleteRoom(@PathVariable Long id) {
+        roomService.deleteRoom(id);
+        return ResponseEntity.ok(ApiResponse.success("Room deleted successfully", null));
     }
     
-    // GET room statistics
-    @GetMapping("/stats")
-    public ResponseEntity<?> getRoomStatistics() {
-        try {
-            long totalRooms = roomRepository.count();
-            long availableRooms = roomRepository.countByStatus("AVAILABLE");
-            long occupiedRooms = roomRepository.countByStatus("OCCUPIED");
-            
-            Map<String, Object> stats = new HashMap<>();
-            stats.put("totalRooms", totalRooms);
-            stats.put("availableRooms", availableRooms);
-            stats.put("occupiedRooms", occupiedRooms);
-            stats.put("occupancyRate", totalRooms > 0 ? 
-                (double) occupiedRooms / totalRooms * 100 : 0);
-            
-            return ResponseEntity.ok(stats);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to get room statistics: " + e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+    @Operation(summary = "Get room status summary")
+    @GetMapping("/status/summary")
+    public ResponseEntity<ApiResponse<Map<String, Long>>> getRoomStatusSummary() {
+        Map<String, Long> summary = new HashMap<>();
+        summary.put("TOTAL", roomService.getTotalRoomCount());
+        summary.put("AVAILABLE", roomService.getCountByStatus("AVAILABLE"));
+        summary.put("OCCUPIED", roomService.getCountByStatus("OCCUPIED"));
+        summary.put("RESERVED", roomService.getCountByStatus("RESERVED"));
+        summary.put("MAINTENANCE", roomService.getCountByStatus("MAINTENANCE"));
+        summary.put("CLEANING", roomService.getCountByStatus("CLEANING"));
+        
+        return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+    
+    @Operation(summary = "Health check")
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Room API is running with Redis!");
     }
 }

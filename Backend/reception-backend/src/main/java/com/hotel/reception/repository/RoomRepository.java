@@ -23,6 +23,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     
     Long countByStatus(String status);
     
+    @Query("SELECT r FROM Room r WHERE r.status = :status AND r.roomType = :type")
+    List<Room> findByStatusAndType(@Param("status") String status, @Param("type") String type);
+    
     @Query(value = """
         SELECT r.* FROM rooms r 
         WHERE r.status = 'AVAILABLE'
@@ -34,9 +37,14 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             AND b.check_out_date >= :checkIn
         )
         AND (:roomType IS NULL OR r.room_type = :roomType)
+        ORDER BY r.room_number
         """, nativeQuery = true)
     List<Room> findAvailableRooms(
             @Param("checkIn") LocalDate checkIn,
             @Param("checkOut") LocalDate checkOut,
-            @Param("roomType") String roomType);
+            @Param("roomType") String roomType
+    );
+    
+    @Query("SELECT COUNT(r) FROM Room r")
+    Long getTotalRoomCount();
 }

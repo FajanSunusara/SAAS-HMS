@@ -2,20 +2,32 @@ package com.hotel.reception;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.cache.annotation.EnableCaching;
+
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.Arrays;
 
 @SpringBootApplication
+@EnableCaching
+@EnableJpaAuditing
+@EnableAsync
 public class HotelReceptionBackendApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(HotelReceptionBackendApplication.class, args);
         printStartupMessage();
+        System.out.println("\n===========================================");
+        System.out.println("🏨 Hotel Reception Backend Started!");
+        System.out.println("===========================================");
+        System.out.println("📖 Swagger UI: http://localhost:8080/api/swagger-ui.html");
+        System.out.println("📡 API Docs: http://localhost:8080/api/api-docs");
+        System.out.println("🔌 WebSocket: ws://localhost:8080/api/ws");
+        System.out.println("❤️  Health: http://localhost:8080/api/v1/health");
+        System.out.println("===========================================\n");
     }
+    
     
     private static void printStartupMessage() {
         System.out.println("\n" +
@@ -41,30 +53,5 @@ public class HotelReceptionBackendApplication {
             "╚══════════════════════════════════════════════════════════════════════════╝\n");
     }
     
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",  // React frontend
-            "http://localhost:4200",  // Angular frontend
-            "http://localhost:5173",  // Vite frontend
-            "http://localhost:8080"   // Same origin
-        ));
-        corsConfiguration.setAllowedHeaders(Arrays.asList(
-            "Origin", "Access-Control-Allow-Origin", "Content-Type",
-            "Accept", "Authorization", "X-Requested-With"
-        ));
-        corsConfiguration.setExposedHeaders(Arrays.asList(
-            "Origin", "Content-Type", "Accept", "Authorization"
-        ));
-        corsConfiguration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
-        
-        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
-        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
-        
-        return new CorsFilter(urlBasedCorsConfigurationSource);
-    }
+    
 }
