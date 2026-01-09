@@ -1,0 +1,29 @@
+# ======================
+# Logs (CRITICAL)
+# ======================
+*.log
+*.log.*
+*.gz
+logs/
+Backend/**/logs/
+
+# ======================
+# Java / Spring Boot
+# ======================
+target/
+*.class
+
+# ======================
+# Node / React
+# ======================
+node_modules/
+dist/
+build/
+
+# ======================
+# IDE / OS
+# ======================
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
