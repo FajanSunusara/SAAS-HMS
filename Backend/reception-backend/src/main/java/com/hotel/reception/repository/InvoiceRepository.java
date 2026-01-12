@@ -39,4 +39,16 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     
     @Query("SELECT SUM(i.balanceDue) FROM Invoice i WHERE i.status IN ('PENDING', 'PARTIAL')")
     BigDecimal getTotalPendingAmount();
+    
+    @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i WHERE i.guest.guestId = :guestId")
+    Double sumTotalAmountByGuestId(@Param("guestId") Long guestId);
+    
+    @Query("SELECT COALESCE(SUM(i.balanceDue), 0) FROM Invoice i WHERE i.guest.guestId = :guestId AND i.status = :status")
+    Double sumBalanceDueByGuestIdAndStatus(@Param("guestId") Long guestId, @Param("status") String status);
+    
+//    List<Invoice> findByGuestGuestId(Long guestId);
+    List<Invoice> findByGuestGuestIdAndStatus(Long guestId, String status);
+    
+    @Query("SELECT COALESCE(SUM(i.amountPaid), 0) FROM Invoice i WHERE i.guest.guestId = :guestId")
+    Double sumAmountPaidByGuestId(@Param("guestId") Long guestId);
 }

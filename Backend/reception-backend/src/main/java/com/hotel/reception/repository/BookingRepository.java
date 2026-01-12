@@ -70,7 +70,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
            "b.bookingCode LIKE CONCAT('%', :keyword, '%')")
     Page<Booking> searchBookings(@Param("keyword") String keyword, Pageable pageable);
     
+    Optional<Booking> findFirstByGuestGuestIdAndStatus(Long guestId, String status);
+    Long countByGuestGuestIdAndStatus(Long guestId, String status);
+    Page<Booking> findByGuestGuestId(Long guestId, Pageable pageable);
     
+    @Query("SELECT b FROM Booking b WHERE b.guest.guestId = :guestId AND b.checkInDate <= :date AND b.checkOutDate >= :date AND b.status = 'CHECKED_IN'")
+    Optional<Booking> findCurrentStay(@Param("guestId") Long guestId, @Param("date") LocalDate date);
+    
+    List<Booking> findByGuestGuestIdAndStatusOrderByCheckInDateDesc(Long guestId, String status);
+    List<Booking> findTop10ByGuestGuestIdOrderByCheckInDateDesc(Long guestId);
     
     
 }

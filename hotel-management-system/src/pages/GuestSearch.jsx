@@ -1,20 +1,274 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, Users, UserCheck, Calendar, 
   Phone, Mail, MapPin, Bed, DollarSign, 
   ArrowRight, MoreVertical, CreditCard, LogOut,
-  Plus, Download, Eye
+  Plus, Download, Eye, RefreshCw
 } from 'lucide-react';
+import axios from 'axios';
 
 const GuestSearch = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('current');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentGuests, setCurrentGuests] = useState([]);
+  const [allGuests, setAllGuests] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState({
+    currentGuests: 8,
+    checkInsToday: 3,
+    expectedCheckIns: 5,
+    checkOutsToday: 4,
+    occupancyRate: 85,
+    totalRooms: 180,
+    occupiedRooms: 152,
+    pendingCheckouts: 2
+  });
+  const [quickStats, setQuickStats] = useState([
+    {
+      title: 'Most Frequent Guest',
+      value: 'James Brown',
+      description: '12 stays • $15,780.25 spent',
+      icon: 'UserCheck',
+      color: 'green'
+    },
+    {
+      title: 'Highest LTV Guest',
+      value: 'Jennifer Lee',
+      description: '8 stays • $9,245.75 spent',
+      icon: 'DollarSign',
+      color: 'blue'
+    },
+    {
+      title: 'Check-ins Today',
+      value: '3 Expected',
+      description: '2 completed • 1 pending',
+      icon: 'Calendar',
+      color: 'purple'
+    }
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+    totalPages: 1,
+    totalElements: 0
+  });
 
-  // Mock data for current guests
-  const currentGuests = [
+  // API Configuration
+  const API_BASE_URL = 'http://localhost:8080/api/v1/guests';
+  const axiosInstance = axios.create({
+    baseURL: 'http://localhost:8080/api',
+    timeout: 10000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchDashboardStats();
+    fetchSummaryStats();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'current') {
+      fetchCurrentGuests();
+    } else {
+      fetchAllGuests();
+    }
+  }, [activeTab, searchQuery, statusFilter, pagination.page]);
+
+  // Fetch dashboard statistics
+  const fetchDashboardStats = async () => {
+    setLoadingStats(true);
+    try {
+      const response = await axiosInstance.get('/v1/guests/stats/dashboard');
+      if (response.data?.data) {
+        setDashboardStats({
+          currentGuests: response.data.data.currentGuests || 0,
+          checkInsToday: response.data.data.checkInsToday || 0,
+          expectedCheckIns: response.data.data.expectedCheckIns || 0,
+          checkOutsToday: response.data.data.checkOutsToday || 0,
+          occupancyRate: response.data.data.occupancyRate || 0,
+          totalRooms: response.data.data.totalRooms || 180,
+          occupiedRooms: response.data.data.occupiedRooms || 0,
+          pendingCheckouts: 2 // Default value, adjust based on your backend
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      // Keep default stats on error
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  // Fetch summary statistics
+  const fetchSummaryStats = async () => {
+    try {
+      const response = await axiosInstance.get('/v1/guests/stats/summary');
+      if (response.data?.data) {
+        const stats = response.data.data;
+        setQuickStats([
+          {
+            title: 'Most Frequent Guest',
+            value: stats.mostFrequentGuest || 'James Brown',
+            description: `${stats.mostFrequentGuestStays || 12} stays • $${(stats.mostFrequentGuestValue || 15780.25).toFixed(2)} spent`,
+            icon: 'UserCheck',
+            color: 'green'
+          },
+          {
+            title: 'Highest LTV Guest',
+            value: stats.highestLtvGuest || 'Jennifer Lee',
+            description: `${stats.highestLtvGuestStays || 8} stays • $${(stats.highestLtvGuestValue || 9245.75).toFixed(2)} spent`,
+            icon: 'DollarSign',
+            color: 'blue'
+          },
+          {
+            title: 'Check-ins Today',
+            value: `${dashboardStats.expectedCheckIns || 3} Expected`,
+            description: `${dashboardStats.checkInsToday || 2} completed • ${(dashboardStats.expectedCheckIns || 3) - (dashboardStats.checkInsToday || 2)} pending`,
+            icon: 'Calendar',
+            color: 'purple'
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error fetching summary stats:', error);
+      // Keep default quick stats
+    }
+  };
+
+  // Fetch current guests
+  const fetchCurrentGuests = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        keyword: searchQuery || undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        page: pagination.page,
+        size: pagination.size
+      };
+      
+      // Remove undefined parameters
+      Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
+      
+      const response = await axiosInstance.get('/v1/guests/current', { params });
+      
+      if (response.data?.data?.content) {
+        const mappedGuests = response.data.data.content.map(guest => ({
+          id: guest.guestCode || `GUEST-${guest.guestId || '00000'}`,
+          name: guest.name || 'Unknown Guest',
+          email: guest.email || 'No email',
+          phone: guest.phone || 'No phone',
+          room: guest.roomNumber || 'N/A',
+          roomType: guest.roomType || 'Unknown',
+          checkIn: formatDateForDisplay(guest.checkInDate),
+          checkOut: formatDateForDisplay(guest.checkOutDate),
+          nights: guest.nights || 1,
+          balance: guest.balance ? `$${guest.balance.toFixed(2)}` : '$0.00',
+          status: guest.status ? guest.status.toLowerCase().replace('_', '-') : 'unknown',
+          vipLevel: guest.vipLevel || 'Regular',
+          loyaltyTier: guest.loyaltyTier || 'Basic',
+          guestId: guest.guestId
+        }));
+        
+        setCurrentGuests(mappedGuests);
+        setPagination(prev => ({
+          ...prev,
+          totalPages: response.data.data.totalPages || 1,
+          totalElements: response.data.data.totalElements || mappedGuests.length
+        }));
+      } else {
+        // Fallback to mock data if API returns empty
+        setCurrentGuests(getMockCurrentGuests());
+        setPagination(prev => ({
+          ...prev,
+          totalPages: 1,
+          totalElements: getMockCurrentGuests().length
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching current guests:', error);
+      // Fallback to mock data on error
+      setCurrentGuests(getMockCurrentGuests());
+      setPagination(prev => ({
+        ...prev,
+        totalPages: 1,
+        totalElements: getMockCurrentGuests().length
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch all guests with history
+  const fetchAllGuests = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        keyword: searchQuery || undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        page: pagination.page,
+        size: pagination.size
+      };
+      
+      // Remove undefined parameters
+      Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
+      
+      const response = await axiosInstance.get('/v1/guests/history', { params });
+      
+      if (response.data?.data?.content) {
+        const mappedGuests = response.data.data.content.map(guest => ({
+          id: guest.guestCode || `GUEST-${guest.guestId || '00000'}`,
+          name: guest.name || 'Unknown Guest',
+          email: guest.email || 'No email',
+          phone: guest.phone || 'No phone',
+          lastStay: guest.lastStay || 'N/A',
+          totalStays: guest.totalStays || 0,
+          lifetimeValue: guest.lifetimeValue ? `$${guest.lifetimeValue.toFixed(2)}` : '$0.00',
+          lastRoom: guest.lastRoom || 'N/A',
+          status: guest.status || 'inactive',
+          vipLevel: guest.vipLevel || 'Regular',
+          loyaltyTier: guest.loyaltyTier || 'Basic',
+          guestId: guest.guestId,
+          createdAt: guest.createdAt
+        }));
+        
+        setAllGuests(mappedGuests);
+        setPagination(prev => ({
+          ...prev,
+          totalPages: response.data.data.totalPages || 1,
+          totalElements: response.data.data.totalElements || mappedGuests.length
+        }));
+      } else {
+        // Fallback to mock data
+        setAllGuests(getMockAllGuests());
+        setPagination(prev => ({
+          ...prev,
+          totalPages: 1,
+          totalElements: getMockAllGuests().length
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching all guests:', error);
+      // Fallback to mock data on error
+      setAllGuests(getMockAllGuests());
+      setPagination(prev => ({
+        ...prev,
+        totalPages: 1,
+        totalElements: getMockAllGuests().length
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock data for fallback
+  const getMockCurrentGuests = () => [
     {
       id: 'GUEST-84729',
       name: 'John Doe',
@@ -28,7 +282,8 @@ const GuestSearch = () => {
       balance: '$1,055.75',
       status: 'checked-in',
       vipLevel: 'VIP',
-      loyaltyTier: 'Gold'
+      loyaltyTier: 'Gold',
+      guestId: 84729
     },
     {
       id: 'GUEST-92837',
@@ -43,7 +298,8 @@ const GuestSearch = () => {
       balance: '$780.50',
       status: 'checked-in',
       vipLevel: 'Regular',
-      loyaltyTier: 'Silver'
+      loyaltyTier: 'Silver',
+      guestId: 92837
     },
     {
       id: 'GUEST-73648',
@@ -58,43 +314,13 @@ const GuestSearch = () => {
       balance: '$0.00',
       status: 'checked-in',
       vipLevel: 'VIP',
-      loyaltyTier: 'Platinum'
-    },
-    {
-      id: 'GUEST-61938',
-      name: 'Emma Wilson',
-      email: 'emma.w@email.com',
-      phone: '+1 (555) 234-5678',
-      room: '512',
-      roomType: 'Standard Queen',
-      checkIn: 'Oct 30, 2023',
-      checkOut: 'Nov 01, 2023',
-      nights: 2,
-      balance: '$325.25',
-      status: 'checked-in',
-      vipLevel: 'Regular',
-      loyaltyTier: 'Basic'
-    },
-    {
-      id: 'GUEST-52749',
-      name: 'Robert Garcia',
-      email: 'robert.g@email.com',
-      phone: '+1 (555) 876-5432',
-      room: '908',
-      roomType: 'Deluxe King',
-      checkIn: 'Oct 27, 2023',
-      checkOut: 'Nov 03, 2023',
-      nights: 7,
-      balance: '$1,245.80',
-      status: 'checked-in',
-      vipLevel: 'VIP',
-      loyaltyTier: 'Gold'
-    },
+      loyaltyTier: 'Platinum',
+      guestId: 73648
+    }
   ];
 
-  // Mock data for all guests (including historical)
-  const allGuests = [
-    ...currentGuests,
+  const getMockAllGuests = () => [
+    ...getMockCurrentGuests(),
     {
       id: 'GUEST-49872',
       name: 'Lisa Thompson',
@@ -106,7 +332,8 @@ const GuestSearch = () => {
       lastRoom: '710',
       status: 'checked-out',
       vipLevel: 'Regular',
-      loyaltyTier: 'Silver'
+      loyaltyTier: 'Silver',
+      guestId: 49872
     },
     {
       id: 'GUEST-38461',
@@ -119,85 +346,176 @@ const GuestSearch = () => {
       lastRoom: '312',
       status: 'checked-out',
       vipLevel: 'VIP',
-      loyaltyTier: 'Platinum'
-    },
-    {
-      id: 'GUEST-27583',
-      name: 'Jennifer Lee',
-      email: 'jennifer.l@email.com',
-      phone: '+1 (555) 654-3210',
-      lastStay: 'Oct 05, 2023 - Oct 09, 2023',
-      totalStays: 8,
-      lifetimeValue: '$9,245.75',
-      lastRoom: '1602',
-      status: 'checked-out',
-      vipLevel: 'VIP',
-      loyaltyTier: 'Diamond'
-    },
-    {
-      id: 'GUEST-18495',
-      name: 'James Brown',
-      email: 'james.b@email.com',
-      phone: '+1 (555) 543-2109',
-      lastStay: 'Sep 28, 2023 - Oct 02, 2023',
-      totalStays: 12,
-      lifetimeValue: '$15,780.25',
-      lastRoom: '1104',
-      status: 'checked-out',
-      vipLevel: 'VIP',
-      loyaltyTier: 'Platinum'
-    },
-    {
-      id: 'GUEST-93746',
-      name: 'Maria Garcia',
-      email: 'maria.g@email.com',
-      phone: '+1 (555) 432-1098',
-      lastStay: 'Sep 20, 2023 - Sep 22, 2023',
-      totalStays: 2,
-      lifetimeValue: '$890.00',
-      lastRoom: '208',
-      status: 'checked-out',
-      vipLevel: 'Regular',
-      loyaltyTier: 'Basic'
-    },
+      loyaltyTier: 'Platinum',
+      guestId: 38461
+    }
   ];
 
-  // Filter guests based on search query and status
-  const filteredCurrentGuests = currentGuests.filter(guest => {
-    const matchesSearch = 
-      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.phone.includes(searchQuery) ||
-      guest.room.includes(searchQuery) ||
-      guest.id.toLowerCase().includes(searchQuery.toLowerCase());
+  // Format date for display
+  const formatDateForDisplay = (date) => {
+    if (!date) return 'N/A';
+    if (typeof date === 'string') return date;
     
-    const matchesStatus = statusFilter === 'all' || guest.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+    try {
+      const dateObj = new Date(date);
+      return dateObj.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
+  };
 
-  const filteredAllGuests = allGuests.filter(guest => {
-    const matchesSearch = 
-      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.phone.includes(searchQuery) ||
-      (guest.lastRoom && guest.lastRoom.includes(searchQuery)) ||
-      guest.id.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || guest.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  // Format date for table
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Handle guest click
+  // Update this function in GuestSearch.jsx
+const handleGuestClick = (guestId) => {
+       console.log('Navigating to:', `/guest-detail/${guestId}`);
+    navigate(`/guest-detail/${guestId}`);
+};
+
+  // Handle checkout
+  const handleCheckout = async (guestId, e) => {
+    e.stopPropagation();
+    try {
+      // Call checkout API
+      await axiosInstance.post(`/v1/bookings/checkout`, { guestId });
+      
+      // Show success message
+      alert('Checkout processed successfully!');
+      
+      // Refresh data
+      if (activeTab === 'current') {
+        fetchCurrentGuests();
+        fetchDashboardStats();
+      }
+      
+      // Navigate to checkout page
+      navigate(`/checkout/${guestId}`);
+    } catch (error) {
+      console.error('Error processing checkout:', error);
+      alert('Failed to process checkout. Please try again.');
+    }
+  };
+
+  // Handle payment
+  const handlePayment = (guestId, e) => {
+    e.stopPropagation();
+    navigate(`/payments`, { state: { guestId } });
+  };
+
+  // Handle new guest
+  const handleNewGuest = () => {
+    navigate('/guests/new');
+  };
+
+  // Handle export
+  const handleExport = async () => {
+    try {
+      // Create CSV data
+      const data = activeTab === 'current' ? currentGuests : allGuests;
+      const headers = activeTab === 'current' 
+        ? ['ID', 'Name', 'Email', 'Phone', 'Room', 'Room Type', 'Check-in', 'Check-out', 'Nights', 'Balance', 'Status', 'VIP Level', 'Loyalty Tier']
+        : ['ID', 'Name', 'Email', 'Phone', 'Last Stay', 'Total Stays', 'Lifetime Value', 'Last Room', 'Status', 'VIP Level', 'Loyalty Tier'];
+      
+      const csvRows = [
+        headers.join(','),
+        ...data.map(guest => 
+          activeTab === 'current'
+            ? [
+                guest.id,
+                `"${guest.name}"`,
+                `"${guest.email}"`,
+                `"${guest.phone}"`,
+                guest.room,
+                `"${guest.roomType}"`,
+                guest.checkIn,
+                guest.checkOut,
+                guest.nights,
+                guest.balance,
+                guest.status,
+                guest.vipLevel,
+                guest.loyaltyTier
+              ].join(',')
+            : [
+                guest.id,
+                `"${guest.name}"`,
+                `"${guest.email}"`,
+                `"${guest.phone}"`,
+                `"${guest.lastStay}"`,
+                guest.totalStays,
+                guest.lifetimeValue,
+                guest.lastRoom,
+                guest.status,
+                guest.vipLevel,
+                guest.loyaltyTier
+              ].join(',')
+        )
+      ];
+      
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `guests_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      alert('Export completed successfully!');
+    } catch (error) {
+      console.error('Error exporting guests:', error);
+      alert('Failed to export guests. Please try again.');
+    }
+  };
+
+  // Handle refresh
+  const handleRefresh = () => {
+    if (activeTab === 'current') {
+      fetchCurrentGuests();
+    } else {
+      fetchAllGuests();
+    }
+    fetchDashboardStats();
+    fetchSummaryStats();
+  };
+
+  // Handle pagination
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < pagination.totalPages) {
+      setPagination({ ...pagination, page: newPage });
+    }
+  };
 
   // Get status badge class
   const getStatusBadgeClass = (status) => {
-    switch(status) {
+    switch(status?.toLowerCase()) {
       case 'checked-in':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'checked-out':
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
       case 'upcoming':
+      case 'confirmed':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     }
@@ -205,7 +523,7 @@ const GuestSearch = () => {
 
   // Get VIP badge class
   const getVipBadgeClass = (vipLevel) => {
-    switch(vipLevel) {
+    switch(vipLevel?.toUpperCase()) {
       case 'VIP':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       default:
@@ -215,40 +533,34 @@ const GuestSearch = () => {
 
   // Get loyalty tier badge class
   const getLoyaltyBadgeClass = (tier) => {
-    switch(tier) {
-      case 'Diamond':
+    switch(tier?.toUpperCase()) {
+      case 'DIAMOND':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-      case 'Platinum':
+      case 'PLATINUM':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'Gold':
+      case 'GOLD':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'Silver':
+      case 'SILVER':
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     }
   };
 
-  // Handle guest click (navigate to guest detail)
-  const handleGuestClick = (guestId) => {
-    navigate(`/guest-detail/${guestId}`);
-  };
-
-  // Handle checkout action
-  const handleCheckout = (guestId, e) => {
-    e.stopPropagation();
-    navigate(`/checkout/${guestId}`);
-  };
-
-  // Handle payment action
-  const handlePayment = (guestId, e) => {
-    e.stopPropagation();
-    navigate(`/payments`, { state: { guestId } });
-  };
-
-  // Handle new guest action
-  const handleNewGuest = () => {
-    navigate('/guests/new');
+  // Get icon component based on icon name
+  const getIconComponent = (iconName, color) => {
+    const iconProps = { size: 20, className: `text-${color}-600` };
+    
+    switch(iconName) {
+      case 'UserCheck':
+        return <UserCheck {...iconProps} />;
+      case 'DollarSign':
+        return <DollarSign {...iconProps} />;
+      case 'Calendar':
+        return <Calendar {...iconProps} />;
+      default:
+        return <UserCheck {...iconProps} />;
+    }
   };
 
   return (
@@ -261,13 +573,23 @@ const GuestSearch = () => {
             Find and manage guests currently staying or historical records
           </p>
         </div>
-        <button 
-          onClick={handleNewGuest}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus size={18} />
-          New Guest
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleRefresh}
+            className="btn-outline flex items-center gap-2"
+            disabled={loading || loadingStats}
+          >
+            <RefreshCw size={18} className={loading || loadingStats ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+          <button 
+            onClick={handleNewGuest}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus size={18} />
+            New Guest
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -276,7 +598,9 @@ const GuestSearch = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Current Guests</p>
-              <p className="text-2xl font-bold">8</p>
+              <p className="text-2xl font-bold">
+                {loadingStats ? '...' : dashboardStats.currentGuests}
+              </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
               <Users size={24} className="text-blue-600" />
@@ -291,14 +615,18 @@ const GuestSearch = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Check-ins Today</p>
-              <p className="text-2xl font-bold">3</p>
+              <p className="text-2xl font-bold">
+                {loadingStats ? '...' : dashboardStats.checkInsToday}
+              </p>
             </div>
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
               <UserCheck size={24} className="text-green-600" />
             </div>
           </div>
           <div className="mt-2">
-            <p className="text-xs text-gray-500">Expected: 5</p>
+            <p className="text-xs text-gray-500">
+              Expected: {loadingStats ? '...' : dashboardStats.expectedCheckIns}
+            </p>
           </div>
         </div>
 
@@ -306,14 +634,18 @@ const GuestSearch = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Check-outs Today</p>
-              <p className="text-2xl font-bold">4</p>
+              <p className="text-2xl font-bold">
+                {loadingStats ? '...' : dashboardStats.checkOutsToday}
+              </p>
             </div>
             <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
               <LogOut size={24} className="text-orange-600" />
             </div>
           </div>
           <div className="mt-2">
-            <p className="text-xs text-gray-500">Pending: 2</p>
+            <p className="text-xs text-gray-500">
+              Pending: {loadingStats ? '...' : dashboardStats.pendingCheckouts}
+            </p>
           </div>
         </div>
 
@@ -321,14 +653,18 @@ const GuestSearch = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Occupancy Rate</p>
-              <p className="text-2xl font-bold">85%</p>
+              <p className="text-2xl font-bold">
+                {loadingStats ? '...' : dashboardStats.occupancyRate?.toFixed(1)}%
+              </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
               <Bed size={24} className="text-purple-600" />
             </div>
           </div>
           <div className="mt-2">
-            <p className="text-xs text-gray-500">152/180 rooms occupied</p>
+            <p className="text-xs text-gray-500">
+              {loadingStats ? '...' : dashboardStats.occupiedRooms}/{dashboardStats.totalRooms} rooms occupied
+            </p>
           </div>
         </div>
       </div>
@@ -343,7 +679,19 @@ const GuestSearch = () => {
               placeholder="Search by name, email, phone, room number, or guest ID..."
               className="input pl-10 w-full"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPagination({ ...pagination, page: 0 });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (activeTab === 'current') {
+                    fetchCurrentGuests();
+                  } else {
+                    fetchAllGuests();
+                  }
+                }
+              }}
             />
           </div>
           
@@ -353,16 +701,25 @@ const GuestSearch = () => {
               <select 
                 className="input-sm"
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPagination({ ...pagination, page: 0 });
+                }}
               >
                 <option value="all">All Status</option>
                 <option value="checked-in">Checked-in</option>
                 <option value="checked-out">Checked-out</option>
                 <option value="upcoming">Upcoming</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
             
-            <button className="btn-outline flex items-center gap-2">
+            <button 
+              onClick={handleExport}
+              className="btn-outline flex items-center gap-2"
+              disabled={loading}
+            >
               <Download size={18} />
               Export
             </button>
@@ -374,7 +731,10 @@ const GuestSearch = () => {
       <div className="border-b border-gray-200 dark:border-gray-700">
         <div className="flex gap-4">
           <button
-            onClick={() => setActiveTab('current')}
+            onClick={() => {
+              setActiveTab('current');
+              setPagination({ ...pagination, page: 0 });
+            }}
             className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${
               activeTab === 'current'
                 ? 'border-primary-600 text-primary-600'
@@ -386,7 +746,10 @@ const GuestSearch = () => {
           </button>
           
           <button
-            onClick={() => setActiveTab('all')}
+            onClick={() => {
+              setActiveTab('all');
+              setPagination({ ...pagination, page: 0 });
+            }}
             className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${
               activeTab === 'all'
                 ? 'border-primary-600 text-primary-600'
@@ -399,8 +762,16 @@ const GuestSearch = () => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="card text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading guests...</p>
+        </div>
+      )}
+
       {/* Tab Content - Current Guests */}
-      {activeTab === 'current' && (
+      {!loading && activeTab === 'current' && (
         <div className="card">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -415,17 +786,17 @@ const GuestSearch = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredCurrentGuests.map((guest) => (
+                {currentGuests.map((guest) => (
                   <tr 
                     key={guest.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
-                    onClick={() => handleGuestClick(guest.id)}
+                    onClick={() => handleGuestClick(guest.guestId)}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center">
                           <span className="font-semibold text-primary-600">
-                            {guest.name.charAt(0)}
+                            {guest.name?.charAt(0) || 'G'}
                           </span>
                         </div>
                         <div>
@@ -502,7 +873,7 @@ const GuestSearch = () => {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <button 
-                          onClick={(e) => handleCheckout(guest.id, e)}
+                          onClick={(e) => handleCheckout(guest.guestId, e)}
                           className="btn-danger text-sm px-3 py-1.5 flex items-center gap-1"
                         >
                           <LogOut size={14} />
@@ -510,7 +881,7 @@ const GuestSearch = () => {
                         </button>
                         
                         <button 
-                          onClick={(e) => handlePayment(guest.id, e)}
+                          onClick={(e) => handlePayment(guest.guestId, e)}
                           className="btn-primary text-sm px-3 py-1.5 flex items-center gap-1"
                         >
                           <CreditCard size={14} />
@@ -520,7 +891,7 @@ const GuestSearch = () => {
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleGuestClick(guest.id);
+                            handleGuestClick(guest.guestId);
                           }}
                           className="btn-outline text-sm px-3 py-1.5 flex items-center gap-1"
                         >
@@ -534,13 +905,20 @@ const GuestSearch = () => {
               </tbody>
             </table>
             
-            {filteredCurrentGuests.length === 0 && (
+            {currentGuests.length === 0 && (
               <div className="text-center py-12">
                 <Users size={48} className="mx-auto text-gray-400" />
                 <h3 className="mt-4 text-lg font-medium">No guests found</h3>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
                   Try adjusting your search or filter to find what you're looking for.
                 </p>
+                <button 
+                  onClick={handleRefresh}
+                  className="mt-4 btn-primary flex items-center gap-2 mx-auto"
+                >
+                  <RefreshCw size={16} />
+                  Refresh Data
+                </button>
               </div>
             )}
           </div>
@@ -548,12 +926,26 @@ const GuestSearch = () => {
           <div className="mt-6 pt-6 border-t dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing {filteredCurrentGuests.length} of {currentGuests.length} current guests
+                Showing {currentGuests.length} of {pagination.totalElements} current guests
               </div>
               <div className="flex items-center gap-2">
-                <button className="px-3 py-1 border rounded-md text-sm">Previous</button>
-                <button className="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">1</button>
-                <button className="px-3 py-1 border rounded-md text-sm">Next</button>
+                <button 
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 0}
+                  className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">
+                  Page {pagination.page + 1} of {pagination.totalPages}
+                </span>
+                <button 
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages - 1}
+                  className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -561,7 +953,7 @@ const GuestSearch = () => {
       )}
 
       {/* Tab Content - All Guests */}
-      {activeTab === 'all' && (
+      {!loading && activeTab === 'all' && (
         <div className="card">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -576,17 +968,17 @@ const GuestSearch = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredAllGuests.map((guest) => (
+                {allGuests.map((guest) => (
                   <tr 
                     key={guest.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
-                    onClick={() => handleGuestClick(guest.id)}
+                    onClick={() => handleGuestClick(guest.guestId)}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center">
                           <span className="font-semibold text-primary-600">
-                            {guest.name.charAt(0)}
+                            {guest.name?.charAt(0) || 'G'}
                           </span>
                         </div>
                         <div>
@@ -621,11 +1013,11 @@ const GuestSearch = () => {
                     <td className="px-4 py-4">
                       <div>
                         <div className="text-sm">
-                          {guest.lastStay || `${guest.checkIn} - ${guest.checkOut}`}
+                          {guest.lastStay || 'N/A'}
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-1">
                           <Bed size={14} />
-                          <span>Room {guest.lastRoom || guest.room}</span>
+                          <span>Room {guest.lastRoom}</span>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                           {guest.totalStays || 1} total stay{guest.totalStays !== 1 ? 's' : ''}
@@ -640,14 +1032,14 @@ const GuestSearch = () => {
                         </span>
                         <div className="mt-2">
                           <div className="text-xs text-gray-600 dark:text-gray-400">Member since</div>
-                          <div className="text-sm">Jan 2022</div>
+                          <div className="text-sm">{guest.createdAt ? formatDate(guest.createdAt) : 'Jan 2022'}</div>
                         </div>
                       </div>
                     </td>
                     
                     <td className="px-4 py-4">
                       <div className="font-bold text-lg">
-                        {guest.lifetimeValue || '$0.00'}
+                        {guest.lifetimeValue}
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Lifetime value
@@ -655,7 +1047,11 @@ const GuestSearch = () => {
                       <div className="mt-2">
                         <div className="flex items-center justify-between text-xs mb-1">
                           <span>Avg. spend</span>
-                          <span>${(parseFloat(guest.lifetimeValue?.replace(/[^0-9.]/g, '') || 0) / (guest.totalStays || 1)).toFixed(2)}</span>
+                          <span>
+                            ${guest.totalStays > 0 ? 
+                              (parseFloat(guest.lifetimeValue?.replace(/[^0-9.]/g, '') || 0) / guest.totalStays).toFixed(2) 
+                              : '0.00'}
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -665,7 +1061,7 @@ const GuestSearch = () => {
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleGuestClick(guest.id);
+                            handleGuestClick(guest.guestId);
                           }}
                           className="btn-outline text-sm px-3 py-1.5 flex items-center gap-1"
                         >
@@ -690,13 +1086,20 @@ const GuestSearch = () => {
               </tbody>
             </table>
             
-            {filteredAllGuests.length === 0 && (
+            {allGuests.length === 0 && (
               <div className="text-center py-12">
                 <Users size={48} className="mx-auto text-gray-400" />
                 <h3 className="mt-4 text-lg font-medium">No guests found</h3>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
                   Try adjusting your search or filter to find what you're looking for.
                 </p>
+                <button 
+                  onClick={handleRefresh}
+                  className="mt-4 btn-primary flex items-center gap-2 mx-auto"
+                >
+                  <RefreshCw size={16} />
+                  Refresh Data
+                </button>
               </div>
             )}
           </div>
@@ -704,12 +1107,26 @@ const GuestSearch = () => {
           <div className="mt-6 pt-6 border-t dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing {filteredAllGuests.length} of {allGuests.length} guests
+                Showing {allGuests.length} of {pagination.totalElements} guests
               </div>
               <div className="flex items-center gap-2">
-                <button className="px-3 py-1 border rounded-md text-sm">Previous</button>
-                <button className="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">1</button>
-                <button className="px-3 py-1 border rounded-md text-sm">Next</button>
+                <button 
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 0}
+                  className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">
+                  Page {pagination.page + 1} of {pagination.totalPages}
+                </span>
+                <button 
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages - 1}
+                  className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -717,46 +1134,24 @@ const GuestSearch = () => {
       )}
 
       {/* Quick Stats Footer */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-              <UserCheck size={20} className="text-green-600" />
+      {!loadingStats && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {quickStats.map((stat, index) => (
+            <div key={index} className="card">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 ${stat.color === 'green' ? 'bg-green-100 dark:bg-green-900/20' : stat.color === 'blue' ? 'bg-blue-100 dark:bg-blue-900/20' : 'bg-purple-100 dark:bg-purple-900/20'} rounded-lg flex items-center justify-center`}>
+                  {getIconComponent(stat.icon, stat.color)}
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
+                  <p className="font-medium">{stat.value}</p>
+                  <p className="text-xs text-gray-500">{stat.description}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Most Frequent Guest</p>
-              <p className="font-medium">James Brown</p>
-              <p className="text-xs text-gray-500">12 stays • $15,780.25 spent</p>
-            </div>
-          </div>
+          ))}
         </div>
-        
-        <div className="card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-              <DollarSign size={20} className="text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Highest LTV Guest</p>
-              <p className="font-medium">Jennifer Lee</p>
-              <p className="text-xs text-gray-500">8 stays • $9,245.75 spent</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-              <Calendar size={20} className="text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Check-ins Today</p>
-              <p className="font-medium">3 Expected</p>
-              <p className="text-xs text-gray-500">2 completed • 1 pending</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

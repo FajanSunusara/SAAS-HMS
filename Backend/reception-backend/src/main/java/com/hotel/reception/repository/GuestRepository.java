@@ -42,4 +42,17 @@ public interface GuestRepository extends JpaRepository<Guest, Long> {
     
     @Query("SELECT COUNT(DISTINCT b.guest.guestId) FROM Booking b WHERE b.createdAt BETWEEN :start AND :end")
     Long countUniqueGuestsInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    
+    Optional<Guest> findByGuestId(Long guestId);
+//    Optional<Guest> findByEmail(String email);
+//    Optional<Guest> findByPhone(String phone);
+//    
+//    @Query("SELECT g FROM Guest g WHERE LOWER(g.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(g.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR g.email LIKE CONCAT('%', :keyword, '%') OR g.phone LIKE CONCAT('%', :keyword, '%')")
+//    List<Guest> searchGuests(@Param("keyword") String keyword);
+    
+    @Query("SELECT COUNT(g) FROM Guest g")
+    Long countTotalGuests();
+    
+    @Query("SELECT COUNT(DISTINCT b.guest.guestId) FROM Booking b WHERE b.status = 'CHECKED_IN'")
+    Long countCurrentGuests();
 }

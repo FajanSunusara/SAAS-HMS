@@ -78,4 +78,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT COALESCE(SUM(p.amountPaid), 0) FROM Payment p WHERE p.invoice.invoiceId = :invoiceId AND p.status = 'COMPLETED'")
     BigDecimal getTotalPaidByInvoiceId(@Param("invoiceId") Long invoiceId);
+    
+    Page<Payment> findByGuestGuestId(Long guestId, Pageable pageable);
+    List<Payment> findTop10ByGuestGuestIdOrderByCreatedAtDesc(Long guestId);
+    List<Payment> findByGuestGuestIdOrderByCreatedAtDesc(Long guestId);
+    
+    @Query("SELECT COALESCE(SUM(p.amountPaid), 0) FROM Payment p WHERE p.guest.guestId = :guestId AND p.paymentDate = :date")
+    Double sumAmountPaidByGuestIdAndDate(@Param("guestId") Long guestId, @Param("date") LocalDate date);
+    
+    @Query("SELECT p FROM Payment p WHERE p.guest.guestId = :guestId AND p.paymentDate = CURRENT_DATE")
+    List<Payment> findTodayPaymentsByGuestId(@Param("guestId") Long guestId);
 }
