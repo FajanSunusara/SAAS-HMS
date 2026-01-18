@@ -1,6 +1,8 @@
 package com.hotel.reception.repository;
 
 import com.hotel.reception.model.entity.Room;
+import com.hotel.reception.model.enums.RoomStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,7 +23,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     
     List<Room> findByFloorNumber(Integer floorNumber);
     
-    Long countByStatus(String status);
+//    Long countByStatus(String status);
     
     @Query("SELECT r FROM Room r WHERE r.status = :status AND r.roomType = :type")
     List<Room> findByStatusAndType(@Param("status") String status, @Param("type") String type);
@@ -47,4 +49,44 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     
     @Query("SELECT COUNT(r) FROM Room r")
     Long getTotalRoomCount();
+    
+
+
+Long countByStatus(RoomStatus status);
+//    
+//    @Query("SELECT DISTINCT r.roomType FROM Room r ORDER BY r.roomType")
+//    List<String> findDistinctRoomTypes();
+//    
+//    @Query("SELECT DISTINCT r.floorNumber FROM Room r ORDER BY r.floorNumber")
+//    List<Integer> findDistinctFloors();
+//    
+    // Find available rooms for date range
+//    @Query("SELECT r FROM Room r WHERE r.roomId NOT IN (" +
+//           "SELECT br.room.roomId FROM BookingRoom br " +
+//           "JOIN br.booking b " +
+//           "WHERE (:checkInDate < b.checkOutDate AND :checkOutDate > b.checkInDate) " +
+//           "AND b.status NOT IN ('CANCELLED', 'CHECKED_OUT')) " +
+//           "AND r.status = 'AVAILABLE' " +
+//           "AND (:roomType IS NULL OR r.roomType = :roomType)")
+//    
+//    List<Room> findAvailableRooms(@Param("checkInDate") LocalDate checkInDate,
+//                                  @Param("checkOutDate") LocalDate checkOutDate,
+//                                  @Param("roomType") String roomType);
+
+//    Long countByStatus(String status);
+//    
+//    @Query("SELECT DISTINCT r.roomType FROM Room r")
+//    List<String> findDistinctRoomTypes();
+//    
+//    @Query("SELECT DISTINCT r.floorNumber FROM Room r ORDER BY r.floorNumber")
+//    List<Integer> findDistinctFloors();
+//    
+    Long countByStatus(String status);
+    
+    @Query("SELECT DISTINCT r.roomType FROM Room r")
+    List<String> findDistinctRoomTypes();
+    
+    @Query("SELECT DISTINCT r.floorNumber FROM Room r ORDER BY r.floorNumber")
+    List<Integer> findDistinctFloors();
+    
 }

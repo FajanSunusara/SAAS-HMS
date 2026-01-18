@@ -8,5 +8,6 @@ public enum BookingStatus {
     CANCELLED,
     NO_SHOW,
     PAYMENT_DUE,
-    LATE_ARRIVAL
+    LATE_ARRIVAL,
+    TENTATIVE 
 }

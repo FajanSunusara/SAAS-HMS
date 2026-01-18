@@ -1,12 +1,212 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Calendar, Plus, Filter, Search, TrendingUp, TrendingDown, 
   Download, Eye, Edit, List, BarChart3, X, ChevronLeft, 
   ChevronRight, Users, Home, DollarSign, Bed, Check, 
   Clock, AlertCircle, ChevronDown, ChevronUp, ArrowUpDown,
-  Grid, ChevronRight as ChevronRightIcon, ChevronLeft as ChevronLeftIcon
+  Grid, ChevronRight as ChevronRightIcon, ChevronLeft as ChevronLeftIcon,
+  Loader2
 } from 'lucide-react';
+
+// API configuration
+const API_BASE_URL = 'http://localhost:8080'; // Your backend URL
+const API_VERSION = '/api/v1/reservation-dashboard';
+
+// API service functions
+const api = {
+  // Dashboard stats
+  getDashboardStats: async (date) => {
+    try {
+      const dateStr = date.toISOString().split('T')[0];
+      const response = await fetch(`${API_BASE_URL}${API_VERSION}/stats?date=${dateStr}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Dashboard stats error:', errorText);
+        throw new Error(`Failed to fetch dashboard stats: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Dashboard stats API error:', error);
+      throw error;
+    }
+  },
+
+  // Calendar view
+  getCalendarView: async (centerDate, daysBefore = 3, daysAfter = 3) => {
+    try {
+      const centerDateStr = centerDate.toISOString().split('T')[0];
+      const response = await fetch(
+        `${API_BASE_URL}${API_VERSION}/calendar?centerDate=${centerDateStr}&daysBefore=${daysBefore}&daysAfter=${daysAfter}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Calendar view error:', errorText);
+        throw new Error(`Failed to fetch calendar data: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Calendar view API error:', error);
+      throw error;
+    }
+  },
+
+  // List view with filters - FIXED: Handle parameters safely
+  getReservationList: async (params, pageable) => {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      // Only add parameters if they have valid values
+      if (params.searchQuery) queryParams.append('searchQuery', params.searchQuery);
+      
+      // Handle status parameter safely
+      if (params.status && params.status !== 'all') {
+        queryParams.append('status', params.status);
+      }
+      
+      // Handle array filters - take first value if array exists
+      if (params.roomType && params.roomType.length > 0) {
+        queryParams.append('roomType', params.roomType[0]);
+      }
+      
+      if (params.floor && params.floor.length > 0) {
+        queryParams.append('floor', params.floor[0]);
+      }
+      
+      if (params.source && params.source.length > 0) {
+        queryParams.append('source', params.source[0]);
+      }
+      
+      if (params.paymentStatus && params.paymentStatus.length > 0) {
+        queryParams.append('paymentStatus', params.paymentStatus[0]);
+      }
+      
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.sortDirection) queryParams.append('sortDirection', params.sortDirection);
+      
+      // Add pageable params
+      queryParams.append('page', pageable.page || 0);
+      queryParams.append('size', pageable.size || 10);
+      
+      const url = `${API_BASE_URL}${API_VERSION}/list?${queryParams.toString()}`;
+      console.log('Fetching from:', url);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Reservation list error:', errorText);
+        throw new Error(`Failed to fetch reservation list: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Reservation list API error:', error);
+      throw error;
+    }
+  },
+
+  // Month overview
+  getMonthOverview: async (monthYear, roomType) => {
+    try {
+      const url = roomType 
+        ? `${API_BASE_URL}${API_VERSION}/month-overview?monthYear=${monthYear}&roomType=${roomType}`
+        : `${API_BASE_URL}${API_VERSION}/month-overview?monthYear=${monthYear}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Month overview error:', errorText);
+        throw new Error(`Failed to fetch month overview: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Month overview API error:', error);
+      throw error;
+    }
+  },
+
+  // Booking status counts
+  getBookingStatusCounts: async (date) => {
+    try {
+      const dateStr = date.toISOString().split('T')[0];
+      const response = await fetch(`${API_BASE_URL}${API_VERSION}/status-counts?date=${dateStr}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Status counts error:', errorText);
+        throw new Error(`Failed to fetch status counts: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Status counts API error:', error);
+      throw error;
+    }
+  },
+
+  // Filter options
+  getFilterOptions: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_VERSION}/filter-options`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Filter options error:', errorText);
+        throw new Error(`Failed to fetch filter options: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Filter options API error:', error);
+      throw error;
+    }
+  },
+};
 
 const ReservationBooking = () => {
   const navigate = useNavigate();
@@ -16,8 +216,8 @@ const ReservationBooking = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeView, setActiveView] = useState('calendar');
   const [showFilters, setShowFilters] = useState(false);
-  const [currentCenterDate, setCurrentCenterDate] = useState(new Date('2024-08-07'));
-  const [currentMonth, setCurrentMonth] = useState(new Date('2024-08-01'));
+  const [currentCenterDate, setCurrentCenterDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [appliedFilters, setAppliedFilters] = useState({
     roomType: [],
     floor: [],
@@ -26,7 +226,8 @@ const ReservationBooking = () => {
     source: [],
     paymentStatus: []
   });
-  const [sortConfig, setSortConfig] = useState({ key: 'time', direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  const [pageable, setPageable] = useState({ page: 0, size: 10 });
 
   // Calculate date range based on center date (3 days before and after)
   const getWeekDates = (centerDate) => {
@@ -114,11 +315,74 @@ const ReservationBooking = () => {
   const currentWeekDates = getWeekDates(currentCenterDate);
   const weekRangeString = formatWeekRange(currentWeekDates);
 
-  // Dashboard Stats
-  const stats = [
+  // React Query hooks for data fetching
+  const { data: dashboardStats, isLoading: statsLoading, error: statsError } = useQuery({
+    queryKey: ['dashboardStats', currentCenterDate],
+    queryFn: () => api.getDashboardStats(currentCenterDate),
+    retry: 1,
+  });
+
+  const { data: calendarData, isLoading: calendarLoading, error: calendarError } = useQuery({
+    queryKey: ['calendarView', currentCenterDate, activeView],
+    queryFn: () => api.getCalendarView(currentCenterDate, 3, 3),
+    enabled: activeView === 'calendar',
+    retry: 1,
+  });
+
+  // FIXED: Properly structure parameters for getReservationList
+  const { data: reservationListData, isLoading: listLoading, error: listError } = useQuery({
+    queryKey: ['reservationList', searchQuery, selectedFilter, appliedFilters, sortConfig, pageable, activeView],
+    queryFn: () => api.getReservationList({
+      searchQuery,
+      status: selectedFilter,
+      roomType: appliedFilters.roomType,
+      floor: appliedFilters.floor,
+      source: appliedFilters.source,
+      paymentStatus: appliedFilters.paymentStatus,
+      sortBy: sortConfig.key,
+      sortDirection: sortConfig.direction,
+    }, pageable),
+    enabled: activeView === 'list',
+    retry: 1,
+  });
+
+  const { data: monthOverviewData, isLoading: monthLoading, error: monthError } = useQuery({
+    queryKey: ['monthOverview', currentMonth, appliedFilters.roomType, activeView],
+    queryFn: () => api.getMonthOverview(
+      currentMonth.toISOString().slice(0, 7),
+      appliedFilters.roomType.length > 0 ? appliedFilters.roomType[0] : null
+    ),
+    enabled: activeView === 'month',
+    retry: 1,
+  });
+
+  const { data: bookingStatusData, isLoading: statusLoading, error: statusError } = useQuery({
+    queryKey: ['bookingStatusCounts', currentCenterDate],
+    queryFn: () => api.getBookingStatusCounts(currentCenterDate),
+    retry: 1,
+  });
+
+  const { data: filterOptionsData, isLoading: filterOptionsLoading, error: filterOptionsError } = useQuery({
+    queryKey: ['filterOptions'],
+    queryFn: api.getFilterOptions,
+    retry: 1,
+  });
+
+  // Log errors for debugging
+  useEffect(() => {
+    if (statsError) console.error('Dashboard stats error:', statsError);
+    if (calendarError) console.error('Calendar error:', calendarError);
+    if (listError) console.error('List error:', listError);
+    if (monthError) console.error('Month error:', monthError);
+    if (statusError) console.error('Status error:', statusError);
+    if (filterOptionsError) console.error('Filter options error:', filterOptionsError);
+  }, [statsError, calendarError, listError, monthError, statusError, filterOptionsError]);
+
+  // Dashboard Stats - mapped from API
+  const stats = dashboardStats ? [
     { 
       label: "Today's Arrivals", 
-      value: 12, 
+      value: dashboardStats.todayArrivals || 0, 
       icon: Users,
       change: '+2', 
       trending: 'up',
@@ -128,7 +392,7 @@ const ReservationBooking = () => {
     },
     { 
       label: "Today's Departures", 
-      value: 8, 
+      value: dashboardStats.todayDepartures || 0, 
       icon: Home,
       change: '-1', 
       trending: 'down',
@@ -138,7 +402,7 @@ const ReservationBooking = () => {
     },
     { 
       label: 'Occupancy Rate', 
-      value: '84%', 
+      value: dashboardStats.occupancyRate ? `${dashboardStats.occupancyRate}%` : '0%', 
       icon: Bed,
       change: '+3%',
       trending: 'up',
@@ -148,7 +412,7 @@ const ReservationBooking = () => {
     },
     { 
       label: 'Revenue Today', 
-      value: '$2,845', 
+      value: dashboardStats.revenueToday ? `$${dashboardStats.revenueToday.toLocaleString()}` : '$0', 
       icon: DollarSign,
       change: '+12.5%', 
       trending: 'up',
@@ -156,288 +420,45 @@ const ReservationBooking = () => {
       color: 'text-yellow-500',
       bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
     },
-  ];
+  ] : [];
 
-  // Booking Status Options
-  const bookingStatus = [
-    { label: 'Confirmed', count: 18, color: 'bg-blue-500', value: 'confirmed' },
-    { label: 'Checked In', count: 15, color: 'bg-green-500', value: 'checked-in' },
-    { label: 'Tentative', count: 8, color: 'bg-yellow-500', value: 'tentative' },
-    { label: 'No Show', count: 4, color: 'bg-red-500', value: 'no-show' },
-    { label: 'Cancelled', count: 3, color: 'bg-gray-500', value: 'cancelled' },
-  ];
+  // Booking Status Options - mapped from API
+  const bookingStatus = bookingStatusData || [];
 
-  // Filter Options
-  const filterOptions = {
-    roomType: ['Standard', 'Deluxe', 'Suite', 'Presidential'],
-    floor: ['1', '2', '3', '4', '5'],
-    amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony', 'Sea View', 'Jacuzzi'],
-    source: ['Website', 'OTA', 'Phone', 'Travel Agent', 'Walk-in'],
-    paymentStatus: ['Paid', 'Pending', 'Partially Paid', 'Refunded'],
+  // Filter Options - from API
+  const filterOptions = filterOptionsData || {
+    roomType: [],
+    floor: [],
+    amenities: [],
+    source: [],
+    paymentStatus: [],
   };
 
-  // Original Data
-  const allRooms = [
-    { id: 101, type: 'Standard', floor: '1', price: 120, amenities: ['WiFi', 'TV'], maxOccupancy: 2 },
-    { id: 102, type: 'Standard', floor: '1', price: 120, amenities: ['WiFi', 'TV'], maxOccupancy: 2 },
-    { id: 103, type: 'Standard', floor: '1', price: 120, amenities: ['WiFi', 'TV'], maxOccupancy: 2 },
-    { id: 104, type: 'Standard', floor: '1', price: 120, amenities: ['WiFi', 'TV'], maxOccupancy: 2 },
-    { id: 201, type: 'Deluxe', floor: '2', price: 180, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar'], maxOccupancy: 3 },
-    { id: 202, type: 'Deluxe', floor: '2', price: 180, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar'], maxOccupancy: 3 },
-    { id: 203, type: 'Deluxe', floor: '2', price: 180, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar'], maxOccupancy: 3 },
-    { id: 204, type: 'Deluxe', floor: '2', price: 180, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar'], maxOccupancy: 3 },
-    { id: 301, type: 'Suite', floor: '3', price: 250, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony'], maxOccupancy: 4 },
-    { id: 302, type: 'Suite', floor: '3', price: 250, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony'], maxOccupancy: 4 },
-    { id: 303, type: 'Suite', floor: '3', price: 250, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony'], maxOccupancy: 4 },
-    { id: 401, type: 'Presidential', floor: '4', price: 450, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony', 'Jacuzzi'], maxOccupancy: 6 },
-    { id: 402, type: 'Presidential', floor: '4', price: 450, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony', 'Jacuzzi'], maxOccupancy: 6 },
-    { id: 501, type: 'Suite', floor: '5', price: 300, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony', 'Sea View'], maxOccupancy: 4 },
-    { id: 502, type: 'Suite', floor: '5', price: 300, amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony', 'Sea View'], maxOccupancy: 4 },
-  ];
+  // Calendar data from API
+  const allRooms = calendarData?.rooms || [];
+  const calendarBookings = calendarData?.bookings || [];
 
-  // Sample bookings for calendar view - Updated with guestId
-  const calendarBookings = [
-    { id: 1, roomId: 101, guest: 'John Anderson', guestId: '1', checkIn: '2024-08-07', checkOut: '2024-08-10', status: 'confirmed', adults: 2, children: 1, source: 'Website', payment: 'Paid' },
-    { id: 2, roomId: 201, guest: 'Sarah Williams', guestId: '2', checkIn: '2024-08-07', checkOut: '2024-08-09', status: 'checked-in', adults: 2, children: 0, source: 'OTA', payment: 'Paid' },
-    { id: 3, roomId: 301, guest: 'Michael Brown', guestId: '3', checkIn: '2024-08-07', checkOut: '2024-08-12', status: 'tentative', adults: 3, children: 1, source: 'Phone', payment: 'Pending' },
-    { id: 4, roomId: 102, guest: 'Emily Davis', guestId: '4', checkIn: '2024-08-07', checkOut: '2024-08-08', status: 'confirmed', adults: 1, children: 0, source: 'Website', payment: 'Paid' },
-    { id: 5, roomId: 401, guest: 'Robert Johnson', guestId: '5', checkIn: '2024-08-07', checkOut: '2024-08-14', status: 'no-show', adults: 2, children: 2, source: 'Travel Agent', payment: 'Refunded' },
-    { id: 6, roomId: 202, guest: 'David Wilson', guestId: '6', checkIn: '2024-08-06', checkOut: '2024-08-08', status: 'confirmed', adults: 2, children: 0, source: 'Website', payment: 'Paid' },
-    { id: 7, roomId: 302, guest: 'Lisa Martinez', guestId: '7', checkIn: '2024-08-08', checkOut: '2024-08-11', status: 'confirmed', adults: 2, children: 1, source: 'OTA', payment: 'Partially Paid' },
-    { id: 8, roomId: 103, guest: 'James Taylor', guestId: '8', checkIn: '2024-08-09', checkOut: '2024-08-10', status: 'checked-in', adults: 1, children: 0, source: 'Walk-in', payment: 'Paid' },
-    { id: 9, roomId: 203, guest: 'Maria Garcia', guestId: '9', checkIn: '2024-08-05', checkOut: '2024-08-07', status: 'cancelled', adults: 2, children: 0, source: 'Website', payment: 'Refunded' },
-    { id: 10, roomId: 501, guest: 'Thomas Clark', guestId: '10', checkIn: '2024-08-10', checkOut: '2024-08-15', status: 'tentative', adults: 3, children: 0, source: 'Travel Agent', payment: 'Pending' },
-  ];
+  // List data from API
+  const allReservations = reservationListData?.content || [];
+  const totalReservations = reservationListData?.totalElements || 0;
 
-  // List View Reservations
-  const allReservations = [
-    {
-      id: 1,
-      bookingId: 'BK-2024-0012',
-      guestId: '1',
-      time: '09:00 AM',
-      guest: 'John Anderson',
-      room: '101',
-      type: 'Standard',
-      status: 'Confirmed',
-      checkIn: '2024-08-07',
-      checkOut: '2024-08-10',
-      nights: 3,
-      amount: '$360.00',
-      paymentStatus: 'Paid',
-      source: 'Website',
-      floor: '1',
-      specialRequests: 'Late check-in requested'
-    },
-    {
-      id: 2,
-      bookingId: 'BK-2024-0013',
-      guestId: '2',
-      time: '11:30 AM',
-      guest: 'Sarah Williams',
-      room: '201',
-      type: 'Deluxe',
-      status: 'Checked In',
-      checkIn: '2024-08-07',
-      checkOut: '2024-08-09',
-      nights: 2,
-      amount: '$360.00',
-      paymentStatus: 'Paid',
-      source: 'OTA',
-      floor: '2',
-      specialRequests: 'Non-smoking room'
-    },
-    {
-      id: 3,
-      bookingId: 'BK-2024-0014',
-      guestId: '3',
-      time: '02:00 PM',
-      guest: 'Michael Brown',
-      room: '301',
-      type: 'Suite',
-      status: 'Tentative',
-      checkIn: '2024-08-07',
-      checkOut: '2024-08-12',
-      nights: 5,
-      amount: '$1,250.00',
-      paymentStatus: 'Pending',
-      source: 'Phone',
-      floor: '3',
-      specialRequests: 'Anniversary celebration'
-    },
-    {
-      id: 4,
-      bookingId: 'BK-2024-0015',
-      guestId: '4',
-      time: '03:30 PM',
-      guest: 'Emily Davis',
-      room: '102',
-      type: 'Standard',
-      status: 'Confirmed',
-      checkIn: '2024-08-07',
-      checkOut: '2024-08-08',
-      nights: 1,
-      amount: '$120.00',
-      paymentStatus: 'Paid',
-      source: 'Website',
-      floor: '1',
-      specialRequests: 'Early check-in if possible'
-    },
-    {
-      id: 5,
-      bookingId: 'BK-2024-0016',
-      guestId: '5',
-      time: '04:45 PM',
-      guest: 'Robert Johnson',
-      room: '401',
-      type: 'Presidential',
-      status: 'No Show',
-      checkIn: '2024-08-07',
-      checkOut: '2024-08-14',
-      nights: 7,
-      amount: '$3,150.00',
-      paymentStatus: 'Refunded',
-      source: 'Travel Agent',
-      floor: '4',
-      specialRequests: 'Airport pickup required'
-    },
-    {
-      id: 6,
-      bookingId: 'BK-2024-0017',
-      guestId: '6',
-      time: '10:15 AM',
-      guest: 'David Wilson',
-      room: '202',
-      type: 'Deluxe',
-      status: 'Confirmed',
-      checkIn: '2024-08-06',
-      checkOut: '2024-08-08',
-      nights: 2,
-      amount: '$360.00',
-      paymentStatus: 'Paid',
-      source: 'Website',
-      floor: '2',
-      specialRequests: 'High floor preferred'
-    },
-    {
-      id: 7,
-      bookingId: 'BK-2024-0018',
-      guestId: '7',
-      time: '01:20 PM',
-      guest: 'Lisa Martinez',
-      room: '302',
-      type: 'Suite',
-      status: 'Confirmed',
-      checkIn: '2024-08-08',
-      checkOut: '2024-08-11',
-      nights: 3,
-      amount: '$750.00',
-      paymentStatus: 'Partially Paid',
-      source: 'OTA',
-      floor: '3',
-      specialRequests: 'Connecting room if available'
-    },
-    {
-      id: 8,
-      bookingId: 'BK-2024-0019',
-      guestId: '8',
-      time: '06:00 PM',
-      guest: 'James Taylor',
-      room: '103',
-      type: 'Standard',
-      status: 'Checked In',
-      checkIn: '2024-08-09',
-      checkOut: '2024-08-10',
-      nights: 1,
-      amount: '$120.00',
-      paymentStatus: 'Paid',
-      source: 'Walk-in',
-      floor: '1',
-      specialRequests: 'Late check-out requested'
-    },
-    {
-      id: 9,
-      bookingId: 'BK-2024-0020',
-      guestId: '9',
-      time: '09:45 AM',
-      guest: 'Maria Garcia',
-      room: '203',
-      type: 'Deluxe',
-      status: 'Cancelled',
-      checkIn: '2024-08-05',
-      checkOut: '2024-08-07',
-      nights: 2,
-      amount: '$360.00',
-      paymentStatus: 'Refunded',
-      source: 'Website',
-      floor: '2',
-      specialRequests: ''
-    },
-    {
-      id: 10,
-      bookingId: 'BK-2024-0021',
-      guestId: '10',
-      time: '03:00 PM',
-      guest: 'Thomas Clark',
-      room: '501',
-      type: 'Suite',
-      status: 'Tentative',
-      checkIn: '2024-08-10',
-      checkOut: '2024-08-15',
-      nights: 5,
-      amount: '$1,500.00',
-      paymentStatus: 'Pending',
-      source: 'Travel Agent',
-      floor: '5',
-      specialRequests: 'Sea view required'
-    },
-  ];
-
-  // Month Data for Overview
-  const monthData = [
-    { date: '2024-08-01', occupancy: 72, revenue: 2850, arrivals: 8, departures: 6 },
-    { date: '2024-08-02', occupancy: 78, revenue: 3120, arrivals: 10, departures: 4 },
-    { date: '2024-08-03', occupancy: 85, revenue: 3400, arrivals: 12, departures: 5 },
-    { date: '2024-08-04', occupancy: 88, revenue: 3520, arrivals: 9, departures: 6 },
-    { date: '2024-08-05', occupancy: 82, revenue: 3280, arrivals: 7, departures: 8 },
-    { date: '2024-08-06', occupancy: 79, revenue: 3160, arrivals: 8, departures: 11 },
-    { date: '2024-08-07', occupancy: 84, revenue: 3360, arrivals: 12, departures: 8 },
-    { date: '2024-08-08', occupancy: 90, revenue: 3600, arrivals: 15, departures: 9 },
-    { date: '2024-08-09', occupancy: 92, revenue: 3680, arrivals: 14, departures: 7 },
-    { date: '2024-08-10', occupancy: 88, revenue: 3520, arrivals: 11, departures: 10 },
-    { date: '2024-08-11', occupancy: 85, revenue: 3400, arrivals: 9, departures: 8 },
-    { date: '2024-08-12', occupancy: 83, revenue: 3320, arrivals: 7, departures: 6 },
-    { date: '2024-08-13', occupancy: 80, revenue: 3200, arrivals: 6, departures: 5 },
-    { date: '2024-08-14', occupancy: 78, revenue: 3120, arrivals: 8, departures: 9 },
-    { date: '2024-08-15', occupancy: 75, revenue: 3000, arrivals: 5, departures: 7 },
-    { date: '2024-08-16', occupancy: 82, revenue: 3280, arrivals: 10, departures: 6 },
-    { date: '2024-08-17', occupancy: 88, revenue: 3520, arrivals: 12, departures: 4 },
-    { date: '2024-08-18', occupancy: 90, revenue: 3600, arrivals: 13, departures: 5 },
-    { date: '2024-08-19', occupancy: 86, revenue: 3440, arrivals: 11, departures: 8 },
-    { date: '2024-08-20', occupancy: 84, revenue: 3360, arrivals: 9, departures: 7 },
-    { date: '2024-08-21', occupancy: 81, revenue: 3240, arrivals: 8, departures: 9 },
-    { date: '2024-08-22', occupancy: 79, revenue: 3160, arrivals: 7, departures: 6 },
-    { date: '2024-08-23', occupancy: 83, revenue: 3320, arrivals: 10, departures: 7 },
-    { date: '2024-08-24', occupancy: 87, revenue: 3480, arrivals: 12, departures: 5 },
-    { date: '2024-08-25', occupancy: 89, revenue: 3560, arrivals: 13, departures: 6 },
-    { date: '2024-08-26', occupancy: 85, revenue: 3400, arrivals: 11, departures: 9 },
-    { date: '2024-08-27', occupancy: 82, revenue: 3280, arrivals: 9, departures: 8 },
-    { date: '2024-08-28', occupancy: 80, revenue: 3200, arrivals: 8, departures: 10 },
-    { date: '2024-08-29', occupancy: 78, revenue: 3120, arrivals: 7, departures: 9 },
-    { date: '2024-08-30', occupancy: 76, revenue: 3040, arrivals: 6, departures: 8 },
-    { date: '2024-08-31', occupancy: 74, revenue: 2960, arrivals: 5, departures: 7 },
-  ];
+  // Month data from API
+  const monthData = monthOverviewData?.dailyStatistics || [];
+  const monthStatistics = monthOverviewData?.monthStatistics || null;
 
   // Helper Functions
   const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
+    const statusLower = status?.toLowerCase() || '';
+    switch (statusLower) {
       case 'confirmed':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800';
       case 'checked in':
+      case 'checked-in':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-800';
       case 'tentative':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800';
       case 'no show':
+      case 'no-show':
         return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800';
       case 'cancelled':
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 border border-gray-200 dark:border-gray-800';
@@ -447,6 +468,7 @@ const ReservationBooking = () => {
   };
 
   const getPaymentStatusColor = (status) => {
+    if (!status) return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
     switch (status) {
       case 'Paid':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
@@ -462,6 +484,7 @@ const ReservationBooking = () => {
   };
 
   const getCalendarStatusColor = (status) => {
+    if (!status) return 'bg-gray-500/20 border-l-4 border-gray-500 hover:bg-gray-500/30';
     switch (status) {
       case 'confirmed':
         return 'bg-blue-500/20 border-l-4 border-blue-500 hover:bg-blue-500/30';
@@ -479,6 +502,7 @@ const ReservationBooking = () => {
   };
 
   const getOccupancyColor = (percentage) => {
+    if (!percentage) return 'bg-gradient-to-br from-green-500 to-green-600';
     if (percentage >= 90) return 'bg-gradient-to-br from-red-500 to-red-600';
     if (percentage >= 75) return 'bg-gradient-to-br from-orange-500 to-orange-600';
     if (percentage >= 50) return 'bg-gradient-to-br from-yellow-500 to-yellow-600';
@@ -488,15 +512,15 @@ const ReservationBooking = () => {
   // Filter Functions
   const filterRooms = () => {
     return allRooms.filter(room => {
-      if (appliedFilters.roomType.length > 0 && !appliedFilters.roomType.includes(room.type)) {
+      if (appliedFilters.roomType.length > 0 && !appliedFilters.roomType.includes(room.roomType)) {
         return false;
       }
-      if (appliedFilters.floor.length > 0 && !appliedFilters.floor.includes(room.floor)) {
+      if (appliedFilters.floor.length > 0 && !appliedFilters.floor.includes(room.floorNumber?.toString())) {
         return false;
       }
-      if (appliedFilters.amenities.length > 0) {
+      if (appliedFilters.amenities.length > 0 && room.features) {
         const hasAllAmenities = appliedFilters.amenities.every(amenity => 
-          room.amenities.includes(amenity)
+          room.features.includes(amenity)
         );
         if (!hasAllAmenities) return false;
       }
@@ -506,7 +530,7 @@ const ReservationBooking = () => {
 
   const filterBookings = () => {
     return calendarBookings.filter(booking => {
-      const room = allRooms.find(r => r.id === booking.roomId);
+      const room = allRooms.find(r => r.roomId === booking.roomId);
       if (!room) return false;
       
       // Status Filter
@@ -520,24 +544,24 @@ const ReservationBooking = () => {
       }
       
       // Payment Status Filter
-      if (appliedFilters.paymentStatus.length > 0 && !appliedFilters.paymentStatus.includes(booking.payment)) {
+      if (appliedFilters.paymentStatus.length > 0 && !appliedFilters.paymentStatus.includes(booking.paymentStatus)) {
         return false;
       }
       
       // Room Type Filter
-      if (appliedFilters.roomType.length > 0 && !appliedFilters.roomType.includes(room.type)) {
+      if (appliedFilters.roomType.length > 0 && !appliedFilters.roomType.includes(room.roomType)) {
         return false;
       }
       
       // Floor Filter
-      if (appliedFilters.floor.length > 0 && !appliedFilters.floor.includes(room.floor)) {
+      if (appliedFilters.floor.length > 0 && !appliedFilters.floor.includes(room.floorNumber?.toString())) {
         return false;
       }
       
       // Amenities Filter
-      if (appliedFilters.amenities.length > 0) {
+      if (appliedFilters.amenities.length > 0 && room.features) {
         const hasAllAmenities = appliedFilters.amenities.every(amenity => 
-          room.amenities.includes(amenity)
+          room.features.includes(amenity)
         );
         if (!hasAllAmenities) return false;
       }
@@ -546,93 +570,13 @@ const ReservationBooking = () => {
     });
   };
 
-  const filterReservations = () => {
-    let filtered = allReservations.filter(reservation => {
-      // Status Filter (quick filter buttons)
-      if (selectedFilter !== 'all') {
-        const statusValue = reservation.status.toLowerCase().replace(' ', '-');
-        if (statusValue !== selectedFilter) return false;
-      }
-      
-      // Search Query
-      if (searchQuery && !reservation.guest.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !reservation.room.includes(searchQuery) &&
-          !reservation.bookingId.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-      
-      // Status Filter (from advanced filters)
-      const reservationStatus = reservation.status.toLowerCase().replace(' ', '-');
-      if (appliedFilters.status.length > 0 && !appliedFilters.status.includes(reservationStatus)) {
-        return false;
-      }
-      
-      // Source Filter
-      if (appliedFilters.source.length > 0 && !appliedFilters.source.includes(reservation.source)) {
-        return false;
-      }
-      
-      // Payment Status Filter
-      if (appliedFilters.paymentStatus.length > 0 && !appliedFilters.paymentStatus.includes(reservation.paymentStatus)) {
-        return false;
-      }
-      
-      // Room Type Filter
-      if (appliedFilters.roomType.length > 0 && !appliedFilters.roomType.includes(reservation.type)) {
-        return false;
-      }
-      
-      // Floor Filter
-      if (appliedFilters.floor.length > 0 && !appliedFilters.floor.includes(reservation.floor)) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    // Apply Sorting
-    filtered.sort((a, b) => {
-      if (sortConfig.key === 'time') {
-        const timeA = a.time.includes('PM') ? parseInt(a.time) + 12 : parseInt(a.time);
-        const timeB = b.time.includes('PM') ? parseInt(b.time) + 12 : parseInt(b.time);
-        return sortConfig.direction === 'asc' ? timeA - timeB : timeB - timeA;
-      }
-      
-      if (sortConfig.key === 'amount') {
-        const amountA = parseFloat(a.amount.replace('$', '').replace(',', ''));
-        const amountB = parseFloat(b.amount.replace('$', '').replace(',', ''));
-        return sortConfig.direction === 'asc' ? amountA - amountB : amountB - amountA;
-      }
-      
-      if (sortConfig.key === 'nights') {
-        return sortConfig.direction === 'asc' ? a.nights - b.nights : b.nights - a.nights;
-      }
-      
-      if (sortConfig.key === 'guest') {
-        return sortConfig.direction === 'asc' 
-          ? a.guest.localeCompare(b.guest)
-          : b.guest.localeCompare(a.guest);
-      }
-      
-      if (sortConfig.key === 'room') {
-        return sortConfig.direction === 'asc' 
-          ? parseInt(a.room) - parseInt(b.room)
-          : parseInt(b.room) - parseInt(a.room);
-      }
-      
-      return 0;
-    });
-    
-    return filtered;
-  };
-
   const getBookingForRoomAndDate = (roomId, date) => {
     const dateStr = date.toISOString().split('T')[0];
     const filteredBookings = filterBookings();
     return filteredBookings.find(booking => 
       booking.roomId === roomId && 
-      dateStr >= booking.checkIn && 
-      dateStr < booking.checkOut
+      dateStr >= booking.checkInDate && 
+      dateStr < booking.checkOutDate
     );
   };
 
@@ -678,58 +622,51 @@ const ReservationBooking = () => {
   // Get month data for current month
   const getCurrentMonthData = () => {
     const currentMonthStr = currentMonth.toISOString().slice(0, 7); // YYYY-MM
-    return monthData.filter(day => day.date.startsWith(currentMonthStr));
+    return monthData.filter(day => day.date?.startsWith(currentMonthStr));
   };
 
   // Calculate month statistics
   const getMonthStatistics = () => {
+    if (monthStatistics) {
+      return monthStatistics;
+    }
+    
     const currentMonthData = getCurrentMonthData();
     const stats = {
-      totalRevenue: currentMonthData.reduce((sum, day) => sum + day.revenue, 0),
-      avgOccupancy: Math.round(currentMonthData.reduce((sum, day) => sum + day.occupancy, 0) / currentMonthData.length),
-      peakOccupancy: Math.max(...currentMonthData.map(day => day.occupancy)),
-      totalArrivals: currentMonthData.reduce((sum, day) => sum + day.arrivals, 0),
-      totalDepartures: currentMonthData.reduce((sum, day) => sum + day.departures, 0),
+      totalRevenue: currentMonthData.reduce((sum, day) => sum + (day.revenue || 0), 0),
+      avgOccupancy: Math.round(currentMonthData.reduce((sum, day) => sum + (day.occupancy || 0), 0) / (currentMonthData.length || 1)),
+      peakOccupancy: Math.max(...currentMonthData.map(day => day.occupancy || 0)),
+      totalArrivals: currentMonthData.reduce((sum, day) => sum + (day.arrivals || 0), 0),
+      totalDepartures: currentMonthData.reduce((sum, day) => sum + (day.departures || 0), 0),
     };
     return stats;
   };
 
-  // Add keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (activeView !== 'calendar') return;
-      
-      switch (e.key) {
-        case 'ArrowLeft':
-          e.preventDefault();
-          goToPreviousDay();
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          goToNextDay();
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          goToPreviousWeek();
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          goToNextWeek();
-          break;
-        case 'Home':
-          e.preventDefault();
-          goToToday();
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeView, currentCenterDate]);
-
   // Filter Panel Component
   const FilterPanel = () => {
     const activeFilterCount = Object.values(appliedFilters).flat().length;
+    
+    if (filterOptionsLoading) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-lg">
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="animate-spin text-blue-500" size={24} />
+            <span className="ml-2 text-gray-600 dark:text-gray-400">Loading filters...</span>
+          </div>
+        </div>
+      );
+    }
+    
+    if (filterOptionsError) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-lg">
+          <div className="flex items-center justify-center py-8">
+            <AlertCircle className="text-red-500" size={24} />
+            <span className="ml-2 text-red-600 dark:text-red-400">Failed to load filters</span>
+          </div>
+        </div>
+      );
+    }
     
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-lg">
@@ -763,7 +700,7 @@ const ReservationBooking = () => {
           <div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Room Type</h4>
             <div className="space-y-2">
-              {filterOptions.roomType.map(type => (
+              {filterOptions.roomTypes?.map(type => (
                 <label key={type} className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 dark:hover:bg-gray-750 rounded-lg">
                   <input 
                     type="checkbox" 
@@ -773,7 +710,7 @@ const ReservationBooking = () => {
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">{type}</span>
                   <span className="text-xs text-gray-500 dark:text-gray-500 ml-auto">
-                    {allRooms.filter(r => r.type === type).length} rooms
+                    {allRooms.filter(r => r.roomType === type).length} rooms
                   </span>
                 </label>
               ))}
@@ -784,7 +721,7 @@ const ReservationBooking = () => {
           <div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Floor</h4>
             <div className="flex flex-wrap gap-2">
-              {filterOptions.floor.map(floor => (
+              {filterOptions.floors?.map(floor => (
                 <button
                   key={floor}
                   onClick={() => toggleFilter('floor', floor)}
@@ -828,7 +765,7 @@ const ReservationBooking = () => {
           <div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Booking Source</h4>
             <div className="space-y-2">
-              {filterOptions.source.map(source => (
+              {filterOptions.sources?.map(source => (
                 <label key={source} className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 dark:hover:bg-gray-750 rounded-lg">
                   <input 
                     type="checkbox" 
@@ -846,7 +783,7 @@ const ReservationBooking = () => {
           <div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Payment Status</h4>
             <div className="space-y-2">
-              {filterOptions.paymentStatus.map(status => (
+              {filterOptions.paymentStatuses?.map(status => (
                 <label key={status} className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 dark:hover:bg-gray-750 rounded-lg">
                   <input 
                     type="checkbox" 
@@ -864,7 +801,7 @@ const ReservationBooking = () => {
           <div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Amenities</h4>
             <div className="space-y-2">
-              {filterOptions.amenities.map(amenity => (
+              {filterOptions.amenities?.map(amenity => (
                 <label key={amenity} className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 dark:hover:bg-gray-750 rounded-lg">
                   <input 
                     type="checkbox" 
@@ -964,6 +901,36 @@ const ReservationBooking = () => {
     const weekDates = getWeekDates(currentCenterDate);
     const today = new Date();
     const activeFilterCount = Object.values(appliedFilters).flat().length;
+    
+    if (calendarLoading) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="animate-spin text-blue-500 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Loading Calendar Data...</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Fetching rooms and bookings information</p>
+          </div>
+        </div>
+      );
+    }
+    
+    if (calendarError) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="text-red-500 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Failed to load calendar data</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">{calendarError.message}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
     
     // Format for date input
     const formatDateForInput = (date) => {
@@ -1105,71 +1072,81 @@ const ReservationBooking = () => {
               </div>
 
               {/* Room Rows */}
-              {filteredRooms.map(room => (
-                <div key={room.id} className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750/50 transition-colors">
-                  <div className="p-4">
-                    <div className="font-semibold text-gray-900 dark:text-white">Room {room.id}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
-                      <span>{room.type}</span>
-                      <span className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">Floor {room.floor}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      ${room.price}/night
-                    </div>
-                  </div>
-                  
-                  {weekDates.map((day, dayIndex) => {
-                    const booking = getBookingForRoomAndDate(room.id, day);
-                    const isToday = day.toDateString() === today.toDateString();
-                    const isCenterDate = day.toDateString() === currentCenterDate.toDateString();
-                    
-                    return (
-                      <div 
-                        key={dayIndex} 
-                        className={`p-2 border-l border-gray-200 dark:border-gray-700 min-h-[100px] ${
-                          isToday ? 'bg-blue-50/30 dark:bg-blue-900/10' : 
-                          isCenterDate ? 'bg-blue-50/20 dark:bg-blue-900/5' : ''
-                        }`}
-                      >
-                        {booking ? (
-                          <div 
-                            className={`${getCalendarStatusColor(booking.status)} rounded-lg p-3 h-full cursor-pointer hover:shadow-sm transition-all group`}
-                            onClick={() => navigate(`/guest-detail/${booking.guestId}`)}
-                          >
-                            <div className="font-medium text-sm truncate text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                              {booking.guest}
-                            </div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 capitalize">
-                              {booking.status.replace('-', ' ')}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                              {booking.adults} Adult{booking.adults !== 1 ? 's' : ''}
-                              {booking.children > 0 && `, ${booking.children} Child${booking.children !== 1 ? 'ren' : ''}`}
-                            </div>
-                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              Click to view guest details →
-                            </div>
-                          </div>
-                        ) : (
-                          <button 
-                            className="w-full h-full flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 rounded-lg transition-colors"
-                            onClick={() => navigate('/booking-form', { 
-                              state: { 
-                                roomId: room.id,
-                                roomType: room.type,
-                                date: day.toISOString().split('T')[0],
-                                price: room.price
-                              } 
-                            })}
-                          >
-                            <Plus size={16} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+              {filteredRooms.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Calendar className="mx-auto text-gray-400 mb-4" size={48} />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No rooms found</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    Try adjusting your filters
+                  </p>
                 </div>
-              ))}
+              ) : (
+                filteredRooms.map(room => (
+                  <div key={room.roomId} className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750/50 transition-colors">
+                    <div className="p-4">
+                      <div className="font-semibold text-gray-900 dark:text-white">Room {room.roomNumber}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
+                        <span>{room.roomType}</span>
+                        <span className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">Floor {room.floorNumber}</span>
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        ${room.baseRate}/night
+                      </div>
+                    </div>
+                    
+                    {weekDates.map((day, dayIndex) => {
+                      const booking = getBookingForRoomAndDate(room.roomId, day);
+                      const isToday = day.toDateString() === today.toDateString();
+                      const isCenterDate = day.toDateString() === currentCenterDate.toDateString();
+                      
+                      return (
+                        <div 
+                          key={dayIndex} 
+                          className={`p-2 border-l border-gray-200 dark:border-gray-700 min-h-[100px] ${
+                            isToday ? 'bg-blue-50/30 dark:bg-blue-900/10' : 
+                            isCenterDate ? 'bg-blue-50/20 dark:bg-blue-900/5' : ''
+                          }`}
+                        >
+                          {booking ? (
+                            <div 
+                              className={`${getCalendarStatusColor(booking.status)} rounded-lg p-3 h-full cursor-pointer hover:shadow-sm transition-all group`}
+                              onClick={() => navigate(`/guest-detail/${booking.guestId}`)}
+                            >
+                              <div className="font-medium text-sm truncate text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                {booking.guestName}
+                              </div>
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 capitalize">
+                                {booking.status?.replace('-', ' ')}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                {booking.adults} Adult{booking.adults !== 1 ? 's' : ''}
+                                {booking.children > 0 && `, ${booking.children} Child${booking.children !== 1 ? 'ren' : ''}`}
+                              </div>
+                              <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                Click to view guest details →
+                              </div>
+                            </div>
+                          ) : (
+                            <button 
+                              className="w-full h-full flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 rounded-lg transition-colors"
+                              onClick={() => navigate('/booking-form', { 
+                                state: { 
+                                  roomId: room.roomId,
+                                  roomType: room.roomType,
+                                  date: day.toISOString().split('T')[0],
+                                  price: room.baseRate
+                                } 
+                              })}
+                            >
+                              <Plus size={16} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -1209,8 +1186,31 @@ const ReservationBooking = () => {
 
   // List View Component
   const ListView = () => {
-    const filteredReservations = filterReservations();
     const activeFilterCount = Object.values(appliedFilters).flat().length;
+    
+    if (listLoading) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="animate-spin text-blue-500 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Loading Reservations...</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Fetching reservation data</p>
+          </div>
+        </div>
+      );
+    }
+    
+    if (listError) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="text-red-500 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Failed to load reservations</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">{listError.message}</p>
+          </div>
+        </div>
+      );
+    }
     
     return (
       <div className="space-y-4">
@@ -1219,7 +1219,7 @@ const ReservationBooking = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">All Reservations</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Showing {filteredReservations.length} of {allReservations.length} reservations
+              Showing {allReservations.length} of {totalReservations} reservations
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -1263,16 +1263,36 @@ const ReservationBooking = () => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <select className="input-field text-sm">
-                <option>All Sources</option>
-                {filterOptions.source.map(source => (
-                  <option key={source}>{source}</option>
+              <select 
+                className="input-field text-sm"
+                value={appliedFilters.source[0] || ''}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setAppliedFilters(prev => ({ ...prev, source: [e.target.value] }));
+                  } else {
+                    setAppliedFilters(prev => ({ ...prev, source: [] }));
+                  }
+                }}
+              >
+                <option value="">All Sources</option>
+                {filterOptions.sources?.map(source => (
+                  <option key={source} value={source}>{source}</option>
                 ))}
               </select>
-              <select className="input-field text-sm">
-                <option>All Payment Status</option>
-                {filterOptions.paymentStatus.map(status => (
-                  <option key={status}>{status}</option>
+              <select 
+                className="input-field text-sm"
+                value={appliedFilters.paymentStatus[0] || ''}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setAppliedFilters(prev => ({ ...prev, paymentStatus: [e.target.value] }));
+                  } else {
+                    setAppliedFilters(prev => ({ ...prev, paymentStatus: [] }));
+                  }
+                }}
+              >
+                <option value="">All Payment Status</option>
+                {filterOptions.paymentStatuses?.map(status => (
+                  <option key={status} value={status}>{status}</option>
                 ))}
               </select>
             </div>
@@ -1290,33 +1310,33 @@ const ReservationBooking = () => {
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('time')}
+                    onClick={() => handleSort('createdAt')}
                   >
                     <div className="flex items-center gap-1">
-                      Time
-                      {sortConfig.key === 'time' && (
+                      Created
+                      {sortConfig.key === 'createdAt' && (
                         sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
                     </div>
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('guest')}
+                    onClick={() => handleSort('guestName')}
                   >
                     <div className="flex items-center gap-1">
                       Guest
-                      {sortConfig.key === 'guest' && (
+                      {sortConfig.key === 'guestName' && (
                         sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
                     </div>
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('room')}
+                    onClick={() => handleSort('roomNumber')}
                   >
                     <div className="flex items-center gap-1">
                       Room
-                      {sortConfig.key === 'room' && (
+                      {sortConfig.key === 'roomNumber' && (
                         sortConfig.direction === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                       )}
                     </div>
@@ -1358,7 +1378,7 @@ const ReservationBooking = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredReservations.map((reservation) => (
+                {allReservations.map((reservation) => (
                   <tr 
                     key={reservation.id} 
                     className="hover:bg-gray-50 dark:hover:bg-gray-750/50 transition-colors group"
@@ -1367,7 +1387,9 @@ const ReservationBooking = () => {
                       <input type="checkbox" className="rounded border-gray-300 dark:border-gray-600" />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono text-gray-900 dark:text-white">{reservation.time}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {new Date(reservation.createdAt).toLocaleDateString()}
+                      </div>
                       <div className="text-xs text-gray-500 dark:text-gray-500">{reservation.bookingId}</div>
                     </td>
                     <td className="px-6 py-4">
@@ -1375,7 +1397,7 @@ const ReservationBooking = () => {
                         className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
                         onClick={() => navigate(`/guest-detail/${reservation.guestId}`)}
                       >
-                        {reservation.guest}
+                        {reservation.guestName}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Source: {reservation.source}
@@ -1387,22 +1409,22 @@ const ReservationBooking = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900 dark:text-white">Room {reservation.room}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">Room {reservation.roomNumber}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">Floor {reservation.floor}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">{reservation.type}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{reservation.roomType}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900 dark:text-white">
-                        {reservation.checkIn} → {reservation.checkOut}
+                        {reservation.checkInDate} → {reservation.checkOutDate}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">{reservation.nights}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900 dark:text-white">{reservation.amount}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">${reservation.amount?.toLocaleString()}</div>
                       <span className={`text-xs px-2 py-1 rounded-full ${getPaymentStatusColor(reservation.paymentStatus)}`}>
                         {reservation.paymentStatus}
                       </span>
@@ -1439,7 +1461,7 @@ const ReservationBooking = () => {
             </table>
           </div>
 
-          {filteredReservations.length === 0 && (
+          {allReservations.length === 0 && (
             <div className="text-center py-12">
               <Calendar className="mx-auto text-gray-400 mb-4" size={48} />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No reservations found</h3>
@@ -1459,17 +1481,23 @@ const ReservationBooking = () => {
         {/* Pagination */}
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing 1 to {filteredReservations.length} of {allReservations.length} entries
+            Showing {allReservations.length} of {totalReservations} entries
           </div>
           <div className="flex items-center gap-2">
-            <button className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <button 
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              disabled={pageable.page === 0}
+              onClick={() => setPageable(prev => ({ ...prev, page: prev.page - 1 }))}
+            >
               Previous
             </button>
-            <button className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm">1</button>
-            <button className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              2
+            <button className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm">
+              {pageable.page + 1}
             </button>
-            <button className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <button 
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => setPageable(prev => ({ ...prev, page: prev.page + 1 }))}
+            >
               Next
             </button>
           </div>
@@ -1483,6 +1511,30 @@ const ReservationBooking = () => {
     const currentMonthData = getCurrentMonthData();
     const monthStatistics = getMonthStatistics();
     const activeFilterCount = Object.values(appliedFilters).flat().length;
+    
+    if (monthLoading) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="animate-spin text-blue-500 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Loading Month Overview...</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Fetching monthly statistics</p>
+          </div>
+        </div>
+      );
+    }
+    
+    if (monthError) {
+      return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="text-red-500 mb-4" size={48} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Failed to load month overview</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">{monthError.message}</p>
+          </div>
+        </div>
+      );
+    }
     
     // Get days in month
     const getDaysInMonth = () => {
@@ -1612,7 +1664,7 @@ const ReservationBooking = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
-                <p className="text-2xl font-bold mt-2 text-gray-900 dark:text-white">${monthStatistics.totalRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold mt-2 text-gray-900 dark:text-white">${monthStatistics.totalRevenue?.toLocaleString()}</p>
               </div>
               <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <TrendingUp size={24} className="text-green-500" />
@@ -1715,8 +1767,8 @@ const ReservationBooking = () => {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Daily Revenue Trend</h3>
           <div className="h-64 flex items-end gap-1 overflow-x-auto">
             {currentMonthData.map((day, index) => {
-              const maxRevenue = Math.max(...currentMonthData.map(d => d.revenue));
-              const height = (day.revenue / maxRevenue) * 100;
+              const maxRevenue = Math.max(...currentMonthData.map(d => d.revenue || 0));
+              const height = maxRevenue > 0 ? ((day.revenue || 0) / maxRevenue) * 100 : 0;
               const date = new Date(day.date);
               
               return (
@@ -1729,13 +1781,13 @@ const ReservationBooking = () => {
                     {date.getDate()}
                   </div>
                   <div className="text-xs font-medium mt-1">
-                    ${day.revenue.toLocaleString()}
+                    ${(day.revenue || 0).toLocaleString()}
                   </div>
                   <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
                     <div>{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
-                    <div>Revenue: ${day.revenue.toLocaleString()}</div>
-                    <div>Occupancy: {day.occupancy}%</div>
-                    <div>Arrivals: {day.arrivals}</div>
+                    <div>Revenue: ${(day.revenue || 0).toLocaleString()}</div>
+                    <div>Occupancy: {day.occupancy || 0}%</div>
+                    <div>Arrivals: {day.arrivals || 0}</div>
                   </div>
                 </div>
               );
@@ -1812,6 +1864,18 @@ const ReservationBooking = () => {
     );
   };
 
+  // Loading state for entire component
+  if (statsLoading && activeView === 'calendar') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="animate-spin text-blue-500 mx-auto mb-4" size={48} />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Loading Reservation Dashboard...</h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Dashboard Header */}
@@ -1840,38 +1904,63 @@ const ReservationBooking = () => {
       </div>
 
       {/* Stats Cards */}
+      {statsError && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="text-red-500" size={20} />
+            <span className="text-red-700 dark:text-red-300">Failed to load dashboard stats: {statsError.message}</span>
+          </div>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div key={index} className="group">
-              <div className={`card hover:shadow-lg transition-all duration-300 ${stat.bgColor} hover:scale-[1.02]`}>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
-                    <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stat.value}</p>
-                    {stat.change && (
-                      <div className="flex items-center gap-1 mt-2">
-                        {stat.trending === 'up' ? (
-                          <TrendingUp size={16} className="text-green-500" />
-                        ) : (
-                          <TrendingDown size={16} className="text-red-500" />
-                        )}
-                        <span className={`text-sm ${stat.trending === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                          {stat.change}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className={`p-3 rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform`}>
-                    <Icon size={24} className={stat.color} />
-                  </div>
+        {statsLoading ? (
+          Array(4).fill(0).map((_, index) => (
+            <div key={index} className="card animate-pulse">
+              <div className="flex items-start justify-between">
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">{stat.description}</p>
+                <div className="p-3 bg-gray-100 dark:bg-gray-800/30 rounded-lg">
+                  <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
               </div>
             </div>
-          );
-        })}
+          ))
+        ) : (
+          stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div key={index} className="group">
+                <div className={`card hover:shadow-lg transition-all duration-300 ${stat.bgColor} hover:scale-[1.02]`}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
+                      <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stat.value}</p>
+                      {stat.change && (
+                        <div className="flex items-center gap-1 mt-2">
+                          {stat.trending === 'up' ? (
+                            <TrendingUp size={16} className="text-green-500" />
+                          ) : (
+                            <TrendingDown size={16} className="text-red-500" />
+                          )}
+                          <span className={`text-sm ${stat.trending === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                            {stat.change}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className={`p-3 rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform`}>
+                      <Icon size={24} className={stat.color} />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">{stat.description}</p>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* View Switcher and Quick Filters */}
@@ -1925,20 +2014,26 @@ const ReservationBooking = () => {
             >
               All Reservations
             </button>
-            {bookingStatus.map((status, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedFilter(status.value)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 transition-all ${
-                  selectedFilter === status.value
-                    ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                <div className={`w-2 h-2 rounded-full ${status.color}`}></div>
-                {status.label}
-              </button>
-            ))}
+            {statusLoading ? (
+              Array(5).fill(0).map((_, index) => (
+                <div key={index} className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+              ))
+            ) : (
+              bookingStatus.map((status, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedFilter(status.value)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 transition-all ${
+                    selectedFilter === status.value
+                      ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <div className={`w-2 h-2 rounded-full ${status.color}`}></div>
+                  {status.label}
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -1949,86 +2044,6 @@ const ReservationBooking = () => {
         {activeView === 'list' && <ListView />}
         {activeView === 'month' && <MonthView />}
       </div>
-
-      {/* Today's Arrivals & Departures (Only in List View) */}
-      {activeView === 'list' && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Today's Operations</h2>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                August 7, 2024
-              </span>
-              <button 
-                onClick={() => navigate('/booking-form')}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Quick Check-in
-              </button>
-            </div>
-          </div>
-          
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-blue-800 dark:text-blue-300">Check-in Ready</h3>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">12</p>
-                  <p className="text-sm text-blue-600/80 dark:text-blue-400/80 mt-1">Expected arrivals</p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-800/30 rounded-lg">
-                  <Check size={24} className="text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-              <button 
-                onClick={() => navigate('/checkin')}
-                className="w-full mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Process Check-ins
-              </button>
-            </div>
-            
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-green-800 dark:text-green-300">Check-out Today</h3>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">8</p>
-                  <p className="text-sm text-green-600/80 dark:text-green-400/80 mt-1">Expected departures</p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-800/30 rounded-lg">
-                  <Clock size={24} className="text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-              <button 
-                onClick={() => navigate('/checkout')}
-                className="w-full mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Process Check-outs
-              </button>
-            </div>
-            
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-red-800 dark:text-red-300">Requires Attention</h3>
-                  <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">3</p>
-                  <p className="text-sm text-red-600/80 dark:text-red-400/80 mt-1">Late check-outs & issues</p>
-                </div>
-                <div className="p-3 bg-red-100 dark:bg-red-800/30 rounded-lg">
-                  <AlertCircle size={24} className="text-red-600 dark:text-red-400" />
-                </div>
-              </div>
-              <button 
-                onClick={() => navigate('/issues')}
-                className="w-full mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                View Issues
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Global Filter Panel Modal */}
       {showFilters && (

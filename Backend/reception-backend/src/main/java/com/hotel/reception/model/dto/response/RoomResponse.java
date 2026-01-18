@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -32,4 +33,6 @@ public class RoomResponse {
     private String currentGuestName;
     private Long currentBookingId;
     private LocalDateTime lastUpdated;
+  
+    private BigDecimal roomRate;
 }

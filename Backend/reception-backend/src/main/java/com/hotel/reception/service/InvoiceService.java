@@ -1,12 +1,16 @@
 package com.hotel.reception.service;
 
 import com.hotel.reception.exception.ResourceNotFoundException;
+import com.hotel.reception.model.dto.request.EmailRequest;
+import com.hotel.reception.model.dto.request.InvoiceRequest;
 import com.hotel.reception.model.dto.response.BookingResponse;
 import com.hotel.reception.model.dto.response.GuestResponse;
 import com.hotel.reception.model.dto.response.InvoiceResponse;
 import com.hotel.reception.model.dto.response.PaymentResponse;
+import com.hotel.reception.model.dto.response.RoomResponse;
 import com.hotel.reception.model.entity.Booking;
 import com.hotel.reception.model.entity.BookingRoom;
+import com.hotel.reception.model.entity.Guest;
 import com.hotel.reception.model.entity.Invoice;
 import com.hotel.reception.repository.BookingRepository;
 import com.hotel.reception.repository.BookingRoomRepository;
@@ -21,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -201,4 +206,232 @@ public class InvoiceService {
                 .updatedAt(invoice.getUpdatedAt())
                 .build();
     }
+    
+    public List<InvoiceResponse> getInvoicesByDateRange(LocalDate startDate, LocalDate endDate) {
+        return invoiceRepository.findByIssueDateBetween(startDate, endDate).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<InvoiceResponse> getInvoicesByStatus(String status) {
+        return invoiceRepository.findByStatus(status).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public void deleteInvoice(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
+        
+        // Check if invoice can be deleted
+        if (!invoice.getStatus().equals("PENDING")) {
+            throw new RuntimeException("Only pending invoices can be deleted");
+        }
+        
+        invoiceRepository.delete(invoice);
+        log.info("Invoice deleted: {}", invoiceId);
+    }
+    
+    
+    public InvoiceResponse getInvoiceByNumber(String invoiceNumber) {
+        Invoice invoice = invoiceRepository.findByInvoiceNumber(invoiceNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceNumber));
+        return mapToResponse(invoice);
+    }
+
+    public InvoiceResponse updateInvoice(Long invoiceId, InvoiceRequest request) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
+        
+        // Update fields
+        if (request.getDueDate() != null) {
+            invoice.setDueDate(request.getDueDate());
+        }
+        if (request.getNotes() != null) {
+            invoice.setNotes(request.getNotes());
+        }
+        if (request.getStatus() != null) {
+            invoice.setStatus(request.getStatus());
+        }
+        if (request.getDiscountAmount() != null) {
+            invoice.setDiscountAmount(request.getDiscountAmount());
+        }
+        if (request.getTaxAmount() != null) {
+            invoice.setTaxAmount(request.getTaxAmount());
+        }
+        if (request.getOtherCharges() != null) {
+            invoice.setOtherCharges(request.getOtherCharges());
+        }
+        
+        // Recalculate totals if needed
+        if (request.getDiscountAmount() != null || request.getTaxAmount() != null || 
+            request.getOtherCharges() != null) {
+            recalculateTotals(invoice);
+        }
+        
+        Invoice updatedInvoice = invoiceRepository.save(invoice);
+        log.info("Invoice updated: {}", invoiceId);
+        
+        return mapToResponse(updatedInvoice);
+    }
+
+    public void sendInvoiceEmail(Long invoiceId, EmailRequest emailRequest) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
+        
+        // Implement email sending logic here
+        log.info("Sending invoice {} to {}", invoice.getInvoiceNumber(), emailRequest.getRecipientEmail());
+        
+        // You would typically integrate with an email service
+        // For now, just log the action
+    }
+
+    public byte[] generateInvoicePDF(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
+        
+        // Implement PDF generation logic
+        // This is a simplified example - you would use a PDF library like iText or Apache PDFBox
+        
+        log.info("Generating PDF for invoice: {}", invoice.getInvoiceNumber());
+        
+        // Return dummy PDF bytes for now
+        String pdfContent = "PDF for Invoice " + invoice.getInvoiceNumber();
+        return pdfContent.getBytes();
+    }
+
+    private void recalculateTotals(Invoice invoice) {
+        BigDecimal subtotal = invoice.getRoomCharges()
+                .add(invoice.getServiceCharges())
+                .add(invoice.getFoodCharges())
+                .add(invoice.getOtherCharges());
+        
+        invoice.setSubtotal(subtotal);
+        
+        BigDecimal afterDiscount = subtotal.subtract(invoice.getDiscountAmount());
+        BigDecimal taxAmount = invoice.getTaxAmount() != null ? 
+                invoice.getTaxAmount() : 
+                afterDiscount.multiply(new BigDecimal("0.10")); // Default 10% tax
+        
+        BigDecimal totalAmount = afterDiscount.add(taxAmount);
+        invoice.setTotalAmount(totalAmount);
+        
+        BigDecimal balanceDue = totalAmount.subtract(invoice.getAmountPaid());
+        invoice.setBalanceDue(balanceDue);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ // Add this method to InvoiceService.java
+    public Page<InvoiceResponse> getAllInvoicesOptimized(Pageable pageable) {
+        // Fetch invoices with all necessary relations in one query
+        Page<Invoice> invoices = invoiceRepository.findAllWithDetails(pageable);
+        
+        // Map to response without additional database calls
+        return invoices.map(this::mapToResponseOptimized);
+    }
+
+    public InvoiceResponse getInvoiceByIdOptimized(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findByIdWithDetails(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
+        return mapToResponseOptimized(invoice);
+    }
+
+    // Optimized mapping method
+    private InvoiceResponse mapToResponseOptimized(Invoice invoice) {
+        Booking booking = invoice.getBooking();
+        Guest guest = invoice.getGuest();
+        
+        // Create minimal booking response to avoid circular dependency
+        BookingResponse bookingResponse = null;
+        if (booking != null) {
+            bookingResponse = BookingResponse.builder()
+                    .bookingId(booking.getBookingId())
+                    .bookingCode(booking.getBookingCode())
+                    .checkInDate(booking.getCheckInDate())
+                    .checkOutDate(booking.getCheckOutDate())
+                    .nights(booking.getNights())
+                    .status(booking.getStatus())
+                    .build();
+            
+            // If you need room information, fetch it separately
+            if (booking.getBookingRooms() != null && !booking.getBookingRooms().isEmpty()) {
+                List<RoomResponse> roomResponses = booking.getBookingRooms().stream()
+                        .map(br -> RoomResponse.builder()
+                                .roomNumber(br.getRoom().getRoomNumber())
+                                .roomType(br.getRoom().getRoomType())
+                                .roomRate(br.getRoomRate())
+                                .build())
+                        .collect(Collectors.toList());
+                bookingResponse.setRooms(roomResponses);
+            }
+        }
+        
+        // Create guest response
+        GuestResponse guestResponse = null;
+        if (guest != null) {
+            guestResponse = GuestResponse.builder()
+                    .guestId(guest.getGuestId())
+                    .firstName(guest.getFirstName())
+                    .lastName(guest.getLastName())
+                    .email(guest.getEmail())
+                    .phone(guest.getPhone())
+                    .company(guest.getCompany())
+                    .build();
+        }
+        
+        // Get payments without calling paymentService to avoid additional queries
+        List<PaymentResponse> paymentResponses = invoice.getPayments() != null ?
+                invoice.getPayments().stream()
+                        .map(p -> PaymentResponse.builder()
+                                .paymentId(p.getPaymentId())
+                                .paymentMethod(p.getPaymentMethod())
+                                .amountPaid(p.getAmountPaid())
+                                .paymentDate(p.getPaymentDate())
+                                .transactionId(p.getTransactionId())
+                                .build())
+                        .collect(Collectors.toList()) :
+                new ArrayList<>();
+        
+        return InvoiceResponse.builder()
+                .invoiceId(invoice.getInvoiceId())
+                .invoiceNumber(invoice.getInvoiceNumber())
+                .booking(bookingResponse)
+                .guest(guestResponse)
+                .issueDate(invoice.getIssueDate())
+                .dueDate(invoice.getDueDate())
+                .roomCharges(invoice.getRoomCharges())
+                .serviceCharges(invoice.getServiceCharges())
+                .foodCharges(invoice.getFoodCharges())
+                .otherCharges(invoice.getOtherCharges())
+                .subtotal(invoice.getSubtotal())
+                .discountAmount(invoice.getDiscountAmount())
+                .taxAmount(invoice.getTaxAmount())
+                .totalAmount(invoice.getTotalAmount())
+                .amountPaid(invoice.getAmountPaid())
+                .balanceDue(invoice.getBalanceDue())
+                .status(invoice.getStatus())
+                .notes(invoice.getNotes())
+                .payments(paymentResponses)
+                .createdAt(invoice.getCreatedAt())
+                .updatedAt(invoice.getUpdatedAt())
+                .build();
+    }
+    
+    
 }

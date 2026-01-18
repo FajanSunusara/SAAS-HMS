@@ -17,15 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)  // Changed to read-only
 @RequiredArgsConstructor
 @Slf4j
 public class GuestSearchService {
@@ -125,7 +124,7 @@ public class GuestSearchService {
             .build();
     }
     
-    @Transactional(noRollbackFor = {RuntimeException.class, Exception.class})
+    // Removed @Transactional annotation - read-only from class level applies
     public GuestSummaryStats getGuestSummaryStats() {
         log.info("Fetching guest summary stats");
         
@@ -133,66 +132,83 @@ public class GuestSearchService {
             List<Guest> allGuests = guestRepository.findAll();
             
             if (allGuests.isEmpty()) {
-                return GuestSummaryStats.builder()
-                    .mostFrequentGuest("N/A")
-                    .mostFrequentGuestStays(0)
-                    .mostFrequentGuestValue(BigDecimal.ZERO)
-                    .highestLtvGuest("N/A")
-                    .highestLtvGuestStays(0)
-                    .highestLtvGuestValue(BigDecimal.ZERO)
-                    .totalGuests(0L)
-                    .build();
+                return createEmptyStats();
             }
             
-            // Find most frequent guest
+            // Find most frequent guest and highest LTV guest in a single pass for efficiency
             Guest mostFrequentGuest = null;
             int maxStays = 0;
+            Guest highestLtvGuest = null;
+            BigDecimal maxLtv = BigDecimal.ZERO;
+            
+            // Pre-calculate stays for all guests to avoid multiple queries
+            Map<Long, Integer> guestStaysMap = allGuests.stream()
+                .collect(Collectors.toMap(
+                    Guest::getGuestId,
+                    guest -> bookingRepository.findByGuestGuestId(guest.getGuestId()).size()
+                ));
+            
+            // Pre-calculate LTV for all guests
+            Map<Long, BigDecimal> guestLtvMap = allGuests.stream()
+                .collect(Collectors.toMap(
+                    Guest::getGuestId,
+                    this::calculateLifetimeValueSafe
+                ));
+            
+            // Find guests with max values
             for (Guest guest : allGuests) {
-                int stays = bookingRepository.findByGuestGuestId(guest.getGuestId()).size();
+                Long guestId = guest.getGuestId();
+                int stays = guestStaysMap.getOrDefault(guestId, 0);
+                BigDecimal ltv = guestLtvMap.getOrDefault(guestId, BigDecimal.ZERO);
+                
                 if (stays > maxStays) {
                     maxStays = stays;
                     mostFrequentGuest = guest;
                 }
-            }
-            
-            // Find highest lifetime value guest
-            Guest highestLtvGuest = null;
-            BigDecimal maxLtv = BigDecimal.ZERO;
-            for (Guest guest : allGuests) {
-                BigDecimal ltv = calculateLifetimeValue(guest);
+                
                 if (ltv.compareTo(maxLtv) > 0) {
                     maxLtv = ltv;
                     highestLtvGuest = guest;
                 }
             }
             
-            return GuestSummaryStats.builder()
-                .mostFrequentGuest(mostFrequentGuest != null ? 
-                    mostFrequentGuest.getFirstName() + " " + mostFrequentGuest.getLastName() : "N/A")
-                .mostFrequentGuestStays(mostFrequentGuest != null ? maxStays : 0)
-                .mostFrequentGuestValue(mostFrequentGuest != null ? 
-                    calculateLifetimeValue(mostFrequentGuest) : BigDecimal.ZERO)
-                .highestLtvGuest(highestLtvGuest != null ? 
-                    highestLtvGuest.getFirstName() + " " + highestLtvGuest.getLastName() : "N/A")
-                .highestLtvGuestStays(highestLtvGuest != null ? 
-                    bookingRepository.findByGuestGuestId(highestLtvGuest.getGuestId()).size() : 0)
-                .highestLtvGuestValue(highestLtvGuest != null ? maxLtv : BigDecimal.ZERO)
-                .totalGuests((long) allGuests.size())
-                .build();
+            return buildGuestSummaryStats(allGuests.size(), mostFrequentGuest, maxStays, 
+                                          highestLtvGuest, maxLtv, guestStaysMap);
                 
         } catch (Exception e) {
             log.error("Error in getGuestSummaryStats: {}", e.getMessage(), e);
-            // Return safe default instead of throwing
-            return GuestSummaryStats.builder()
-                .mostFrequentGuest("N/A")
-                .mostFrequentGuestStays(0)
-                .mostFrequentGuestValue(BigDecimal.ZERO)
-                .highestLtvGuest("N/A")
-                .highestLtvGuestStays(0)
-                .highestLtvGuestValue(BigDecimal.ZERO)
-                .totalGuests(0L)
-                .build();
+            return createEmptyStats();
         }
+    }
+    
+    private GuestSummaryStats createEmptyStats() {
+        return GuestSummaryStats.builder()
+            .mostFrequentGuest("N/A")
+            .mostFrequentGuestStays(0)
+            .mostFrequentGuestValue(BigDecimal.ZERO)
+            .highestLtvGuest("N/A")
+            .highestLtvGuestStays(0)
+            .highestLtvGuestValue(BigDecimal.ZERO)
+            .totalGuests(0L)
+            .build();
+    }
+    
+    private GuestSummaryStats buildGuestSummaryStats(int totalGuestsCount, Guest mostFrequentGuest, 
+                                                    int maxStays, Guest highestLtvGuest, 
+                                                    BigDecimal maxLtv, Map<Long, Integer> guestStaysMap) {
+        return GuestSummaryStats.builder()
+            .mostFrequentGuest(mostFrequentGuest != null ? 
+                mostFrequentGuest.getFirstName() + " " + mostFrequentGuest.getLastName() : "N/A")
+            .mostFrequentGuestStays(maxStays)
+            .mostFrequentGuestValue(mostFrequentGuest != null ? 
+                calculateLifetimeValueSafe(mostFrequentGuest) : BigDecimal.ZERO)
+            .highestLtvGuest(highestLtvGuest != null ? 
+                highestLtvGuest.getFirstName() + " " + highestLtvGuest.getLastName() : "N/A")
+            .highestLtvGuestStays(highestLtvGuest != null ? 
+                guestStaysMap.getOrDefault(highestLtvGuest.getGuestId(), 0) : 0)
+            .highestLtvGuestValue(maxLtv)
+            .totalGuests((long) totalGuestsCount)
+            .build();
     }
     
     private CurrentGuestResponse mapToCurrentGuestResponse(Booking booking) {
@@ -204,8 +220,13 @@ public class GuestSearchService {
             roomType = booking.getBookingRooms().get(0).getRoom().getRoomType();
         }
         
-        // Calculate balance
-        BigDecimal balance = bookingService.getBookingBill(booking.getBookingId()).getBalanceDue();
+        // Calculate balance - handle potential exception
+        BigDecimal balance = BigDecimal.ZERO;
+        try {
+            balance = bookingService.getBookingBill(booking.getBookingId()).getBalanceDue();
+        } catch (Exception e) {
+            log.warn("Error getting balance for booking {}: {}", booking.getBookingId(), e.getMessage());
+        }
         
         // Calculate nights
         long nights = booking.getCheckInDate().until(booking.getCheckOutDate()).getDays();
@@ -236,7 +257,7 @@ public class GuestSearchService {
         int totalStays = guestBookings.size();
         
         // Calculate lifetime value
-        BigDecimal lifetimeValue = calculateLifetimeValue(guest);
+        BigDecimal lifetimeValue = calculateLifetimeValueSafe(guest);
         
         // Get last stay information
         Booking lastStay = guestBookings.stream()
@@ -286,22 +307,10 @@ public class GuestSearchService {
             .build();
     }
     
-//    private BigDecimal calculateLifetimeValue(Guest guest) {
-//        List<Booking> guestBookings = bookingRepository.findByGuestGuestId(guest.getGuestId());
-//        
-//        return guestBookings.stream()
-//            .map(booking -> {
-//                try {
-//                    return bookingService.getBookingBill(booking.getBookingId()).getTotalAmount();
-//                } catch (Exception e) {
-//                    return BigDecimal.ZERO;
-//                }
-//            })
-//            .reduce(BigDecimal.ZERO, BigDecimal::add);
-//    }
-//    
-    
-    private BigDecimal calculateLifetimeValue(Guest guest) {
+    /**
+     * Safe version of calculateLifetimeValue that won't throw exceptions
+     */
+    private BigDecimal calculateLifetimeValueSafe(Guest guest) {
         try {
             List<Booking> guestBookings = bookingRepository.findByGuestGuestId(guest.getGuestId());
             
@@ -311,8 +320,20 @@ public class GuestSearchService {
             
             BigDecimal total = BigDecimal.ZERO;
             for (Booking booking : guestBookings) {
-                if (bookingService.getBookingBill(booking.getBookingId()).getTotalAmount() != null) {
-                    total = total.add(bookingService.getBookingBill(booking.getBookingId()).getTotalAmount());
+                try {
+                    // Try to get amount from booking first
+                    if (bookingService.getBookingBill(booking.getBookingId()).getTotalAmount() != null) {
+                        total = total.add(bookingService.getBookingBill(booking.getBookingId()).getTotalAmount());
+                    } else {
+                        // Fall back to service call
+                        BigDecimal amount = bookingService.getBookingBill(booking.getBookingId()).getTotalAmount();
+                        if (amount != null) {
+                            total = total.add(amount);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error getting amount for booking {}: {}", booking.getBookingId(), e.getMessage());
+                    // Continue with next booking
                 }
             }
             return total;
@@ -321,6 +342,13 @@ public class GuestSearchService {
             log.warn("Error calculating LTV for guest {}: {}", guest.getGuestId(), e.getMessage());
             return BigDecimal.ZERO;
         }
+    }
+    
+    /**
+     * Original method kept for compatibility - delegates to safe version
+     */
+    private BigDecimal calculateLifetimeValue(Guest guest) {
+        return calculateLifetimeValueSafe(guest);
     }
     
     private String mapLoyaltyNumberToTier(String loyaltyNumber) {

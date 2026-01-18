@@ -1,4 +1,4 @@
-// src/api/invoiceService.js
+
 import apiService from './apiService';
 
 export const invoiceService = {

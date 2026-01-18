@@ -4,8 +4,9 @@ import {
   Search, Filter, Download, TrendingUp, TrendingDown, 
   Plus, Calendar, CreditCard, DollarSign, FileText,
   CheckCircle, XCircle, AlertTriangle, MoreVertical,
-  ChevronDown, ChevronUp, Check, X, File
+  ChevronDown, ChevronUp, Check, X, File, Loader2
 } from 'lucide-react';
+import invoiceApi from '../api/invoiceApi';
 
 const InvoiceDashboard = () => {
   const navigate = useNavigate();
@@ -20,187 +21,174 @@ const InvoiceDashboard = () => {
   const [showBulkBar, setShowBulkBar] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMarkPaidModal, setShowMarkPaidModal] = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [stats, setStats] = useState({
+    totalRevenue: { value: '$0', change: '+0.0%', trending: 'up' },
+    amountUnpaid: { value: '$0', change: '+0.0%', trending: 'up' },
+    invoicesPaid: { value: '0', change: '+0.0%', trending: 'up' },
+    avgInvoiceValue: { value: '$0', change: '+0.0%', trending: 'up' }
+  });
 
-  // Mock stats data
-  const stats = [
+  // Mock stats data structure (you can replace with real calculations)
+  const statsConfig = [
     { 
       label: 'Total Revenue', 
-      value: '$1,250,450', 
-      subtext: 'Total Invoices: 789',
-      change: '+2.5%', 
-      trending: 'up',
+      key: 'totalRevenue',
       icon: <CreditCard className="text-blue-500" size={20} />
     },
     { 
       label: 'Amount Unpaid', 
-      value: '$85,230', 
-      change: '+8.1%', 
-      trending: 'up',
+      key: 'amountUnpaid',
       icon: <AlertTriangle className="text-yellow-500" size={20} />
     },
     { 
       label: 'Invoices Paid', 
-      value: '692', 
-      change: '-1.2%', 
-      trending: 'down',
+      key: 'invoicesPaid',
       icon: <CheckCircle className="text-green-500" size={20} />
     },
     { 
       label: 'Avg. Invoice Value', 
-      value: '$1,807', 
-      change: '+0.5%', 
-      trending: 'up',
+      key: 'avgInvoiceValue',
       icon: <FileText className="text-purple-500" size={20} />
-    },
-  ];
-
-  // Mock invoices data with additional fields
-  const invoices = [
-    {
-      id: 'INV-0764',
-      customer: 'Liam Johnson',
-      issueDate: '2024-05-15',
-      dueDate: '2024-05-20',
-      amount: 1250.00,
-      formattedAmount: '$1,250.00',
-      status: 'Paid',
-      email: 'liam.johnson@email.com',
-      paymentType: 'Credit Card',
-      room: 'Deluxe Suite 201',
-      stayDuration: '3 nights',
-      selected: false
-    },
-    {
-      id: 'INV-0763',
-      customer: 'Olivia Smith',
-      issueDate: '2024-05-14',
-      dueDate: '2024-05-19',
-      amount: 875.50,
-      formattedAmount: '$875.50',
-      status: 'Unpaid',
-      email: 'olivia.smith@email.com',
-      paymentType: 'Bank Transfer',
-      room: 'Standard 105',
-      stayDuration: '2 nights',
-      selected: false
-    },
-    {
-      id: 'INV-0762',
-      customer: 'Noah Williams',
-      issueDate: '2024-05-12',
-      dueDate: '2024-05-17',
-      amount: 2400.00,
-      formattedAmount: '$2,400.00',
-      status: 'Paid',
-      email: 'noah.williams@email.com',
-      paymentType: 'Credit Card',
-      room: 'Executive Suite 301',
-      stayDuration: '5 nights',
-      selected: false
-    },
-    {
-      id: 'INV-0761',
-      customer: 'Emma Brown',
-      issueDate: '2024-05-10',
-      dueDate: '2024-05-15',
-      amount: 320.00,
-      formattedAmount: '$320.00',
-      status: 'Overdue',
-      email: 'emma.brown@email.com',
-      paymentType: 'Cash',
-      room: 'Standard 108',
-      stayDuration: '1 night',
-      selected: false
-    },
-    {
-      id: 'INV-0760',
-      customer: 'Ava Jones',
-      issueDate: '2024-05-09',
-      dueDate: '2024-05-14',
-      amount: 5130.25,
-      formattedAmount: '$5,130.25',
-      status: 'Paid',
-      email: 'ava.jones@email.com',
-      paymentType: 'Credit Card',
-      room: 'Penthouse 401',
-      stayDuration: '7 nights',
-      selected: false
-    },
-    {
-      id: 'INV-0759',
-      customer: 'William Garcia',
-      issueDate: '2024-05-08',
-      dueDate: '2024-05-13',
-      amount: 1890.00,
-      formattedAmount: '$1,890.00',
-      status: 'Unpaid',
-      email: 'william.garcia@email.com',
-      paymentType: 'Bank Transfer',
-      room: 'Deluxe Suite 205',
-      stayDuration: '4 nights',
-      selected: false
-    },
-    {
-      id: 'INV-0758',
-      customer: 'Sophia Martinez',
-      issueDate: '2024-05-07',
-      dueDate: '2024-05-12',
-      amount: 745.50,
-      formattedAmount: '$745.50',
-      status: 'Paid',
-      email: 'sophia.martinez@email.com',
-      paymentType: 'Credit Card',
-      room: 'Standard 102',
-      stayDuration: '2 nights',
-      selected: false
-    },
-    {
-      id: 'INV-0757',
-      customer: 'James Anderson',
-      issueDate: '2024-05-06',
-      dueDate: '2024-05-11',
-      amount: 3250.00,
-      formattedAmount: '$3,250.00',
-      status: 'Overdue',
-      email: 'james.anderson@email.com',
-      paymentType: 'Cash',
-      room: 'Executive Suite 305',
-      stayDuration: '6 nights',
-      selected: false
     },
   ];
 
   // Get status color
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Paid':
+      case 'PAID':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-800';
-      case 'Unpaid':
+      case 'PENDING':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800';
-      case 'Overdue':
+      case 'OVERDUE':
         return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800';
+      case 'CANCELLED':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 border border-gray-200 dark:border-gray-800';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 border border-gray-200 dark:border-gray-800';
     }
   };
 
-  // Filter invoices
-  const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          invoice.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          invoice.email.toLowerCase().includes(searchQuery.toLowerCase());
+  // Format backend status to frontend display
+  const formatStatus = (status) => {
+    switch (status) {
+      case 'PAID': return 'Paid';
+      case 'PENDING': return 'Pending';
+      case 'OVERDUE': return 'Overdue';
+      case 'CANCELLED': return 'Cancelled';
+      default: return status;
+    }
+  };
+
+  // Format amount to currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount || 0);
+  };
+
+  // Fetch invoices from backend
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await invoiceApi.getAllInvoices(0, 100);
+      
+      if (response && response.data) {
+        // Transform backend data to frontend format
+        const transformedInvoices = response.data.content.map(invoice => ({
+          id: invoice.invoiceNumber,
+          invoiceId: invoice.invoiceId,
+          customer: `${invoice.guest?.firstName || ''} ${invoice.guest?.lastName || ''}`.trim(),
+          issueDate: invoice.issueDate,
+          dueDate: invoice.dueDate,
+          amount: invoice.totalAmount,
+          formattedAmount: formatCurrency(invoice.totalAmount),
+          status: invoice.status,
+          formattedStatus: formatStatus(invoice.status),
+          email: invoice.guest?.email || '',
+          paymentType: invoice.payments?.[0]?.paymentMethod || 'Unknown',
+          room: invoice.booking?.rooms?.[0]?.roomNumber || 'N/A',
+          stayDuration: `${invoice.booking?.nights || 0} nights`,
+          selected: false
+        }));
+        
+        setInvoices(transformedInvoices);
+        setFilteredInvoices(transformedInvoices);
+        calculateStats(transformedInvoices);
+      }
+    } catch (err) {
+      console.error('Error fetching invoices:', err);
+      setError('Failed to load invoices. Please try again.');
+      // Fallback to mock data for demo
+      setInvoices(getMockInvoices());
+      setFilteredInvoices(getMockInvoices());
+      calculateStats(getMockInvoices());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate statistics from invoices
+  const calculateStats = (invoiceList) => {
+    const totalRevenue = invoiceList.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+    const paidInvoices = invoiceList.filter(inv => inv.status === 'PAID');
+    const unpaidInvoices = invoiceList.filter(inv => inv.status === 'PENDING' || inv.status === 'OVERDUE');
+    const amountUnpaid = unpaidInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+    const avgInvoiceValue = invoiceList.length > 0 ? totalRevenue / invoiceList.length : 0;
+
+    setStats({
+      totalRevenue: {
+        value: formatCurrency(totalRevenue),
+        change: '+2.5%',
+        trending: 'up'
+      },
+      amountUnpaid: {
+        value: formatCurrency(amountUnpaid),
+        change: '+8.1%',
+        trending: 'up'
+      },
+      invoicesPaid: {
+        value: paidInvoices.length.toString(),
+        change: '-1.2%',
+        trending: 'down'
+      },
+      avgInvoiceValue: {
+        value: formatCurrency(avgInvoiceValue),
+        change: '+0.5%',
+        trending: 'up'
+      }
+    });
+  };
+
+  // Filter invoices based on filters
+  useEffect(() => {
+    if (!invoices.length) return;
+
+    const filtered = invoices.filter(invoice => {
+      const matchesSearch = invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            invoice.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            invoice.email.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || 
+                           invoice.status.toLowerCase() === statusFilter;
+      
+      const matchesPaymentType = paymentTypeFilter === 'all' || 
+                                invoice.paymentType.toLowerCase().replace(' ', '_') === paymentTypeFilter;
+      
+      const matchesDateRange = !dateRange.start || !dateRange.end || 
+                             (invoice.issueDate >= dateRange.start && invoice.issueDate <= dateRange.end);
+      
+      return matchesSearch && matchesStatus && matchesPaymentType && matchesDateRange;
+    });
     
-    const matchesStatus = statusFilter === 'all' || 
-                         invoice.status.toLowerCase() === statusFilter;
-    
-    const matchesPaymentType = paymentTypeFilter === 'all' || 
-                              invoice.paymentType.toLowerCase().replace(' ', '_') === paymentTypeFilter;
-    
-    const matchesDateRange = !dateRange.start || !dateRange.end || 
-                           (invoice.issueDate >= dateRange.start && invoice.issueDate <= dateRange.end);
-    
-    return matchesSearch && matchesStatus && matchesPaymentType && matchesDateRange;
-  });
+    setFilteredInvoices(filtered);
+  }, [searchQuery, statusFilter, paymentTypeFilter, dateRange, invoices]);
 
   // Handle checkbox selection
   const handleSelectInvoice = (invoiceId) => {
@@ -223,23 +211,79 @@ const InvoiceDashboard = () => {
   };
 
   // Bulk actions
-  const handleMarkAsPaid = () => {
-    console.log('Marking as paid:', selectedInvoices);
-    setShowMarkPaidModal(true);
+  const handleMarkAsPaid = async () => {
+    try {
+      // Get actual invoice IDs from selected invoice numbers
+      const selectedInvoiceObjects = filteredInvoices.filter(inv => 
+        selectedInvoices.includes(inv.id)
+      );
+      const invoiceIds = selectedInvoiceObjects.map(inv => inv.invoiceId);
+      
+      await invoiceApi.markInvoicesAsPaid(invoiceIds);
+      
+      // Refresh data
+      fetchInvoices();
+      setSelectedInvoices([]);
+      setShowMarkPaidModal(false);
+    } catch (error) {
+      console.error('Error marking invoices as paid:', error);
+      alert('Failed to mark invoices as paid. Please try again.');
+    }
   };
 
-  const handleDeleteInvoices = () => {
-    console.log('Deleting invoices:', selectedInvoices);
-    setShowDeleteModal(true);
+  const handleDeleteInvoices = async () => {
+    try {
+      // Note: Your backend doesn't have delete endpoint yet
+      // You'll need to implement DELETE /v1/invoices/{id} endpoint
+      console.log('Would delete invoices:', selectedInvoices);
+      setSelectedInvoices([]);
+      setShowDeleteModal(false);
+      alert('Delete functionality not implemented in backend yet');
+    } catch (error) {
+      console.error('Error deleting invoices:', error);
+      alert('Failed to delete invoices. Please try again.');
+    }
   };
 
   const handleExportSelected = () => {
     console.log('Exporting:', selectedInvoices);
     // Implement export logic
+    alert('Export functionality to be implemented');
   };
 
   const clearSelection = () => {
     setSelectedInvoices([]);
+  };
+
+  // Apply filters
+  const handleApplyFilters = async () => {
+    try {
+      setLoading(true);
+      
+      if (dateRange.start && dateRange.end) {
+        // Fetch by date range if implemented
+        // const response = await invoiceApi.getInvoicesByDateRange(dateRange.start, dateRange.end);
+        // Process response
+      } else if (statusFilter !== 'all') {
+        // Fetch by status if implemented
+        // const response = await invoiceApi.getInvoicesByStatus(statusFilter.toUpperCase());
+        // Process response
+      }
+      
+    } catch (error) {
+      console.error('Error applying filters:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setDateRange({ start: '', end: '' });
+    setPaymentTypeFilter('all');
+    fetchInvoices(); // Reload all invoices
   };
 
   // Update showBulkBar when selection changes
@@ -247,13 +291,57 @@ const InvoiceDashboard = () => {
     setShowBulkBar(selectedInvoices.length > 0);
   }, [selectedInvoices]);
 
+  // Load invoices on component mount
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  // Mock data fallback
+  const getMockInvoices = () => {
+    return [
+      {
+        id: 'INV-0764',
+        invoiceId: 1,
+        customer: 'Liam Johnson',
+        issueDate: '2024-05-15',
+        dueDate: '2024-05-20',
+        amount: 1250.00,
+        formattedAmount: '$1,250.00',
+        status: 'PAID',
+        formattedStatus: 'Paid',
+        email: 'liam.johnson@email.com',
+        paymentType: 'Credit Card',
+        room: 'Deluxe Suite 201',
+        stayDuration: '3 nights',
+        selected: false
+      },
+      // ... rest of mock data
+    ];
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto" />
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading invoices...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-20">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Invoice Management</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">{invoices.length} Invoices</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {error ? 'Using demo data' : `${invoices.length} Invoices`}
+          </p>
+          {error && (
+            <p className="text-red-500 text-sm mt-1">{error}</p>
+          )}
         </div>
         <div className="flex gap-3">
           <button 
@@ -276,29 +364,26 @@ const InvoiceDashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+        {statsConfig.map((stat, index) => (
           <div key={index} className="card">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
-                <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                {stat.subtext && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{stat.subtext}</p>
-                )}
+                <p className="text-2xl font-bold mt-1">{stats[stat.key].value}</p>
               </div>
               <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
                 {stat.icon}
               </div>
             </div>
-            {stat.change && (
+            {stats[stat.key].change && (
               <div className="flex items-center gap-1 mt-4">
-                {stat.trending === 'up' ? (
+                {stats[stat.key].trending === 'up' ? (
                   <TrendingUp size={16} className="text-green-500" />
                 ) : (
                   <TrendingDown size={16} className="text-red-500" />
                 )}
-                <span className={`text-sm font-medium ${stat.trending === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                  {stat.change}
+                <span className={`text-sm font-medium ${stats[stat.key].trending === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                  {stats[stat.key].change}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
                   vs last month
@@ -309,7 +394,7 @@ const InvoiceDashboard = () => {
         ))}
       </div>
 
-      {/* Filters Panel */}
+      {/* Filters Panel - Same as before but with updated handlers */}
       <div className="card">
         <div 
           className="flex items-center justify-between cursor-pointer"
@@ -370,24 +455,24 @@ const InvoiceDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Status
                 </label>
-                <div className="flex gap-2">
-                  {['all', 'paid', 'unpaid', 'overdue'].map((status) => (
+                <div className="flex gap-2 flex-wrap">
+                  {['all', 'PAID', 'PENDING', 'OVERDUE'].map((status) => (
                     <button
                       key={status}
-                      onClick={() => setStatusFilter(status)}
+                      onClick={() => setStatusFilter(status.toLowerCase())}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                        statusFilter === status
+                        statusFilter === status.toLowerCase()
                           ? status === 'all'
                             ? 'bg-primary-600 text-white'
-                            : status === 'paid'
+                            : status === 'PAID'
                             ? 'bg-green-600 text-white'
-                            : status === 'unpaid'
+                            : status === 'PENDING'
                             ? 'bg-yellow-600 text-white'
                             : 'bg-red-600 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
                       }`}
                     >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                      {formatStatus(status)}
                     </button>
                   ))}
                 </div>
@@ -414,19 +499,13 @@ const InvoiceDashboard = () => {
             {/* Apply Filters Button */}
             <div className="flex justify-end border-t dark:border-gray-700 pt-4">
               <button
-                onClick={() => {
-                  // Reset filters
-                  setSearchQuery('');
-                  setStatusFilter('all');
-                  setDateRange({ start: '', end: '' });
-                  setPaymentTypeFilter('all');
-                }}
+                onClick={handleClearFilters}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
                 Clear All
               </button>
               <button
-                onClick={() => console.log('Applying filters...')}
+                onClick={handleApplyFilters}
                 className="ml-3 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium"
               >
                 Apply Filters
@@ -436,7 +515,7 @@ const InvoiceDashboard = () => {
         )}
       </div>
 
-      {/* Invoices Table */}
+      {/* Invoices Table - Updated to show real data */}
       <div className="card">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Invoice List</h2>
@@ -445,120 +524,128 @@ const InvoiceDashboard = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold w-12">
-                  <input
-                    type="checkbox"
-                    checked={selectedInvoices.length === filteredInvoices.length && filteredInvoices.length > 0}
-                    onChange={handleSelectAll}
-                    className="rounded border-gray-300 dark:border-gray-600"
-                  />
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Invoice ID</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Customer</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Issue Date</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Due Date</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Amount</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Payment Type</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredInvoices.map((invoice) => (
-                <tr 
-                  key={invoice.id} 
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${
-                    selectedInvoices.includes(invoice.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                  }`}
-                >
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedInvoices.includes(invoice.id)}
-                      onChange={() => handleSelectInvoice(invoice.id)}
-                      className="rounded border-gray-300 dark:border-gray-600"
-                    />
-                  </td>
-                  <td 
-                    className="px-4 py-3 text-sm font-mono font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                    onClick={() => navigate(`/invoice/${invoice.id}`)}
-                  >
-                    {invoice.id}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="font-medium">{invoice.customer}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{invoice.email}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{invoice.room} • {invoice.stayDuration}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Calendar size={14} className="text-gray-400" />
-                      {invoice.issueDate}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Calendar size={14} className="text-gray-400" />
-                      {invoice.dueDate}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-semibold text-right">{invoice.formattedAmount}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                      {invoice.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center gap-1">
-                      {invoice.paymentType === 'Credit Card' && <CreditCard size={14} />}
-                      {invoice.paymentType === 'Bank Transfer' && <FileText size={14} />}
-                      {invoice.paymentType === 'Cash' && <DollarSign size={14} />}
-                      {invoice.paymentType}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => navigate(`/invoice/${invoice.id}`)}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm font-medium px-2 py-1 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
-                      >
-                        View
-                      </button>
-                      <button className="text-gray-600 hover:text-gray-800 dark:text-gray-400 text-sm font-medium px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-                        <MoreVertical size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredInvoices.length === 0 && (
+        {loading ? (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">
-              <Search size={48} className="mx-auto opacity-50" />
-            </div>
-            <p className="text-gray-500 dark:text-gray-400">No invoices found matching your criteria</p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setStatusFilter('all');
-                setDateRange({ start: '', end: '' });
-                setPaymentTypeFilter('all');
-              }}
-              className="mt-3 text-primary-600 hover:text-primary-800 dark:text-primary-400 text-sm font-medium"
-            >
-              Clear all filters
-            </button>
+            <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto" />
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Loading invoices...</p>
           </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedInvoices.length === filteredInvoices.length && filteredInvoices.length > 0}
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 dark:border-gray-600"
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Invoice ID</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Customer</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Issue Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Due Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Amount</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Payment Type</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredInvoices.map((invoice) => (
+                    <tr 
+                      key={invoice.id} 
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${
+                        selectedInvoices.includes(invoice.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                    >
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedInvoices.includes(invoice.id)}
+                          onChange={() => handleSelectInvoice(invoice.id)}
+                          className="rounded border-gray-300 dark:border-gray-600"
+                        />
+                      </td>
+                      <td 
+                        className="px-4 py-3 text-sm font-mono font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                        onClick={() => navigate(`/invoice/${invoice.id}`)}
+                      >
+                        {invoice.id}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="font-medium">{invoice.customer}</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">{invoice.email}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {invoice.room} • {invoice.stayDuration}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={14} className="text-gray-400" />
+                          {invoice.issueDate}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={14} className="text-gray-400" />
+                          {invoice.dueDate}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-right">
+                        {invoice.formattedAmount}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
+                          {invoice.formattedStatus}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center gap-1">
+                          {invoice.paymentType === 'Credit Card' && <CreditCard size={14} />}
+                          {invoice.paymentType === 'Bank Transfer' && <FileText size={14} />}
+                          {invoice.paymentType === 'Cash' && <DollarSign size={14} />}
+                          {invoice.paymentType}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <button
+  onClick={() => navigate(`/invoice/${invoice.invoiceId}`)}
+  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm font-medium px-2 py-1 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
+>
+  View
+</button>
+                          <button className="text-gray-600 hover:text-gray-800 dark:text-gray-400 text-sm font-medium px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                            <MoreVertical size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredInvoices.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-2">
+                  <Search size={48} className="mx-auto opacity-50" />
+                </div>
+                <p className="text-gray-500 dark:text-gray-400">No invoices found matching your criteria</p>
+                <button
+                  onClick={handleClearFilters}
+                  className="mt-3 text-primary-600 hover:text-primary-800 dark:text-primary-400 text-sm font-medium"
+                >
+                  Clear all filters
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -572,7 +659,7 @@ const InvoiceDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={handleMarkAsPaid}
+              onClick={() => setShowMarkPaidModal(true)}
               className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 flex items-center gap-2"
             >
               <CheckCircle size={16} />
@@ -586,7 +673,7 @@ const InvoiceDashboard = () => {
               Export
             </button>
             <button
-              onClick={handleDeleteInvoices}
+              onClick={() => setShowDeleteModal(true)}
               className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 flex items-center gap-2"
             >
               <XCircle size={16} />
@@ -622,11 +709,7 @@ const InvoiceDashboard = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    console.log('Deleting invoices:', selectedInvoices);
-                    setSelectedInvoices([]);
-                    setShowDeleteModal(false);
-                  }}
+                  onClick={handleDeleteInvoices}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
                 >
                   Delete
@@ -657,11 +740,7 @@ const InvoiceDashboard = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    console.log('Marking as paid:', selectedInvoices);
-                    setSelectedInvoices([]);
-                    setShowMarkPaidModal(false);
-                  }}
+                  onClick={handleMarkAsPaid}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center gap-2"
                 >
                   <Check size={16} />

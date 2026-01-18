@@ -88,4 +88,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT p FROM Payment p WHERE p.guest.guestId = :guestId AND p.paymentDate = CURRENT_DATE")
     List<Payment> findTodayPaymentsByGuestId(@Param("guestId") Long guestId);
+    
+    
+    @Query("SELECT SUM(p.amountPaid) FROM Payment p " +
+            "WHERE DATE(p.paymentDate) = :date " +
+            "AND p.status = 'COMPLETED'")
+     Optional<BigDecimal> sumAmountPaidByPaymentDate(@Param("date") LocalDate date);
 }

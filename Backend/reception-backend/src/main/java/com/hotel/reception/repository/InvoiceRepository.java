@@ -51,4 +51,40 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     
     @Query("SELECT COALESCE(SUM(i.amountPaid), 0) FROM Invoice i WHERE i.guest.guestId = :guestId")
     Double sumAmountPaidByGuestId(@Param("guestId") Long guestId);
+    
+    
+// // Add to InvoiceRepository.java
+//    @Query("SELECT i FROM Invoice i JOIN FETCH i.booking b JOIN FETCH i.guest g WHERE i.invoiceId = :id")
+//    Optional<Invoice> findByIdWithDetails(@Param("id") Long id);
+
+//    @Query("SELECT i FROM Invoice i JOIN FETCH i.booking b JOIN FETCH i.guest g WHERE i.invoiceNumber = :invoiceNumber")
+//    Optional<Invoice> findByInvoiceNumberWithDetails(@Param("invoiceNumber") String invoiceNumber);
+//    
+    
+    // Add JOIN FETCH queries to avoid N+1 problem
+    @Query("SELECT DISTINCT i FROM Invoice i " +
+           "LEFT JOIN FETCH i.booking b " +
+           "LEFT JOIN FETCH b.bookingRooms br " +
+           "LEFT JOIN FETCH br.room " +
+           "LEFT JOIN FETCH i.guest g " +
+           "LEFT JOIN FETCH i.payments p")
+    Page<Invoice> findAllWithDetails(Pageable pageable);
+    
+    @Query("SELECT DISTINCT i FROM Invoice i " +
+           "LEFT JOIN FETCH i.booking b " +
+           "LEFT JOIN FETCH b.bookingRooms br " +
+           "LEFT JOIN FETCH br.room " +
+           "LEFT JOIN FETCH i.guest g " +
+           "LEFT JOIN FETCH i.payments p " +
+           "WHERE i.invoiceId = :id")
+    Optional<Invoice> findByIdWithDetails(@Param("id") Long id);
+    
+    @Query("SELECT DISTINCT i FROM Invoice i " +
+           "LEFT JOIN FETCH i.booking b " +
+           "LEFT JOIN FETCH b.bookingRooms br " +
+           "LEFT JOIN FETCH br.room " +
+           "LEFT JOIN FETCH i.guest g " +
+           "LEFT JOIN FETCH i.payments p " +
+           "WHERE i.invoiceNumber = :invoiceNumber")
+    Optional<Invoice> findByInvoiceNumberWithDetails(@Param("invoiceNumber") String invoiceNumber);
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -80,5 +81,32 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
     List<Booking> findByGuestGuestIdAndStatusOrderByCheckInDateDesc(Long guestId, String status);
     List<Booking> findTop10ByGuestGuestIdOrderByCheckInDateDesc(Long guestId);
     
+    
+    Long countByCheckInDateAndStatusIn(LocalDate date, List<BookingStatus> statuses);
+//    Long countByCheckOutDateAndStatus(LocalDate date, BookingStatus status);
+    
+    // For calendar view
+    @Query("SELECT b FROM Booking b WHERE " +
+           "(:startDate < b.checkOutDate AND :endDate > b.checkInDate) " +
+           "AND b.status NOT IN ('CANCELLED')")
+    List<Booking> findBookingsInDateRange(@Param("startDate") LocalDate startDate,
+                                          @Param("endDate") LocalDate endDate);
+    
+    // For month overview
+    @Query("SELECT COUNT(br) FROM BookingRoom br " +
+           "JOIN br.booking b " +
+           "WHERE :date BETWEEN b.checkInDate AND b.checkOutDate " +
+           "AND b.status IN ('CONFIRMED', 'CHECKED_IN')")
+    Long countOccupiedRoomsOnDate(@Param("date") LocalDate date);
+    
+    // Status counts for date
+    @Query("SELECT b.status as status, COUNT(b) as count FROM Booking b WHERE " +
+            "b.checkInDate <= :date AND b.checkOutDate >= :date " +
+            "GROUP BY b.status")
+     List<Map<String, Object>> countBookingsByStatusForDate(@Param("date") LocalDate date);
+    
+    // Count by check-in date and status
+    Long countByCheckInDateAndStatus(LocalDate date, BookingStatus status);
+    Long countByCheckOutDateAndStatus(LocalDate date, BookingStatus status);
     
 }
