@@ -404,115 +404,113 @@ const InvoiceView = () => {
     }
   };
 
-  // Generate PDF using Frontend (fallback method)
-  const generatePDFFrontend = async () => {
-    setDownloadingPDF(true);
-    try {
-      const invoiceElement = printRef.current;
-      
-      // Create a clone of the invoice element for PDF generation
-      const element = invoiceElement.cloneNode(true);
-      
-      // Remove action buttons and non-printable elements
-      const buttons = element.querySelectorAll('button, .no-print, .action-button');
-      buttons.forEach(button => button.style.display = 'none');
-      
-      // Set proper styles for PDF
-      element.style.width = '210mm';
-      element.style.minHeight = '297mm';
-      element.style.padding = '20mm';
-      element.style.margin = '0';
-      element.style.backgroundColor = 'white';
-      element.style.color = 'black';
-      
-      // Append to document temporarily
-      document.body.appendChild(element);
-      element.style.position = 'absolute';
-      element.style.left = '-9999px';
-      
-      // Use html2canvas to capture the element
-      const canvas = await html2canvas(element, {
-        scale: 2, // Higher quality
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      
-      // Remove the temporary element
-      document.body.removeChild(element);
-      
-      // Convert canvas to image
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Create PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      let position = 0;
-      
-      // Add image to PDF
+ 
+// Generate PDF using Frontend (fallback method) - Updated version
+const generatePDFFrontend = async () => {
+  setDownloadingPDF(true);
+  try {
+    const invoiceElement = printRef.current;
+    
+    // Hide buttons temporarily
+    const buttons = invoiceElement.querySelectorAll('.no-print');
+    buttons.forEach(button => button.style.display = 'none');
+    
+    // Create canvas with higher quality
+    const canvas = await html2canvas(invoiceElement, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      windowWidth: 1200,
+      windowHeight: invoiceElement.scrollHeight
+    });
+    
+    // Show buttons again
+    buttons.forEach(button => button.style.display = '');
+    
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    
+    let heightLeft = imgHeight;
+    let position = 0;
+    
+    // Add first page
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pdfHeight;
+    
+    // Add additional pages if needed
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      
-      // Add new page if content is too long
-      const heightLeft = imgHeight;
-      while (heightLeft > 0) {
-        position = heightLeft - pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      }
-      
-      // Save PDF
-      pdf.save(`invoice_${invoice.invoiceNumber || invoiceId}.pdf`);
-      
-      setDownloadingPDF(false);
-      return true;
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      setDownloadingPDF(false);
-      return false;
+      heightLeft -= pdfHeight;
     }
-  };
+    
+    // Save PDF
+    pdf.save(`invoice_${invoice.invoiceNumber || invoiceId}.pdf`);
+    
+    setDownloadingPDF(false);
+    return true;
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    setDownloadingPDF(false);
+    return false;
+  }
+};
+
 
   // Download PDF - Try backend first, then frontend
-  const handleDownloadPDF = async () => {
+const handleDownloadPDF = async () => {
+  try {
+    setDownloadingPDF(true);
+    
+    // Try backend endpoint first
     try {
-      setDownloadingPDF(true);
-      
-      // Try backend endpoint first
-      try {
-        const response = await invoiceApi.generateInvoicePDF(invoice.invoiceId);
-        if (response) {
-          // Create blob from response
-          const blob = new Blob([response], { type: 'application/pdf' });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `invoice_${invoice.invoiceNumber || invoiceId}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-          
-          setDownloadingPDF(false);
-          return;
+      const response = await fetch(`http://localhost:8080/api/v1/invoices/${invoice.invoiceId}/pdf`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf'
         }
-      } catch (backendError) {
-        console.log('Backend PDF generation failed, using frontend fallback:', backendError);
-      }
+      });
       
-      // Fallback to frontend PDF generation
-      const success = await generatePDFFrontend();
-      if (!success) {
-        throw new Error('PDF generation failed');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `invoice_${invoice.invoiceNumber || invoiceId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        setDownloadingPDF(false);
+        return;
       }
-      
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-      alert('Failed to download PDF. Please try again.');
-      setDownloadingPDF(false);
+    } catch (backendError) {
+      console.log('Backend PDF generation failed, using frontend fallback:', backendError);
     }
-  };
+    
+    // Fallback to frontend PDF generation
+    const success = await generatePDFFrontend();
+    if (!success) {
+      throw new Error('PDF generation failed');
+    }
+    
+  } catch (error) {
+    console.error('Error downloading PDF:', error);
+    alert('Failed to download PDF. Please try again.');
+    setDownloadingPDF(false);
+  }
+};
+
+
+
 
   // Send Email - Try backend first, then frontend
   const handleSendEmail = async (emailData) => {
@@ -554,18 +552,313 @@ const InvoiceView = () => {
   };
 
   // Handle print
-  const handlePrint = () => {
-    // Add print-specific class to show signature area for print
-    const printArea = printRef.current;
-    printArea.classList.add('print-mode');
+// Handle print - Improved version
+const handlePrint = () => {
+  // Create comprehensive print styles
+  const printStyle = document.createElement('style');
+  printStyle.id = 'invoice-print-style';
+  printStyle.textContent = `
+    @media print {
+      /* Reset everything */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Hide everything initially */
+      body * {
+        visibility: hidden;
+      }
+      
+      /* Show only invoice area */
+      #invoice-print-area,
+      #invoice-print-area * {
+        visibility: visible;
+      }
+      
+      /* Position invoice */
+      #invoice-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm;
+        max-height: 287mm;
+        overflow: hidden;
+        background: white;
+        transform: scale(0.92);
+        transform-origin: top left;
+      }
+      
+      /* Force single page */
+      html, body {
+        height: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden;
+      }
+      
+      /* Hide non-printable */
+      .no-print {
+        display: none !important;
+      }
+      
+      /* Show print-only */
+      .print-only {
+        display: block !important;
+      }
+      
+      /* Extreme spacing reduction */
+      * {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* Add back minimal necessary spacing */
+      .invoice-main-container {
+        padding: 8mm 10mm !important;
+      }
+      
+      /* Section spacing - very compact */
+      .invoice-section {
+        margin-bottom: 4mm !important;
+      }
+      
+      /* Headers */
+      h1, h2, h3, h4 {
+        margin-bottom: 2mm !important;
+        line-height: 1.1 !important;
+      }
+      
+      /* Paragraphs */
+      p {
+        margin: 0.5mm 0 !important;
+        line-height: 1.2 !important;
+      }
+      
+      /* Tables super compact */
+      table {
+        margin: 2mm 0 !important;
+        border-spacing: 0 !important;
+      }
+      
+      table th {
+        padding: 2mm 2mm !important;
+        font-size: 7pt !important;
+      }
+      
+      table td {
+        padding: 1.5mm 2mm !important;
+        font-size: 7pt !important;
+      }
+      
+      /* Grid spacing */
+      .grid {
+        gap: 2mm !important;
+      }
+      
+      /* Card/box padding */
+      .card-compact {
+        padding: 3mm !important;
+        margin: 2mm 0 !important;
+      }
+      
+      /* Border radius minimal */
+      .rounded-xl, .rounded-lg {
+        border-radius: 2mm !important;
+      }
+      
+      /* Font sizes - reduced */
+      body {
+        font-size: 7pt !important;
+      }
+      
+      .text-3xl { font-size: 13pt !important; }
+      .text-2xl { font-size: 11pt !important; }
+      .text-xl { font-size: 10pt !important; }
+      .text-lg { font-size: 9pt !important; }
+      .text-base { font-size: 7pt !important; }
+      .text-sm { font-size: 6pt !important; }
+      .text-xs { font-size: 5pt !important; }
+      
+      /* Icons smaller */
+      svg, .lucide {
+        width: 10pt !important;
+        height: 10pt !important;
+      }
+      
+      /* Summary cards */
+      .summary-card {
+        padding: 2mm !important;
+        margin: 1mm 0 !important;
+      }
+      
+      /* Status badges */
+      .status-badge {
+        padding: 1mm 3mm !important;
+        font-size: 6pt !important;
+      }
+      
+      /* Totals section */
+      .totals-row {
+        padding: 1.5mm 0 !important;
+      }
+      
+      /* Prevent page breaks */
+      * {
+        page-break-inside: avoid !important;
+      }
+      
+      table {
+        page-break-inside: auto !important;
+      }
+      
+      tr {
+        page-break-inside: avoid !important;
+      }
+      
+      /* Page setup */
+      @page {
+        size: A4 portrait;
+        margin: 8mm 10mm;
+      }
+      
+      /* Color preservation */
+      .bg-blue-600, .bg-indigo-600 {
+        background: linear-gradient(to right, #2563eb, #4f46e5) !important;
+      }
+      
+      .bg-gray-50 { background-color: #f9fafb !important; }
+      .bg-blue-50 { background-color: #eff6ff !important; }
+      .bg-green-50 { background-color: #f0fdf4 !important; }
+      .bg-red-50 { background-color: #fef2f2 !important; }
+      .bg-purple-50 { background-color: #faf5ff !important; }
+      
+      .text-blue-600 { color: #2563eb !important; }
+      .text-green-600 { color: #16a34a !important; }
+      .text-red-600 { color: #dc2626 !important; }
+      .text-gray-900 { color: #111827 !important; }
+      .text-gray-600 { color: #4b5563 !important; }
+      
+      /* Borders */
+      .border { border-width: 0.5pt !important; }
+      .border-2 { border-width: 1pt !important; }
+      
+      /* Shadows removed */
+      .shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl {
+        box-shadow: none !important;
+      }
+      
+      /* Signature compact */
+      .signature-section {
+        padding: 3mm !important;
+        margin: 2mm 0 !important;
+      }
+      
+      /* Footer */
+      .footer-section {
+        margin-top: 3mm !important;
+        padding-top: 2mm !important;
+      }
+    }
+  `;
+  
+  // Add print styles to document
+  document.head.appendChild(printStyle);
+  
+  // Add necessary classes to invoice container
+  const printArea = printRef.current;
+  printArea.id = 'invoice-print-area';
+  printArea.classList.add('print-mode', 'invoice-main-container');
+  
+  // Add compact classes to sections
+  const sections = printArea.querySelectorAll('.mb-8, .mb-6');
+  sections.forEach(section => {
+    section.classList.add('invoice-section');
+  });
+  
+  const cards = printArea.querySelectorAll('.p-6, .p-4, .p-8');
+  cards.forEach(card => {
+    card.classList.add('card-compact');
+  });
+  
+  // Trigger print after a short delay
+  setTimeout(() => {
+    window.print();
     
+    // Cleanup after print dialog closes
     setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        printArea.classList.remove('print-mode');
-      }, 100);
-    }, 100);
-  };
+      printArea.classList.remove('print-mode', 'invoice-main-container');
+      sections.forEach(section => {
+        section.classList.remove('invoice-section');
+      });
+      cards.forEach(card => {
+        card.classList.remove('card-compact');
+      });
+      
+      const styleElement = document.getElementById('invoice-print-style');
+      if (styleElement) {
+        styleElement.remove();
+      }
+    }, 500);
+  }, 300);
+};
+
+const handlePrintWithPreview = () => {
+  // Create a new window for preview
+  const printWindow = window.open('', '_blank', 'width=800,height=600');
+  
+  if (!printWindow) {
+    alert('Please allow popups to use print preview');
+    return;
+  }
+  
+  // Get invoice HTML
+  const invoiceHTML = printRef.current.innerHTML;
+  
+  // Create complete HTML document
+  const fullHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Invoice ${invoice.invoiceNumber}</title>
+      <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+      <style>
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+      </style>
+    </head>
+    <body class="bg-white p-8">
+      ${invoiceHTML}
+      <div class="text-center mt-8 no-print">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded">
+          Print Invoice
+        </button>
+        <button onclick="window.close()" class="bg-gray-600 text-white px-6 py-2 rounded ml-2">
+          Close
+        </button>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  printWindow.document.write(fullHTML);
+  printWindow.document.close();
+};
+
 
   // Initialize canvas for manual signature
   useEffect(() => {
@@ -1779,91 +2072,304 @@ const InvoiceView = () => {
         </div>
       </div>
 
-      {/* Print Styles */}
-      <style jsx>{`
-        @media print {
-          /* Hide everything except the invoice */
-          body * {
-            visibility: hidden;
-          }
-          
-          #root, #root > div, .invoice-container, .invoice-container * {
-            visibility: visible;
-          }
-          
-          /* Invoice container styling for print */
-          .invoice-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0;
-            padding: 15mm;
-            background: white;
-            box-shadow: none;
-            border: none;
-          }
-          
-          /* Hide non-printable elements */
-          .no-print {
-            display: none !important;
-          }
-          
-          /* Show print-only elements */
-          .print-only {
-            display: block !important;
-          }
-          
-          /* Ensure proper page breaks */
-          .page-break {
-            page-break-before: always;
-          }
-          
-          /* Adjust font sizes for print */
-          body {
-            font-size: 12pt;
-          }
-          
-          h1, h2, h3, h4 {
-            font-size: 14pt !important;
-            margin-bottom: 10pt !important;
-          }
-          
-          /* Remove backgrounds for better print */
-          .bg-gray-50, .bg-green-50, .bg-blue-50, .bg-yellow-50, .bg-red-50 {
-            background: transparent !important;
-          }
-          
-          /* Ensure text is black for print */
-          .text-gray-900, .text-gray-700, .text-gray-600, .text-gray-500 {
-            color: black !important;
-          }
-          
-          /* Ensure borders are visible */
-          .border-gray-300, .border-gray-200 {
-            border-color: #999 !important;
-          }
-          
-          /* Signature area styling for print */
-          .signature-print-area {
-            border: 2px dashed #ccc;
-            padding: 20pt;
-            margin-top: 20pt;
-            min-height: 100pt;
-          }
-        }
-        
-        @page {
-          size: A4;
-          margin: 15mm;
-        }
-        
-        /* Print mode class for showing signature area */
-        .print-mode .print-only {
-          display: block;
-        }
-      `}</style>
+   <style jsx>{`
+  @media print {
+    /* Force single page */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    /* Hide everything except invoice */
+    body * {
+      visibility: hidden;
+    }
+    
+    #invoice-print-area,
+    #invoice-print-area * {
+      visibility: visible;
+    }
+    
+    #invoice-print-area {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      background: white;
+      transform: scale(0.95);
+      transform-origin: top left;
+    }
+    
+    /* Hide non-printable elements */
+    .no-print {
+      display: none !important;
+    }
+    
+    /* Show print-only elements */
+    .print-only {
+      display: block !important;
+    }
+    
+    /* Compact spacing for single page */
+    .invoice-container {
+      padding: 12mm !important;
+      margin: 0 !important;
+    }
+    
+    /* Reduce all spacing */
+    h1, h2, h3, h4, h5, h6 {
+      margin: 4pt 0 !important;
+      line-height: 1.2 !important;
+    }
+    
+    p {
+      margin: 2pt 0 !important;
+      line-height: 1.3 !important;
+    }
+    
+    /* Compact tables */
+    table {
+      border-collapse: collapse !important;
+      margin: 6pt 0 !important;
+    }
+    
+    table td, table th {
+      padding: 3pt 4pt !important;
+      line-height: 1.2 !important;
+    }
+    
+    /* Reduce section spacing */
+    .mb-8, .mb-6, .mb-4 {
+      margin-bottom: 6pt !important;
+    }
+    
+    .mt-8, .mt-6, .mt-4 {
+      margin-top: 6pt !important;
+    }
+    
+    .p-8, .p-6, .p-4 {
+      padding: 6pt !important;
+    }
+    
+    .pb-8, .pb-6, .pb-4 {
+      padding-bottom: 6pt !important;
+    }
+    
+    .pt-8, .pt-6, .pt-4 {
+      padding-top: 6pt !important;
+    }
+    
+    /* Compact card spacing */
+    .rounded-lg, .rounded-xl {
+      border-radius: 4pt !important;
+      margin: 4pt 0 !important;
+    }
+    
+    /* Remove shadows */
+    .shadow-lg, .shadow-2xl, .shadow-sm {
+      box-shadow: none !important;
+    }
+    
+    /* Preserve colors */
+    .bg-gray-50 {
+      background-color: #f9fafb !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .bg-green-50 {
+      background-color: #f0fdf4 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .bg-blue-50, .bg-blue-100 {
+      background-color: #eff6ff !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .bg-green-100 {
+      background-color: #dcfce7 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .bg-yellow-100 {
+      background-color: #fef9c3 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .bg-red-100 {
+      background-color: #fee2e2 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .bg-purple-100 {
+      background-color: #f3e8ff !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    /* Preserve text colors */
+    .text-blue-600 {
+      color: #2563eb !important;
+    }
+    
+    .text-green-600, .text-green-800 {
+      color: #16a34a !important;
+    }
+    
+    .text-yellow-600, .text-yellow-800 {
+      color: #ca8a04 !important;
+    }
+    
+    .text-red-600, .text-red-800 {
+      color: #dc2626 !important;
+    }
+    
+    .text-purple-600 {
+      color: #9333ea !important;
+    }
+    
+    .text-gray-900 {
+      color: #111827 !important;
+    }
+    
+    .text-gray-700 {
+      color: #374151 !important;
+    }
+    
+    .text-gray-600 {
+      color: #4b5563 !important;
+    }
+    
+    .text-gray-500 {
+      color: #6b7280 !important;
+    }
+    
+    /* Preserve borders */
+    .border, .border-t, .border-b, .border-l, .border-r,
+    .border-2, .border-t-2, .border-b-2 {
+      border-color: #d1d5db !important;
+    }
+    
+    .border-gray-800, .border-gray-900 {
+      border-color: #1f2937 !important;
+    }
+    
+    /* Compact font sizes */
+    body {
+      font-size: 8pt !important;
+      line-height: 1.3 !important;
+    }
+    
+    .text-3xl, .text-2xl {
+      font-size: 14pt !important;
+    }
+    
+    .text-xl, .text-lg {
+      font-size: 11pt !important;
+    }
+    
+    .text-base {
+      font-size: 8pt !important;
+    }
+    
+    .text-sm {
+      font-size: 7pt !important;
+    }
+    
+    .text-xs {
+      font-size: 6pt !important;
+    }
+    
+    /* Signature area compact */
+    .signature-print-area {
+      border: 1px dashed #ccc;
+      padding: 8pt;
+      margin-top: 6pt;
+      min-height: 40pt;
+      page-break-inside: avoid;
+    }
+    
+    /* Prevent page breaks */
+    * {
+      page-break-inside: avoid !important;
+    }
+    
+    table {
+      page-break-inside: auto !important;
+    }
+    
+    tr {
+      page-break-inside: avoid !important;
+      page-break-after: auto !important;
+    }
+    
+    /* Page setup - CRITICAL for single page */
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
+      padding: 0;
+    }
+    
+    /* Grid adjustments */
+    .grid {
+      gap: 6pt !important;
+    }
+    
+    /* Flex spacing */
+    .gap-2, .gap-3, .gap-4 {
+      gap: 4pt !important;
+    }
+    
+    /* Icon sizing */
+    svg {
+      width: 12pt !important;
+      height: 12pt !important;
+    }
+    
+    /* Status badges compact */
+    .inline-flex {
+      padding: 2pt 6pt !important;
+      font-size: 7pt !important;
+    }
+    
+    /* Summary cards very compact */
+    .bg-white.p-4 {
+      padding: 6pt !important;
+      margin-bottom: 4pt !important;
+    }
+    
+    /* Make totals section more compact */
+    .w-full.md\\:w-2\\/3.lg\\:w-1\\/2 {
+      width: 50% !important;
+    }
+    
+    /* Compress footer */
+    .text-center.pt-8 {
+      padding-top: 6pt !important;
+      margin-top: 6pt !important;
+    }
+  }
+  
+  /* Screen view - keep normal */
+  @media screen {
+    .print-only {
+      display: none;
+    }
+  }
+  
+  /* Print mode class */
+  .print-mode .print-only {
+    display: block;
+  }
+`}</style>
     </div>
   );
 };

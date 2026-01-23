@@ -197,6 +197,67 @@ const invoiceApi = {
     }
   },
 
+    // Generate and download PDF from backend
+  generateInvoicePDF: async (id) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/v1/invoices/${id}/pdf`, {
+        responseType: 'blob',
+        timeout: 30000 // 30 second timeout
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generating PDF from backend:', error);
+      throw error;
+    }
+  },
+
+  // Download PDF directly (alternative method)
+  downloadInvoicePDF: async (id, invoiceNumber) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/v1/invoices/${id}/pdf`, {
+        responseType: 'blob',
+        timeout: 30000
+      });
+      
+      // Create blob URL
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoice_${invoiceNumber || id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      return true;
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      throw error;
+    }
+  },
+
+  // Send invoice email
+  sendInvoiceEmail: async (id, emailData) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/v1/invoices/${id}/send-email`, 
+        emailData,
+        {
+          timeout: 30000
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error sending email via backend:', error);
+      throw error;
+    }
+  },
+
   // Get invoices by status
   getInvoicesByStatus: async (status) => {
     try {

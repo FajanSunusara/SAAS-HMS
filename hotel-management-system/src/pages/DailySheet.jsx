@@ -559,6 +559,13 @@ const DailySheet = () => {
                   >
                     Yesterday
                   </button>
+                  <Link
+  to="/payments"
+  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors"
+>
+  <CreditCard className="w-4 h-4" />
+  Payments
+</Link>
                 </div>
               </div>
               

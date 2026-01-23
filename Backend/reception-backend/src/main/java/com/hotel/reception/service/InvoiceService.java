@@ -286,19 +286,19 @@ public class InvoiceService {
         // For now, just log the action
     }
 
-    public byte[] generateInvoicePDF(Long invoiceId) {
-        Invoice invoice = invoiceRepository.findById(invoiceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
-        
-        // Implement PDF generation logic
-        // This is a simplified example - you would use a PDF library like iText or Apache PDFBox
-        
-        log.info("Generating PDF for invoice: {}", invoice.getInvoiceNumber());
-        
-        // Return dummy PDF bytes for now
-        String pdfContent = "PDF for Invoice " + invoice.getInvoiceNumber();
-        return pdfContent.getBytes();
-    }
+//    public byte[] generateInvoicePDF(Long invoiceId) {
+//        Invoice invoice = invoiceRepository.findById(invoiceId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
+//        
+//        // Implement PDF generation logic
+//        // This is a simplified example - you would use a PDF library like iText or Apache PDFBox
+//        
+//        log.info("Generating PDF for invoice: {}", invoice.getInvoiceNumber());
+//        
+//        // Return dummy PDF bytes for now
+//        String pdfContent = "PDF for Invoice " + invoice.getInvoiceNumber();
+//        return pdfContent.getBytes();
+//    }
 
     private void recalculateTotals(Invoice invoice) {
         BigDecimal subtotal = invoice.getRoomCharges()
@@ -433,5 +433,19 @@ public class InvoiceService {
                 .build();
     }
     
+    @Autowired
+    private InvoicePDFService invoicePDFService;
+
+    // Update the generateInvoicePDF method
+    public byte[] generateInvoicePDF(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
+        
+        InvoiceResponse invoiceResponse = mapToResponse(invoice);
+        
+        log.info("Generating PDF for invoice: {}", invoice.getInvoiceNumber());
+        
+        return invoicePDFService.generateInvoicePDF(invoiceResponse);
+    }
     
 }

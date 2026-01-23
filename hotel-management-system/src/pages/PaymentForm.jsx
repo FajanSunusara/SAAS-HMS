@@ -519,7 +519,7 @@ const PaymentForm = () => {
                     {formatCurrency(formData.amount)}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Hotel Payment • Invoice #{invoice?.id}
+                    Hotel Payment â€¢ Invoice #{invoice?.id}
                   </div>
                 </div>
               )}
@@ -681,11 +681,11 @@ const PaymentForm = () => {
                 <span className="text-sm font-medium text-green-800">Cash Payment Instructions</span>
               </div>
               <ul className="text-xs text-green-700 space-y-1">
-                <li>• Verify cash amount carefully</li>
-                <li>• Check for counterfeit notes</li>
-                <li>• Issue receipt immediately</li>
-                <li>• Deposit cash in safe/locker</li>
-                <li>• Update cash register tally</li>
+                <li>â€¢ Verify cash amount carefully</li>
+                <li>â€¢ Check for counterfeit notes</li>
+                <li>â€¢ Issue receipt immediately</li>
+                <li>â€¢ Deposit cash in safe/locker</li>
+                <li>â€¢ Update cash register tally</li>
               </ul>
             </div>
             <div>
@@ -809,7 +809,7 @@ const PaymentForm = () => {
                                 {item.guestName}
                               </div>
                               <div className="text-sm text-gray-600 mt-1">
-                                Invoice #{item.id} • Room {item.roomNumber} • Booking #{item.bookingId}
+                                Invoice #{item.id} â€¢ Room {item.roomNumber} â€¢ Booking #{item.bookingId}
                               </div>
                               <div className="text-xs text-gray-500 mt-1">
                                 {formatDate(item.checkIn)} - {formatDate(item.checkOut)}
@@ -1314,7 +1314,7 @@ const PaymentForm = () => {
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="text-sm text-gray-600">
-                Invoice #{invoice.id} • Balance Due: {formatCurrency(invoice.balanceDue)}
+                Invoice #{invoice.id} â€¢ Balance Due: {formatCurrency(invoice.balanceDue)}
               </div>
               
               <div className="flex flex-wrap gap-3">
@@ -1376,7 +1376,7 @@ const PaymentForm = () => {
           </div>
           <ul className="text-sm space-y-1">
             {Object.entries(errors).map(([key, error]) => (
-              <li key={key}>• {error}</li>
+              <li key={key}>â€¢ {error}</li>
             ))}
           </ul>
         </div>
@@ -1385,4 +1385,3 @@ const PaymentForm = () => {
   );
 };
 
-export default PaymentForm;
