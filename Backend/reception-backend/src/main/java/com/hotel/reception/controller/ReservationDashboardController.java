@@ -16,6 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -62,14 +65,26 @@ public class ReservationDashboardController {
             @RequestParam(required = false) String paymentStatus,
             @RequestParam(required = false) List<String> amenities,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false, defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false, defaultValue = "desc") String sortDirection,
             Pageable pageable) {
-        
-        Page<ReservationListResponse> response = reservationDashboardService.getReservationList(
-                searchQuery, status, roomType, floor, source, paymentStatus, 
-                amenities, sortBy, sortDirection, pageable);
+
+        // 🔥 Force sorting by checkInDate DESC
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "checkInDate")
+        );
+
+        Page<ReservationListResponse> response =
+                reservationDashboardService.getReservationList(
+                        searchQuery, status, roomType, floor,
+                        source, paymentStatus, amenities,
+                        sortBy, sortDirection, sortedPageable
+                );
+
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
 //    @Operation(summary = "Get month overview data")
 //    @GetMapping("/month-overview")

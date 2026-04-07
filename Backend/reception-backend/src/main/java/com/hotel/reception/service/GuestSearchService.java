@@ -40,7 +40,7 @@ public class GuestSearchService {
         LocalDate today = LocalDate.now();
         
         // Get current bookings
-        List<Booking> currentBookings = bookingRepository.findOccupiedRoomsByDate(today);
+        List<Booking> currentBookings = bookingRepository.findOccupiedRoomsByDate(today, BookingStatus.CHECKED_IN);
         
         // Filter by keyword if provided
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -60,9 +60,14 @@ public class GuestSearchService {
         
         // Filter by status if provided
         if (status != null && !status.equalsIgnoreCase("all")) {
-            currentBookings = currentBookings.stream()
-                .filter(booking -> booking.getStatus().equalsIgnoreCase(status))
-                .collect(Collectors.toList());
+            try {
+                BookingStatus targetStatus = BookingStatus.valueOf(status.toUpperCase());
+                currentBookings = currentBookings.stream()
+                    .filter(booking -> booking.getStatus().equals(targetStatus))
+                    .collect(Collectors.toList());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid status filter: {}", status);
+            }
         }
         
         // Convert to CurrentGuestResponse
@@ -96,20 +101,20 @@ public class GuestSearchService {
         LocalDate today = LocalDate.now();
         
         // Get current guests count
-        long currentGuests = bookingRepository.findOccupiedRoomsByDate(today).size();
+        long currentGuests = bookingRepository.findOccupiedRoomsByDate(today, BookingStatus.CHECKED_IN).size();
         
         // Get today's check-ins
-        long checkInsToday = bookingRepository.countByCheckInDateAndStatus(today, BookingStatus.CHECKED_IN.name());
+        long checkInsToday = bookingRepository.countByCheckInDateAndStatus(today, BookingStatus.CHECKED_IN);
         
         // Get expected check-ins (confirmed bookings for today)
-        long expectedCheckIns = bookingRepository.countByCheckInDateAndStatus(today, BookingStatus.CONFIRMED.name());
+        long expectedCheckIns = bookingRepository.countByCheckInDateAndStatus(today, BookingStatus.CONFIRMED);
         
         // Get today's check-outs
-        long checkOutsToday = bookingRepository.countByCheckOutDateAndStatus(today, BookingStatus.CHECKED_IN.name());
+        long checkOutsToday = bookingRepository.countByCheckOutDateAndStatus(today, BookingStatus.CHECKED_IN);
         
         // Calculate occupancy rate
         long totalRooms = 180L; // This should come from RoomRepository
-        long occupiedRooms = bookingRepository.findOccupiedRoomsByDate(today).size();
+        long occupiedRooms = bookingRepository.findOccupiedRoomsByDate(today, BookingStatus.CHECKED_IN).size();
         double occupancyRate = totalRooms > 0 ? 
             (double) occupiedRooms / totalRooms * 100 : 0;
         
@@ -243,7 +248,7 @@ public class GuestSearchService {
             .checkOutDate(booking.getCheckOutDate())
             .nights((int) nights)
             .balance(balance)
-            .status(booking.getStatus())
+            .status(booking.getStatus().name())
             .vipLevel(booking.getGuest().getVipStatus())
             .loyaltyTier(mapLoyaltyNumberToTier(booking.getGuest().getLoyaltyNumber()))
             .build();
@@ -283,7 +288,7 @@ public class GuestSearchService {
             .anyMatch(b -> 
                 b.getCheckInDate().isBefore(today.plusDays(1)) && 
                 b.getCheckOutDate().isAfter(today) &&
-                b.getStatus().equals(BookingStatus.CHECKED_IN.name())
+                b.getStatus().equals(BookingStatus.CHECKED_IN)
             );
         
         if (hasCurrentBooking) {

@@ -25,6 +25,24 @@ public interface GuestRepository extends JpaRepository<Guest, Long> {
     
     List<Guest> findByVipStatus(String vipStatus);
     
+    @Query("""
+    		SELECT g FROM Guest g
+    		WHERE LOWER(g.firstName) = LOWER(:firstName)
+    		AND LOWER(g.lastName) = LOWER(:lastName)
+    		AND g.phone = :phone
+    		AND (
+    		    (:email IS NULL AND g.email IS NULL)
+    		    OR g.email = :email
+    		)
+    		""")
+    		Optional<Guest> findExactGuest(
+    		    @Param("firstName") String firstName,
+    		    @Param("lastName") String lastName,
+    		    @Param("phone") String phone,
+    		    @Param("email") String email
+    		);
+
+    
     @Query("SELECT g FROM Guest g WHERE " +
            "LOWER(CONCAT(g.firstName, ' ', g.lastName)) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(g.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

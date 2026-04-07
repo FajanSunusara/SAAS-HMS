@@ -296,7 +296,7 @@ public class ReservationDashboardServiceImpl implements ReservationDashboardServ
                 .guestName(booking.getGuest().getFirstName() + " " + booking.getGuest().getLastName())
                 .checkInDate(booking.getCheckInDate())
                 .checkOutDate(booking.getCheckOutDate())
-                .status(formatStatus(booking.getStatus())) // Fixed: using helper method
+                .status(formatStatus(booking.getStatus().name())) // Fixed: using helper method
                 .adults(booking.getAdults())
                 .children(booking.getChildren())
                 .source(booking.getBookingSource())
@@ -321,7 +321,7 @@ public class ReservationDashboardServiceImpl implements ReservationDashboardServ
                 .guestName(booking.getGuest().getFirstName() + " " + booking.getGuest().getLastName())
                 .roomNumber(room != null ? room.getRoomNumber() : null)
                 .roomType(room != null ? room.getRoomType() : null)
-                .status(formatStatus(booking.getStatus())) // Fixed: using helper method
+                .status(formatStatus(booking.getStatus().name())) // Fixed: using helper method
                 .checkInDate(booking.getCheckInDate())
                 .checkOutDate(booking.getCheckOutDate())
                 .nights((int) nights)
@@ -369,10 +369,10 @@ public class ReservationDashboardServiceImpl implements ReservationDashboardServ
         log.info("Getting dashboard stats for date: {}", date);
         
         // Today's arrivals
-Long todayArrivals = bookingRepository.countByCheckInDateAndStatus(date,"CONFIRMED");
+Long todayArrivals = bookingRepository.countByCheckInDateAndStatus(date, BookingStatus.CONFIRMED);
         
         // Today's departures
-        Long todayDepartures = bookingRepository.countByCheckOutDateAndStatus(date, "CHECKED_IN");
+        Long todayDepartures = bookingRepository.countByCheckOutDateAndStatus(date, BookingStatus.CHECKED_IN);
         
         // Occupancy rate - Use String "OCCUPIED" instead of RoomStatus enum
         Long totalRooms = roomRepository.count();
@@ -397,26 +397,31 @@ Long todayArrivals = bookingRepository.countByCheckInDateAndStatus(date,"CONFIRM
     @Override
     public CalendarViewResponse getCalendarView(LocalDate centerDate, int daysBefore, int daysAfter) {
         log.info("Getting calendar view for center date: {}", centerDate);
-        
+
         LocalDate startDate = centerDate.minusDays(daysBefore);
         LocalDate endDate = centerDate.plusDays(daysAfter);
-        
+
         // Get all rooms
         List<Room> rooms = roomRepository.findAll();
         List<RoomResponse> roomResponses = rooms.stream()
                 .map(this::mapToRoomResponse)
                 .collect(Collectors.toList());
-        
-        // Get bookings for the date range
-        List<Booking> bookings = bookingRepository.findBookingsInDateRange(startDate, endDate);
+
+        // Get bookings for the date range (exclude cancelled)
+        List<Booking> bookings = bookingRepository.findBookingsInDateRange(
+                startDate,
+                endDate,
+                BookingStatus.CANCELLED
+        );
+
         List<CalendarBookingResponse> bookingResponses = bookings.stream()
                 .map(this::mapToCalendarBookingResponse)
                 .collect(Collectors.toList());
-        
+
         // Generate date range
         List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1))
                 .collect(Collectors.toList());
-        
+
         return CalendarViewResponse.builder()
                 .rooms(roomResponses)
                 .bookings(bookingResponses)
@@ -424,6 +429,12 @@ Long todayArrivals = bookingRepository.countByCheckInDateAndStatus(date,"CONFIRM
                 .centerDate(centerDate)
                 .build();
     }
+    
+    List<BookingStatus> occupiedStatuses = List.of(
+            BookingStatus.CHECKED_IN,
+            BookingStatus.CONFIRMED
+    );
+
 
     @Override
     public MonthOverviewResponse getMonthOverview(String monthYear, String roomType) {
@@ -438,7 +449,11 @@ Long todayArrivals = bookingRepository.countByCheckInDateAndStatus(date,"CONFIRM
         
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             // Calculate occupancy for the day
-            Long occupiedRooms = bookingRepository.countOccupiedRoomsOnDate(date);
+        	Long occupiedRooms = bookingRepository.countOccupiedRoomsOnDate(
+        	        date,
+        	        occupiedStatuses
+        	);
+
             Long totalRooms = roomRepository.count();
             BigDecimal occupancy = totalRooms > 0 ?
                     BigDecimal.valueOf(occupiedRooms * 100.0 / totalRooms) :
@@ -449,8 +464,8 @@ Long todayArrivals = bookingRepository.countByCheckInDateAndStatus(date,"CONFIRM
                     .orElse(BigDecimal.ZERO);
             
             // Count arrivals and departures
-            Long arrivals = bookingRepository.countByCheckInDateAndStatus(date, "CHECKED_IN");
-            Long departures = bookingRepository.countByCheckOutDateAndStatus(date, "CHECKED_OUT");
+            Long arrivals = bookingRepository.countByCheckInDateAndStatus(date, BookingStatus.CHECKED_IN);
+            Long departures = bookingRepository.countByCheckOutDateAndStatus(date, BookingStatus.CHECKED_OUT);
             
             dailyStats.add(DailyStatisticResponse.builder()
                     .date(date)
@@ -500,34 +515,35 @@ Long todayArrivals = bookingRepository.countByCheckInDateAndStatus(date,"CONFIRM
     }
 
     @Override
+    @Transactional
     public List<BookingStatusCountResponse> getBookingStatusCounts(LocalDate date) {
-        // FIXED: Repository now returns List<Map<String, Object>>
-        List<Map<String, Object>> results = bookingRepository.countBookingsByStatusForDate(date);
-        
-        // Convert to Map<String, Long>
-        Map<String, Long> countMap = results.stream()
+
+        List<Map<String, Object>> results =
+                bookingRepository.countBookingsByStatusForDate(date);
+
+        Map<BookingStatus, Long> countMap = results.stream()
                 .collect(Collectors.toMap(
-                    map -> (String) map.get("status"),
-                    map -> (Long) map.get("count")
+                        map -> (BookingStatus) map.get("status"), // ✅ ENUM
+                        map -> ((Number) map.get("count")).longValue()
                 ));
-        
-        Map<String, String> colorMap = new HashMap<>();
-        colorMap.put("CONFIRMED", "bg-blue-500");
-        colorMap.put("CHECKED_IN", "bg-green-500");
-        colorMap.put("TENTATIVE", "bg-yellow-500");
-        colorMap.put("NO_SHOW", "bg-red-500");
-        colorMap.put("CANCELLED", "bg-gray-500");
-        
+
+        Map<BookingStatus, String> colorMap = Map.of(
+                BookingStatus.CONFIRMED, "bg-blue-500",
+                BookingStatus.CHECKED_IN, "bg-green-500",
+                BookingStatus.TENTATIVE, "bg-yellow-500",
+                BookingStatus.NO_SHOW, "bg-red-500",
+                BookingStatus.CANCELLED, "bg-gray-500"
+        );
+
         return countMap.entrySet().stream()
                 .map(entry -> BookingStatusCountResponse.builder()
-                        .label(entry.getKey().replace("_", " "))
+                        .label(entry.getKey().name().replace("_", " "))
                         .count(entry.getValue())
                         .color(colorMap.getOrDefault(entry.getKey(), "bg-gray-500"))
-                        .value(entry.getKey().toLowerCase().replace("_", "-"))
+                        .value(entry.getKey().name().toLowerCase().replace("_", "-"))
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
-    
-    
+
     
 }

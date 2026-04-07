@@ -42,8 +42,8 @@ const Dashboard = () => {
 
       // Fetch data sequentially to avoid overwhelming the API
       const roomSummaryResponse = await API.get('/rooms/status/summary');
-      const arrivalsResponse = await API.get('/bookings/checkins/today');
-      const departuresResponse = await API.get('/bookings/checkouts/today');
+      const arrivalsResponse = await API.get('/dashboard/checkins/today');
+      const departuresResponse = await API.get('/dashboard/checkouts/today');
       const healthResponse = await API.get('/health');
 
       // Transform room summary data

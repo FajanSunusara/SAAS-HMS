@@ -83,7 +83,7 @@ public class BookingService {
         booking.setInfants(request.getInfants() != null ? request.getInfants() : 0);
         booking.setPurposeOfVisit(request.getPurposeOfVisit());
         booking.setSpecialInstructions(request.getSpecialInstructions());
-        booking.setStatus(BookingStatus.CONFIRMED.name());
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPaymentStatus("PENDING");
         
         // Set pricing
@@ -143,14 +143,14 @@ public class BookingService {
     
     public List<BookingResponse> getTodayCheckIns() {
         LocalDate today = LocalDate.now();
-        return bookingRepository.findTodayCheckIns(today).stream()
+        return bookingRepository.findTodayCheckIns(today, BookingStatus.CONFIRMED).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
     
     public List<BookingResponse> getTodayCheckOuts() {
         LocalDate today = LocalDate.now();
-        return bookingRepository.findTodayCheckOuts(today).stream()
+        return bookingRepository.findTodayCheckOuts(today, BookingStatus.CHECKED_IN).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -169,16 +169,16 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         
         // Validate booking can be checked in
-        if (BookingStatus.CHECKED_IN.name().equals(booking.getStatus())) {
+        if (BookingStatus.CHECKED_IN.equals(booking.getStatus())) {
             throw new BusinessException("Booking is already checked in");
         }
         
-        if (BookingStatus.CANCELLED.name().equals(booking.getStatus())) {
+        if (BookingStatus.CANCELLED.equals(booking.getStatus())) {
             throw new BusinessException("Cannot check in a cancelled booking");
         }
         
         // Update booking status and actual check-in time
-        booking.setStatus(BookingStatus.CHECKED_IN.name());
+        booking.setStatus(BookingStatus.CHECKED_IN);
         booking.setActualCheckIn(LocalDateTime.now());
         
         // Update payment status if deposit paid
@@ -203,12 +203,12 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         
         // Validate booking can be checked out
-        if (!BookingStatus.CHECKED_IN.name().equals(booking.getStatus())) {
+        if (!BookingStatus.CHECKED_IN.equals(booking.getStatus())) {
             throw new BusinessException("Booking is not checked in");
         }
         
         // Update booking status
-        booking.setStatus(BookingStatus.CHECKED_OUT.name());
+        booking.setStatus(BookingStatus.CHECKED_OUT);
         booking.setActualCheckOut(LocalDateTime.now());
         
         // Apply discount if any
@@ -263,7 +263,7 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         
         // Update booking status
-        booking.setStatus(BookingStatus.CANCELLED.name());
+        booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancelledAt(LocalDateTime.now());
         booking.setCancellationReason(reason);
         
@@ -277,23 +277,23 @@ public class BookingService {
         return mapToResponse(cancelledBooking);
     }
     
-    public BookingResponse updateBookingStatus(Long bookingId, String newStatus) {
+    public BookingResponse updateBookingStatus(Long bookingId, BookingStatus newStatus) {
         log.info("Updating booking {} status to {}", bookingId, newStatus);
         
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         
-        String oldStatus = booking.getStatus();
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(newStatus);
         
         // Handle specific status transitions
-        if (BookingStatus.CHECKED_IN.name().equals(newStatus) && !BookingStatus.CHECKED_IN.name().equals(oldStatus)) {
+        if (BookingStatus.CHECKED_IN.equals(newStatus) && !BookingStatus.CHECKED_IN.equals(oldStatus)) {
             booking.setActualCheckIn(LocalDateTime.now());
             updateRoomStatusesForBooking(booking, "OCCUPIED");
-        } else if (BookingStatus.CHECKED_OUT.name().equals(newStatus) && !BookingStatus.CHECKED_OUT.name().equals(oldStatus)) {
+        } else if (BookingStatus.CHECKED_OUT.equals(newStatus) && !BookingStatus.CHECKED_OUT.equals(oldStatus)) {
             booking.setActualCheckOut(LocalDateTime.now());
             updateRoomStatusesForBooking(booking, "CLEANING");
-        } else if (BookingStatus.CANCELLED.name().equals(newStatus)) {
+        } else if (BookingStatus.CANCELLED.equals(newStatus)) {
             booking.setCancelledAt(LocalDateTime.now());
             updateRoomStatusesForBooking(booking, "AVAILABLE");
         }
@@ -310,7 +310,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         
-        booking.setStatus(BookingStatus.CANCELLED.name());
+        booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancelledAt(LocalDateTime.now());
         booking.setCancellationReason(reason);
         
@@ -324,23 +324,26 @@ public class BookingService {
     
     public List<BookingResponse> getExpectedArrivals(LocalDate date) {
         return bookingRepository.findByCheckInDate(date).stream()
-                .filter(booking -> !BookingStatus.CHECKED_IN.name().equals(booking.getStatus()) &&
-                                  !BookingStatus.CANCELLED.name().equals(booking.getStatus()))
+                .filter(booking -> !BookingStatus.CHECKED_IN.equals(booking.getStatus()) &&
+                                  !BookingStatus.CANCELLED.equals(booking.getStatus()))
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
     
     public List<BookingResponse> getOccupiedBookingsForDate(LocalDate date) {
-        return bookingRepository.findOccupiedRoomsByDate(date).stream()
+        return bookingRepository
+                .findOccupiedRoomsByDate(date, BookingStatus.CHECKED_IN)
+                .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+
     
     public List<BookingResponse> getTodayDepartures() {
         LocalDate today = LocalDate.now();
-        return bookingRepository.findTodayCheckOuts(today).stream()
-                .filter(booking -> !BookingStatus.CHECKED_OUT.name().equals(booking.getStatus()) &&
-                                  !BookingStatus.CANCELLED.name().equals(booking.getStatus()))
+        return bookingRepository.findTodayCheckOuts(today, BookingStatus.CHECKED_IN).stream()
+                .filter(booking -> !BookingStatus.CHECKED_OUT.equals(booking.getStatus()) &&
+                                  !BookingStatus.CANCELLED.equals(booking.getStatus()))
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -738,6 +741,7 @@ public class BookingService {
 //}
     
     
+ 
     
     
     public Page<BookingResponse> searchDepartures(String keyword, String roomType, String status, 
@@ -787,7 +791,9 @@ return true;
 .filter(booking -> {
 // Status filter
 if (StringUtils.hasText(status) && !"all".equalsIgnoreCase(status)) {
-return status.equalsIgnoreCase(booking.getStatus());
+	return BookingStatus.valueOf(status.toUpperCase())
+	        .equals(booking.getStatus());
+
 }
 return true;
 })

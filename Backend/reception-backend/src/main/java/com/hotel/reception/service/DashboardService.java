@@ -1,6 +1,8 @@
 package com.hotel.reception.service;
 
-import com.hotel.reception.model.dto.response.DashboardResponse;
+import com.hotel.reception.mapper.BookingMapper;
+import com.hotel.reception.model.dto.response.*;
+import com.hotel.reception.model.enums.BookingStatus;
 import com.hotel.reception.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -36,11 +40,11 @@ public class DashboardService {
         LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
         
         // Today's check-ins and check-outs
-        Long todayCheckIns = bookingRepository.countByCheckInDateAndStatus(today, "CONFIRMED");
-        Long todayCheckOuts = bookingRepository.countByCheckOutDateAndStatus(today, "CHECKED_IN");
+        Long todayCheckIns = bookingRepository.countByCheckInDateAndStatus(today, BookingStatus.CONFIRMED);
+        Long todayCheckOuts = bookingRepository.countByCheckOutDateAndStatus(today, BookingStatus.CHECKED_IN);
         
         // Current occupancy
-        Long currentOccupancy = bookingRepository.countByStatus("CHECKED_IN");
+        Long currentOccupancy = bookingRepository.countByStatus(BookingStatus.CHECKED_IN);
         
         // Room status counts
         Long totalRooms = roomService.getTotalRoomCount();
@@ -74,9 +78,9 @@ public class DashboardService {
         
         // Booking counts
         Long totalBookings = bookingRepository.count();
-        Long confirmedBookings = bookingRepository.countByStatus("CONFIRMED");
-        Long checkedInBookings = bookingRepository.countByStatus("CHECKED_IN");
-        Long cancelledBookings = bookingRepository.countByStatus("CANCELLED");
+        Long confirmedBookings = bookingRepository.countByStatus(BookingStatus.CONFIRMED);
+        Long checkedInBookings = bookingRepository.countByStatus(BookingStatus.CHECKED_IN);
+        Long cancelledBookings = bookingRepository.countByStatus(BookingStatus.CANCELLED);
         
         // Payment method breakdown
         Map<String, BigDecimal> paymentMethodBreakdown = paymentService.getPaymentMethodBreakdown(
@@ -84,9 +88,9 @@ public class DashboardService {
         
         // Upcoming check-ins/outs
         Long upcomingCheckIns = bookingRepository.countByCheckInDateAndStatus(
-                today.plusDays(1), "CONFIRMED");
+                today.plusDays(1), BookingStatus.CONFIRMED);
         Long upcomingCheckOuts = bookingRepository.countByCheckOutDateAndStatus(
-                today.plusDays(1), "CHECKED_IN");
+                today.plusDays(1), BookingStatus.CHECKED_IN);
         
         // Calculate KPIs
         BigDecimal averageDailyRate = calculateAverageDailyRate();
@@ -128,7 +132,7 @@ public class DashboardService {
         LocalDate startOfMonth = today.withDayOfMonth(1);
         
         BigDecimal monthlyRevenue = invoiceRepository.getTotalRevenueByDateRange(startOfMonth, today);
-        Long occupiedRoomNights = bookingRepository.countByStatus("CHECKED_IN");
+        Long occupiedRoomNights = bookingRepository.countByStatus(BookingStatus.CHECKED_IN);
         
         if (monthlyRevenue != null && occupiedRoomNights > 0) {
             return monthlyRevenue.divide(BigDecimal.valueOf(occupiedRoomNights), 2, RoundingMode.HALF_UP);
@@ -142,4 +146,37 @@ public class DashboardService {
         }
         return BigDecimal.ZERO;
     }
+    
+//    private final BookingRepository bookingRepository;
+    private final BookingMapper bookingMapper;
+
+    public List<DashboardBookingResponse> getTodayCheckIns() {
+        LocalDate today = LocalDate.now();
+        List<BookingStatus> arrivalStatuses = List.of(
+                BookingStatus.CONFIRMED,
+                BookingStatus.CHECKED_IN
+        );
+        return bookingRepository
+                .findTodayCheckInsDashboardPage(today, arrivalStatuses)
+                .stream()
+                .map(bookingMapper::toDashboardResponse)
+                .collect(Collectors.toList());
+    }
+
+    
+    public List<DashboardBookingResponse> getTodayCheckOuts() {
+        LocalDate today = LocalDate.now();
+
+        List<BookingStatus> departureStatuses = List.of(
+                BookingStatus.CHECKED_IN
+        );
+
+        return bookingRepository.findTodayCheckOutsDashboardPage(today, departureStatuses)
+        		.stream()
+                .map(bookingMapper::toDashboardResponse)
+                .collect(Collectors.toList());
+    }
+    
+    
+
 }

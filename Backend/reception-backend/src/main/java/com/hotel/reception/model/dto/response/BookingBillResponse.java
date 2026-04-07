@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.hotel.reception.model.enums.BookingStatus;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -37,7 +39,8 @@ public class BookingBillResponse {
     private BigDecimal amountPaid;
     private BigDecimal balanceDue;
     
-    private String status;
+    private BookingStatus status;
+
     private String paymentStatus;
     private LocalDateTime checkedOutAt;
     

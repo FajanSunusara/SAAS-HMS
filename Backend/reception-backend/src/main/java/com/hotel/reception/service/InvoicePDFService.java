@@ -221,7 +221,7 @@ public class InvoicePDFService {
         addStayCell(stayTable, "Check-in", booking.getCheckInDate() != null ? booking.getCheckInDate().toString() : "N/A");
         addStayCell(stayTable, "Check-out", booking.getCheckOutDate() != null ? booking.getCheckOutDate().toString() : "N/A");
         addStayCell(stayTable, "Nights", String.valueOf(booking.getNights()));
-        addStayCell(stayTable, "Status", booking.getStatus());
+        addStayCell(stayTable, "Status", booking.getStatus().name());
         
         document.add(stayTable);
     }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -14,10 +15,20 @@ public interface BookingRoomRepository extends JpaRepository<BookingRoom, Long> 
     List<BookingRoom> findByBookingBookingId(Long bookingId);
     
     List<BookingRoom> findByRoomRoomId(Long roomId);
-    
-    @Query("SELECT br FROM BookingRoom br WHERE br.booking.bookingId = :bookingId AND br.guest.guestId = :guestId")
-    List<BookingRoom> findByBookingAndGuest(
-            @Param("bookingId") Long bookingId,
-            @Param("guestId") Long guestId
-    );
+   
+   @Query("SELECT br FROM BookingRoom br WHERE br.booking.bookingId = :bookingId AND br.guest.guestId = :guestId")
+  List<BookingRoom> findByBookingAndGuest(
+          @Param("bookingId") Long bookingId,
+          @Param("guestId") Long guestId
+  );
+  
+
+  
+  @Query("SELECT br FROM BookingRoom br WHERE br.room.roomId = :roomId AND " +
+         "br.booking.checkInDate <= :checkOut AND " +
+         "br.booking.checkOutDate >= :checkIn AND " +
+         "br.booking.status IN ('CONFIRMED', 'CHECKED_IN')")
+  List<BookingRoom> findBookingsForRoom(@Param("roomId") Long roomId,
+                                        @Param("checkIn") LocalDate checkIn,
+                                        @Param("checkOut") LocalDate checkOut);
 }

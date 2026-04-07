@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.hotel.reception.model.enums.BookingStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -75,8 +77,9 @@ public class Booking {
     @Column(name = "special_instructions", columnDefinition = "TEXT")
     private String specialInstructions;
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 30)
-    private String status = "CONFIRMED";
+    private BookingStatus status = BookingStatus.CONFIRMED;
     
     @Column(name = "payment_status", length = 30)
     private String paymentStatus = "PENDING";
@@ -95,6 +98,18 @@ public class Booking {
     
     @Column(name = "terms_accepted")
     private Boolean termsAccepted = false;
+    
+    // New field: basePrice
+    @Column(name = "base_price", precision = 10, scale = 2)
+    private BigDecimal basePrice = BigDecimal.ZERO;
+    
+    // New field: companyName (for company bookings)
+    @Column(name = "company_name", length = 200)
+    private String companyName;
+    
+    // New field: companyTaxId (for company bookings)
+    @Column(name = "company_tax_id", length = 50)
+    private String companyTaxId;
     
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingRoom> bookingRooms = new ArrayList<>();

@@ -1,5 +1,6 @@
 package com.hotel.reception.model.dto.response;
 
+import com.hotel.reception.model.enums.BookingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,7 +46,7 @@ public class BookingResponse {
     private List<RoomResponse> rooms;
     
     // Status
-    private String status;
+    private BookingStatus status;
     private String paymentStatus;
     
     // Pricing

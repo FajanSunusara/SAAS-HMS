@@ -2,6 +2,7 @@ package com.hotel.reception.service;
 
 import com.hotel.reception.model.dto.response.GuestDetailResponse;
 import com.hotel.reception.model.entity.*;
+import com.hotel.reception.model.enums.BookingStatus;
 import com.hotel.reception.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -150,7 +151,7 @@ public class GuestDetailService {
     // Helper methods with proper null checks
     private Optional<Booking> getCurrentStay(Long guestId) {
         try {
-            return bookingRepository.findCurrentStay(guestId, LocalDate.now());
+            return bookingRepository.findCurrentStay(guestId, LocalDate.now(), BookingStatus.CHECKED_IN);
         } catch (Exception e) {
             log.warn("Error getting current stay for guest {}: {}", guestId, e.getMessage());
             return Optional.empty();
@@ -159,7 +160,7 @@ public class GuestDetailService {
 
     private GuestDetailResponse.GuestInfoResponse mapGuestToResponse(Guest guest) {
         try {
-            Long totalStays = bookingRepository.countByGuestGuestIdAndStatus(guest.getGuestId(), "CHECKED_OUT");
+            Long totalStays = bookingRepository.countByGuestGuestIdAndStatus(guest.getGuestId(), BookingStatus.CHECKED_OUT);
             Double lifetimeValue = invoiceRepository.sumTotalAmountByGuestId(guest.getGuestId());
             
             // Safely format dates
@@ -459,7 +460,7 @@ public class GuestDetailService {
                     .dates(dates)
                     .roomType(roomType)
                     .room(roomNumber)
-                    .status(booking.getStatus() != null ? booking.getStatus() : "UNKNOWN")
+                    .status(booking.getStatus() != null ? booking.getStatus().name() : "UNKNOWN")
                     .total("$" + totalRevenue.setScale(2, RoundingMode.HALF_UP).toString())
                     .revenue(totalRevenue)
                     .source(booking.getBookingSource() != null ? booking.getBookingSource() : "Direct")
@@ -802,8 +803,11 @@ public class GuestDetailService {
 
     private Integer calculateLoyaltyPoints(Long guestId) {
         try {
-            Long stays = bookingRepository.countByGuestGuestIdAndStatus(guestId, "CHECKED_OUT");
-            return (int) (stays != null ? stays * 1556 : 12450);
+            Long totalStays =
+                    bookingRepository.countByGuestGuestIdAndStatus(
+                            guestId, BookingStatus.CHECKED_OUT);
+
+            return (int) ((totalStays != null ? totalStays : 0) * 1556);
         } catch (Exception e) {
             log.warn("Error calculating loyalty points for guest {}: {}", guestId, e.getMessage());
             return 12450;

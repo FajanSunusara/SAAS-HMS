@@ -89,4 +89,16 @@ Long countByStatus(RoomStatus status);
     @Query("SELECT DISTINCT r.floorNumber FROM Room r ORDER BY r.floorNumber")
     List<Integer> findDistinctFloors();
     
+    @Query("SELECT r FROM Room r WHERE r.status = 'AVAILABLE' AND r.roomType = :roomType AND " +
+            "r.roomId NOT IN (" +
+            "   SELECT br.room.roomId FROM BookingRoom br " +
+            "   JOIN br.booking b " +
+            "   WHERE b.status IN ('CONFIRMED', 'CHECKED_IN') AND " +
+            "   b.checkInDate <= :checkOut AND " +
+            "   b.checkOutDate >= :checkIn" +
+            ")")
+     List<Room> findAvailableRoomsByType(@Param("checkIn") LocalDate checkIn, 
+                                         @Param("checkOut") LocalDate checkOut,
+                                         @Param("roomType") String roomType);
+    
 }

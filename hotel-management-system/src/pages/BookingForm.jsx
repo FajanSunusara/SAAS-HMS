@@ -4,21 +4,20 @@ import {
   Calendar, User, Mail, Phone, MapPin, CreditCard, Search, 
   Save, Eye, RefreshCw, ChevronRight, Check,  Bed,
   DollarSign,  Printer, Send, 
- Users, X, AlertCircle, CheckCircle, 
+  Users, X, AlertCircle, CheckCircle, 
   ChevronLeft, Download, HelpCircle, 
-
   Info,  Wifi as WifiIcon,
   Coffee as CoffeeIcon, Car as CarIcon, Sun as SunIcon,
- Wind as WindIcon,
+  Wind as WindIcon,
   Tv as TvIcon, 
- Smartphone as Mobile,
- HardDrive as Disk,
- Download as DownloadIcon,
-  
+  Smartphone as Mobile,
+  HardDrive as Disk,
+  Download as DownloadIcon,
   Eye as EyeIcon,
-   Printer as PrinterIcon,
+  Printer as PrinterIcon,
   Battery as BatteryIcon
 } from 'lucide-react';
+import axios from 'axios';
 
 const BookingForm = () => {
   const navigate = useNavigate();
@@ -115,6 +114,13 @@ const BookingForm = () => {
   const [showRoomGrid, setShowRoomGrid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [formDataArray, setFormDataArray] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [guestSearchLoading, setGuestSearchLoading] = useState(false);
+  const [rooms, setRooms] = useState([]);
+
+  // API base URL
+  const API_BASE_URL = 'http://localhost:8080/api';
 
   // Custom toast notification system
   const showToast = (message, type = 'success') => {
@@ -122,17 +128,50 @@ const BookingForm = () => {
     const newToast = { id, message, type };
     setToasts(prev => [...prev, newToast]);
     
-    // Auto remove toast after 3 seconds
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 3000);
   };
 
+  // Fetch rooms on component mount
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const fetchRooms = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/v1/rooms`);
+      console.log('Rooms API Response:', response.data);
+      
+      if (response.data && response.data.success) {
+        setRooms(response.data.data || []);
+        showToast('Rooms loaded successfully', 'success');
+      }
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+      showToast('Error loading rooms. Using mock data.', 'error');
+      // Use mock rooms as fallback
+      setRooms(createMockRooms());
+    }
+  };
+
+  // Create mock rooms for fallback
+  const createMockRooms = () => {
+    return [
+      { id: 1, roomNumber: '101', roomType: 'Standard Room', baseRate: 120, capacity: 2, floorNumber: 1, status: 'AVAILABLE', features: ['WiFi', 'TV', 'AC'], description: 'Comfortable room with basic amenities' },
+      { id: 2, roomNumber: '102', roomType: 'Standard Room', baseRate: 120, capacity: 2, floorNumber: 1, status: 'AVAILABLE', features: ['WiFi', 'TV', 'AC'], description: 'Comfortable room with basic amenities' },
+      { id: 3, roomNumber: '201', roomType: 'Deluxe Room', baseRate: 180, capacity: 2, floorNumber: 2, status: 'AVAILABLE', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker'], description: 'Spacious room with premium amenities' },
+      { id: 4, roomNumber: '202', roomType: 'Deluxe Room', baseRate: 180, capacity: 2, floorNumber: 2, status: 'AVAILABLE', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker'], description: 'Spacious room with premium amenities' },
+      { id: 5, roomNumber: '301', roomType: 'Executive Suite', baseRate: 280, capacity: 4, floorNumber: 3, status: 'AVAILABLE', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker', 'Work desk'], description: 'Luxury suite with separate living area' },
+      { id: 6, roomNumber: '401', roomType: 'Presidential Suite', baseRate: 450, capacity: 4, floorNumber: 4, status: 'AVAILABLE', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker', 'Jacuzzi', 'Butler service'], description: 'Ultimate luxury with panoramic views' },
+    ];
+  };
+
   const roomTypes = [
-    { id: 1, name: 'Standard Room', price: 120, capacity: 2, available: 5, floor: '2nd', description: 'Comfortable room with basic amenities', features: ['WiFi', 'TV', 'AC', 'Mini-fridge'] },
-    { id: 2, name: 'Deluxe Room', price: 180, capacity: 2, available: 3, floor: '3rd', description: 'Spacious room with premium amenities', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker'] },
-    { id: 3, name: 'Executive Suite', price: 280, capacity: 4, available: 2, floor: '4th', description: 'Luxury suite with separate living area', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker', 'Work desk'] },
-    { id: 4, name: 'Presidential Suite', price: 450, capacity: 4, available: 1, floor: '5th', description: 'Ultimate luxury with panoramic views', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker', 'Jacuzzi', 'Butler service'] },
+    { id: 1, name: 'Standard Room', price: 120, capacity: 2, available: 5, floor: '1st', description: 'Comfortable room with basic amenities', features: ['WiFi', 'TV', 'AC', 'Mini-fridge'] },
+    { id: 2, name: 'Deluxe Room', price: 180, capacity: 2, available: 3, floor: '2nd', description: 'Spacious room with premium amenities', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker'] },
+    { id: 3, name: 'Executive Suite', price: 280, capacity: 4, available: 2, floor: '3rd', description: 'Luxury suite with separate living area', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker', 'Work desk'] },
+    { id: 4, name: 'Presidential Suite', price: 450, capacity: 4, available: 1, floor: '4th', description: 'Ultimate luxury with panoramic views', features: ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker', 'Jacuzzi', 'Butler service'] },
   ];
 
   const ratePlans = [
@@ -275,12 +314,12 @@ const BookingForm = () => {
   const handleRoomSelect = (roomNumber) => {
     setFormData(prev => {
       const rooms = [...prev.selectedRooms];
-      const index = rooms.indexOf(roomNumber);
+      const index = rooms.indexOf(roomNumber.toString());
       
       if (index > -1) {
         rooms.splice(index, 1);
       } else {
-        rooms.push(roomNumber);
+        rooms.push(roomNumber.toString());
       }
       
       return { 
@@ -350,36 +389,83 @@ const BookingForm = () => {
     return total - advance;
   };
 
-  const handleSearchGuest = () => {
+  // Search guests from backend
+  const handleSearchGuest = async () => {
     if (formData.guestSearch.length > 2) {
-      setSearchResults([
-        { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+1234567890', previousStays: 3, loyaltyTier: 'Gold' },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+0987654321', previousStays: 1, loyaltyTier: 'Silver' },
-        { id: 3, name: 'Robert Johnson', email: 'robert@example.com', phone: '+1122334455', previousStays: 5, loyaltyTier: 'Platinum' },
-      ]);
+      try {
+        setGuestSearchLoading(true);
+        const response = await axios.get(`${API_BASE_URL}/v1/guests/search`, {
+          params: { keyword: formData.guestSearch }
+        });
+        
+        console.log('Guest Search Response:', response.data);
+        
+        if (response.data && response.data.success) {
+          setSearchResults(response.data.data || []);
+          if (response.data.data && response.data.data.length > 0) {
+            showToast(`${response.data.data.length} guest(s) found`, 'success');
+          } else {
+            showToast('No guests found', 'info');
+          }
+        } else {
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error('Error searching guests:', error);
+        showToast('Error searching guests', 'error');
+        // Fallback to mock data
+        setSearchResults([
+          { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', phone: '+1234567890', previousStays: 3, loyaltyTier: 'Gold' },
+          { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', phone: '+0987654321', previousStays: 1, loyaltyTier: 'Silver' },
+          { id: 3, firstName: 'Robert', lastName: 'Johnson', email: 'robert@example.com', phone: '+1122334455', previousStays: 5, loyaltyTier: 'Platinum' },
+        ]);
+      } finally {
+        setGuestSearchLoading(false);
+      }
     }
   };
 
   const handleSelectGuest = (guest) => {
     setFormData(prev => ({
       ...prev,
-      firstName: guest.name.split(' ')[0],
-      lastName: guest.name.split(' ').slice(1).join(' '),
-      email: guest.email,
-      phone: guest.phone,
-      guestSearch: guest.name,
+      firstName: guest.firstName || '',
+      lastName: guest.lastName || '',
+      email: guest.email || '',
+      phone: guest.phone || '',
+      guestSearch: `${guest.firstName} ${guest.lastName}`,
+      nationality: guest.nationality || '',
+      loyaltyNumber: guest.loyaltyNumber || '',
+      address: guest.address || '',
     }));
     setSearchResults([]);
-    showToast(`Guest ${guest.name} loaded`, 'success');
+    showToast(`Guest ${guest.firstName} ${guest.lastName} loaded`, 'success');
+  };
+
+  // Add form data to array function
+  const addFormDataToArray = () => {
+    const formDataCopy = { ...formData };
+    
+    const dataToStore = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      step: currentStep,
+      data: { ...formDataCopy }
+    };
+
+    setFormDataArray(prev => [...prev, dataToStore]);
+    showToast('Form data saved to array', 'success');
   };
 
   const handleSaveDraft = () => {
+    addFormDataToArray();
+    
     const drafts = JSON.parse(localStorage.getItem('bookingDrafts') || '[]');
     drafts.push({
       ...formData,
       draftId: Date.now(),
       savedAt: new Date().toISOString(),
       progress: currentStep,
+      formDataArray: formDataArray
     });
     localStorage.setItem('bookingDrafts', JSON.stringify(drafts));
     setDraftSaved(true);
@@ -456,34 +542,80 @@ const BookingForm = () => {
         earlyCheckIn: false,
         lateCheckOut: false,
       });
+      setFormDataArray([]);
       setCurrentStep(1);
       setValidationErrors({});
       showToast('Form reset successfully', 'info');
     }
   };
 
-  const handleViewAvailability = () => {
+  const handleViewAvailability = async () => {
     if (formData.checkInDate && formData.checkOutDate) {
       setShowAvailability(true);
-      const available = [];
-      for (let i = 101; i <= 110; i++) {
-        available.push({
-          number: i,
-          type: i <= 104 ? 'Standard Room' : i <= 108 ? 'Deluxe Room' : 'Executive Suite',
-          floor: Math.floor(i / 100),
-          price: i <= 104 ? 120 : i <= 108 ? 180 : 280,
-          status: Math.random() > 0.3 ? 'available' : 'occupied',
-          features: i <= 104 ? ['WiFi', 'TV'] : i <= 108 ? ['WiFi', 'TV', 'AC', 'Mini-bar'] : ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker'],
+      
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`${API_BASE_URL}/v1/rooms/available`, {
+          params: {
+            checkIn: formData.checkInDate,
+            checkOut: formData.checkOutDate,
+            roomType: formData.roomSelectionMode === 'type' ? formData.selectedRoomTypes[0]?.typeId : ''
+          }
         });
+        
+        console.log('Available Rooms Response:', response.data);
+        
+        if (response.data && response.data.success) {
+          const roomsData = response.data.data || [];
+          
+          if (Array.isArray(roomsData)) {
+            const transformedRooms = roomsData.map(room => ({
+              id: room.id,
+              number: room.roomNumber || room.id.toString(),
+              type: room.roomType || 'Standard Room',
+              floor: room.floorNumber || 1,
+              price: room.baseRate || 100,
+              status: room.status || 'AVAILABLE',
+              features: room.features || ['WiFi', 'TV']
+            }));
+            setAvailableRooms(transformedRooms);
+          } else {
+            createMockAvailableRooms();
+          }
+        } else {
+          createMockAvailableRooms();
+        }
+      } catch (error) {
+        console.error('Error fetching available rooms:', error);
+        createMockAvailableRooms();
+        showToast('Using mock data (API unavailable)', 'info');
+      } finally {
+        setIsLoading(false);
       }
-      setAvailableRooms(available);
     } else {
       showToast('Please select check-in and check-out dates first.', 'error');
     }
   };
 
+  const createMockAvailableRooms = () => {
+    const available = [];
+    for (let i = 101; i <= 110; i++) {
+      available.push({
+        id: i,
+        number: i.toString(),
+        type: i <= 104 ? 'Standard Room' : i <= 108 ? 'Deluxe Room' : 'Executive Suite',
+        floor: Math.floor(i / 100),
+        price: i <= 104 ? 120 : i <= 108 ? 180 : 280,
+        status: Math.random() > 0.3 ? 'AVAILABLE' : 'OCCUPIED',
+        features: i <= 104 ? ['WiFi', 'TV'] : i <= 108 ? ['WiFi', 'TV', 'AC', 'Mini-bar'] : ['WiFi', 'TV', 'AC', 'Mini-bar', 'Coffee maker'],
+      });
+    }
+    setAvailableRooms(available);
+  };
+
   const handleNextStep = () => {
     if (validateStep(currentStep)) {
+      addFormDataToArray();
       setCurrentStep(prev => Math.min(prev + 1, 5));
     } else {
       showToast('Please fix the validation errors before proceeding.', 'error');
@@ -494,20 +626,208 @@ const BookingForm = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
+  // Prepare data for backend
+  const prepareBackendData = () => {
+    // Transform selected room types to room numbers if in type mode
+    const selectedRoomsToSend = formData.roomSelectionMode === 'type' 
+      ? [] // Will be assigned by backend
+      : formData.selectedRooms;
+
+    // Transform selected room types for backend
+    const selectedRoomTypesForBackend = formData.selectedRoomTypes.map(rt => ({
+      typeId: rt.typeId,
+      numberOfRooms: rt.numberOfRooms
+    }));
+
+    return {
+      // Guest Information
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email || null,
+      phone: formData.phone,
+      nationality: formData.nationality,
+      address: formData.address || null,
+      idType: formData.idType || null,
+      idNumber: formData.idNumber || null,
+      dateOfBirth: formData.dateOfBirth || null,
+      gender: formData.gender || null,
+      passportNumber: formData.passportNumber || null,
+      passportExpiry: formData.passportExpiry || null,
+      country: formData.country || null,
+      state: formData.state || null,
+      city: formData.city || null,
+      zipCode: formData.zipCode || null,
+      emergencyContact: formData.emergencyContact || null,
+      company: formData.company || null,
+      businessEmail: formData.businessEmail || null,
+      loyaltyNumber: formData.loyaltyNumber || null,
+      
+      // Stay Details
+      checkInDate: formData.checkInDate,
+      checkOutDate: formData.checkOutDate,
+      adults: parseInt(formData.adults) || 1,
+      children: parseInt(formData.children) || 0,
+      infants: parseInt(formData.infants) || 0,
+      arrivalTime: formData.arrivalTime || null,
+      departureTime: formData.departureTime || null,
+      purposeOfVisit: formData.purposeOfVisit || null,
+      specialInstructions: formData.specialInstructions || null,
+      
+      // Room Selection
+      roomSelectionMode: formData.roomSelectionMode,
+      selectedRoomTypes: selectedRoomTypesForBackend,
+      selectedRooms: selectedRoomsToSend,
+      totalRooms: formData.totalRooms || selectedRoomTypesForBackend.reduce((sum, rt) => sum + rt.numberOfRooms, 0),
+      
+      // Pricing & Offers
+      ratePlan: formData.ratePlan || null,
+      basePrice: parseFloat(formData.basePrice) || 0,
+      discountType: formData.discountType,
+      discountValue: parseFloat(formData.discountValue) || 0,
+      promoCode: formData.promoCode || null,
+      taxPercentage: parseFloat(formData.taxPercentage) || 10,
+      extraServices: formData.extraServices.map(id => parseInt(id)),
+      
+      // Payment
+      paymentType: formData.paymentType,
+      paymentMethod: formData.paymentMethod || null,
+      advancePayment: parseFloat(formData.advancePayment) || 0,
+      transactionId: formData.transactionId || null,
+      paymentDate: formData.paymentDate || null,
+      paymentRemarks: formData.paymentRemarks || null,
+      
+      // Additional Information
+      specialRequests: formData.specialRequests || null,
+      bookingSource: formData.bookingSource || 'walk-in',
+      remarks: formData.remarks || null,
+      marketingOptIn: formData.marketingOptIn,
+      termsAccepted: formData.termsAccepted,
+      
+      // Room Preferences
+      bedPreference: formData.bedPreference || null,
+      smokingPreference: formData.smokingPreference || 'non-smoking',
+      floorPreference: formData.floorPreference || null,
+      viewPreference: formData.viewPreference || null,
+      
+      // Special Services
+      extraBed: formData.extraBed,
+      crib: formData.crib,
+      wheelchairAccess: formData.wheelchairAccess,
+      earlyCheckIn: formData.earlyCheckIn,
+      lateCheckOut: formData.lateCheckOut,
+
+      // Calculated totals
+      totalAmount: calculateTotal(),
+      balanceDue: calculateBalance(),
+      nights: calculateNights()
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
     if (!validateStep(4)) {
-      setIsSubmitting(false);
       return;
     }
     
+    // Add final form data to array
+    addFormDataToArray();
+    
+    // Prepare data for backend
+    const backendData = prepareBackendData();
+    
+    // Log complete booking details to console
+    console.log('========== COMPLETE BOOKING DETAILS ==========');
+    console.log('Form Data:', formData);
+    console.log('Form Data Array:', formDataArray);
+    console.log('Backend Data (to be sent):', backendData);
+    console.log('Calculated Totals:', {
+      nights: calculateNights(),
+      subtotal: calculateSubtotal(),
+      discount: calculateDiscount(),
+      tax: calculateTax(),
+      total: calculateTotal(),
+      balance: calculateBalance()
+    });
+    console.log('=============================================');
+    
     try {
+      setIsSubmitting(true);
+      showToast('Sending booking data to server...', 'info');
+      
+      // Send data to backend
+      console.log('Sending POST request to:', `${API_BASE_URL}/v1/booking-form`);
+      console.log('Request data:', JSON.stringify(backendData, null, 2));
+      
+      const response = await axios.post(`${API_BASE_URL}/v1/booking-form`, backendData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Backend Response:', response.data);
+      
+      if (response.data && response.data.success) {
+        const newBookingId = response.data.data.bookingId || response.data.data.id || `BK${Date.now().toString().slice(-8)}`;
+        setBookingId(newBookingId);
+        
+        // Clear drafts
+        const drafts = JSON.parse(localStorage.getItem('bookingDrafts') || '[]');
+        const updatedDrafts = drafts.filter(d => 
+          !(d.firstName === formData.firstName && 
+            d.lastName === formData.lastName && 
+            d.checkInDate === formData.checkInDate)
+        );
+        localStorage.setItem('bookingDrafts', JSON.stringify(updatedDrafts));
+        
+        // Save to local storage as backup
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        bookings.push({
+          ...formData,
+          bookingId: newBookingId,
+          createdAt: new Date().toISOString(),
+          status: 'confirmed',
+          totalAmount: calculateTotal(),
+          balanceDue: calculateBalance(),
+          backendResponse: response.data
+        });
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        
+        setCurrentStep(5);
+        showToast('Booking confirmed and saved to database!', 'success');
+        
+        // Log success
+        console.log('✅ Booking successfully created with ID:', newBookingId);
+        console.log('✅ Backend response:', response.data);
+      } else {
+        throw new Error(response.data.message || 'Booking creation failed');
+      }
+    } catch (error) {
+      console.error('❌ Booking creation failed:', error);
+      
+      // Show detailed error
+      let errorMessage = 'Unknown error';
+      if (error.response) {
+        console.error('❌ Error response data:', error.response.data);
+        console.error('❌ Error response status:', error.response.status);
+        console.error('❌ Error response headers:', error.response.headers);
+        
+        errorMessage = error.response.data?.message || 
+                      error.response.data?.error || 
+                      `HTTP ${error.response.status}: ${error.response.statusText}`;
+      } else if (error.request) {
+        console.error('❌ No response received:', error.request);
+        errorMessage = 'No response from server. Please check if backend is running.';
+      } else {
+        console.error('❌ Error setting up request:', error.message);
+        errorMessage = error.message;
+      }
+      
+      showToast(`Failed to create booking: ${errorMessage}`, 'error');
+      
+      // Fallback: Save to localStorage
       const newBookingId = `BK${Date.now().toString().slice(-8)}`;
       setBookingId(newBookingId);
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
       const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
       bookings.push({
@@ -517,21 +837,12 @@ const BookingForm = () => {
         status: 'confirmed',
         totalAmount: calculateTotal(),
         balanceDue: calculateBalance(),
+        error: errorMessage
       });
       localStorage.setItem('bookings', JSON.stringify(bookings));
       
-      const drafts = JSON.parse(localStorage.getItem('bookingDrafts') || '[]');
-      const updatedDrafts = drafts.filter(d => 
-        !(d.firstName === formData.firstName && 
-          d.lastName === formData.lastName && 
-          d.checkInDate === formData.checkInDate)
-      );
-      localStorage.setItem('bookingDrafts', JSON.stringify(updatedDrafts));
-      
       setCurrentStep(5);
-      showToast('Booking confirmed successfully!', 'success');
-    } catch (error) {
-      showToast('Failed to create booking. Please try again.', 'error');
+      showToast('Booking saved locally (backend error)', 'warning');
     } finally {
       setIsSubmitting(false);
     }
@@ -546,14 +857,30 @@ const BookingForm = () => {
   };
 
   const handleExportDetails = () => {
-    const dataStr = JSON.stringify(formData, null, 2);
+    const exportData = {
+      formData: formData,
+      formDataArray: formDataArray,
+      calculated: {
+        nights: calculateNights(),
+        subtotal: calculateSubtotal(),
+        discount: calculateDiscount(),
+        tax: calculateTax(),
+        total: calculateTotal(),
+        balance: calculateBalance()
+      },
+      backendData: prepareBackendData()
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `booking-${Date.now()}.json`;
+    const exportFileDefaultName = `booking-details-${Date.now()}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
+    
+    showToast('Booking details exported successfully', 'success');
   };
 
   const getStepClass = (stepId) => {
@@ -565,7 +892,7 @@ const BookingForm = () => {
   useEffect(() => {
     const newBasePrice = formData.selectedRoomTypes.reduce((total, rt) => {
       const roomType = roomTypes.find(r => r.id === rt.typeId);
-      return total + (roomType.price * rt.numberOfRooms * calculateNights());
+      return total + (roomType?.price * rt.numberOfRooms * calculateNights());
     }, 0);
     
     setFormData(prev => ({ ...prev, basePrice: newBasePrice }));
@@ -590,6 +917,25 @@ const BookingForm = () => {
     }
   };
 
+  // Function to view array data
+  const viewArrayData = () => {
+    console.log('Current form data array:', formDataArray);
+    alert(`Form data array has ${formDataArray.length} entries. Check console for details.`);
+  };
+
+  // Test API connection
+  const testAPIConnection = async () => {
+    try {
+      showToast('Testing API connection...', 'info');
+      const response = await axios.get(`${API_BASE_URL}/v1/rooms/health`);
+      console.log('API Health Check:', response.data);
+      showToast(`API Connection: ${response.data}`, 'success');
+    } catch (error) {
+      console.error('API Connection Test Failed:', error);
+      showToast('API Connection Failed. Check if backend is running.', 'error');
+    }
+  };
+
   return (
     <div className="space-y-6 p-4 md:p-6">
       {/* Custom Toast Container */}
@@ -611,6 +957,23 @@ const BookingForm = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">New Booking</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Create a new reservation for future check-in</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-blue-600 dark:text-blue-400">
+              Data array entries: {formDataArray.length}
+            </p>
+            <button 
+              onClick={viewArrayData}
+              className="ml-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded"
+            >
+              View Array
+            </button>
+            <button 
+              onClick={testAPIConnection}
+              className="ml-2 text-xs bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded"
+            >
+              Test API
+            </button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -708,7 +1071,7 @@ const BookingForm = () => {
                         name="guestSearch"
                         value={formData.guestSearch}
                         onChange={handleInputChange}
-                        onKeyUp={handleSearchGuest}
+                        onKeyUp={(e) => e.key === 'Enter' && handleSearchGuest()}
                         className="input-field pl-10"
                         placeholder="Search by name, phone, or email..."
                       />
@@ -717,8 +1080,14 @@ const BookingForm = () => {
                       type="button"
                       onClick={handleSearchGuest}
                       className="btn-secondary"
+                      disabled={guestSearchLoading}
                     >
-                      Search
+                      {guestSearchLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                          Searching...
+                        </>
+                      ) : 'Search'}
                     </button>
                     <button
                       type="button"
@@ -742,12 +1111,12 @@ const BookingForm = () => {
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <div className="font-medium">{guest.name}</div>
+                              <div className="font-medium">{guest.firstName} {guest.lastName}</div>
                               <div className="text-sm text-gray-600 dark:text-gray-400">
                                 {guest.email} • {guest.phone}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {guest.previousStays} previous stay(s)
+                                Nationality: {guest.nationality || 'Not specified'}
                               </div>
                             </div>
                             <span className={`px-2 py-1 text-xs rounded ${
@@ -757,7 +1126,7 @@ const BookingForm = () => {
                                 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                                 : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
                             }`}>
-                              {guest.loyaltyTier}
+                              {guest.loyaltyTier || 'Member'}
                             </span>
                           </div>
                         </div>
@@ -1274,30 +1643,57 @@ const BookingForm = () => {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {availableRooms.map(room => (
-                        <button
-                          key={room.number}
-                          type="button"
-                          onClick={() => handleRoomSelect(room.number)}
-                          className={`p-4 rounded-lg border-2 transition-all ${
-                            formData.selectedRooms.includes(room.number)
-                              ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                              : room.status === 'available'
-                              ? 'border-gray-300 dark:border-gray-600 hover:border-primary-500'
-                              : 'border-red-300 dark:border-red-600 opacity-50 cursor-not-allowed'
-                          }`}
-                          disabled={room.status !== 'available'}
-                        >
-                          <div className="text-center">
-                            <div className="font-bold text-lg">{room.number}</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{room.type}</div>
-                            <div className="text-sm font-medium mt-2">${room.price}</div>
-                            <div className="text-xs text-gray-500">Floor {room.floor}</div>
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                        <span className="ml-3">Loading available rooms...</span>
+                      </div>
+                    ) : (
+                      <>
+                        {Array.isArray(availableRooms) && availableRooms.length > 0 ? (
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {availableRooms.map(room => (
+                              <button
+                                key={room.id || room.number}
+                                type="button"
+                                onClick={() => handleRoomSelect(room.number || room.id)}
+                                className={`p-4 rounded-lg border-2 transition-all ${
+                                  formData.selectedRooms.includes((room.number || room.id).toString())
+                                    ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                                    : (room.status || '').toUpperCase() === 'AVAILABLE'
+                                    ? 'border-gray-300 dark:border-gray-600 hover:border-primary-500'
+                                    : 'border-red-300 dark:border-red-600 opacity-50 cursor-not-allowed'
+                                }`}
+                                disabled={(room.status || '').toUpperCase() !== 'AVAILABLE'}
+                              >
+                                <div className="text-center">
+                                  <div className="font-bold text-lg">{room.number || room.id || 'N/A'}</div>
+                                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    {room.type || 'Unknown Room Type'}
+                                  </div>
+                                  <div className="text-sm font-medium mt-2">${room.price || 0}</div>
+                                  <div className="text-xs text-gray-500">Floor {room.floor || 'N/A'}</div>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    Status: {(room.status || 'unknown').toUpperCase()}
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
                           </div>
-                        </button>
-                      ))}
-                    </div>
+                        ) : (
+                          <div className="text-center py-8 border rounded-lg">
+                            <p className="text-gray-500">No rooms available for selected dates</p>
+                            <button
+                              type="button"
+                              onClick={createMockAvailableRooms}
+                              className="mt-2 btn-secondary text-sm"
+                            >
+                              Load Mock Data
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
                     
                     <div className="mt-4 text-sm">
                       Selected Rooms: {formData.selectedRooms.length} room(s)
@@ -1732,11 +2128,14 @@ const BookingForm = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={handleSaveDraft}
+                  onClick={() => {
+                    addFormDataToArray();
+                    showToast('Current step saved to array', 'success');
+                  }}
                   className="w-full btn-secondary flex items-center justify-center gap-2"
                 >
                   <Save size={16} />
-                  Save as Draft
+                  Save Current Step to Array
                 </button>
                 <button
                   type="button"
@@ -1745,6 +2144,43 @@ const BookingForm = () => {
                 >
                   <Download size={16} />
                   Export Details
+                </button>
+              </div>
+            </div>
+
+            {/* Array Data Status */}
+            <div className="card bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Disk size={18} />
+                Data Array Status
+              </h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm">Entries:</span>
+                  <span className="font-bold">{formDataArray.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Current Step:</span>
+                  <span className="font-bold">Step {currentStep}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Last Saved:</span>
+                  <span className="text-sm">
+                    {formDataArray.length > 0 
+                      ? new Date(formDataArray[formDataArray.length - 1].timestamp).toLocaleTimeString()
+                      : 'Never'
+                    }
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    console.log('Form Data Array:', formDataArray);
+                    alert(`Check console for ${formDataArray.length} array entries`);
+                  }}
+                  className="w-full mt-2 btn-outline flex items-center justify-center gap-2"
+                >
+                  <EyeIcon size={16} />
+                  View Array in Console
                 </button>
               </div>
             </div>

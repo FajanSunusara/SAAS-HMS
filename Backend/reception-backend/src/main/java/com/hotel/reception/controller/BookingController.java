@@ -5,6 +5,7 @@ import com.hotel.reception.model.dto.request.CheckoutRequest;
 import com.hotel.reception.model.dto.response.ApiResponse;
 import com.hotel.reception.model.dto.response.BookingBillResponse;
 import com.hotel.reception.model.dto.response.BookingResponse;
+import com.hotel.reception.model.enums.BookingStatus;
 import com.hotel.reception.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -90,8 +91,15 @@ public class BookingController {
             @PathVariable Long id,
             @RequestParam String status) {
         
-        BookingResponse response = bookingService.updateBookingStatus(id, status);
-        return ResponseEntity.ok(ApiResponse.success("Booking status updated", response));
+        try {
+            BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
+            BookingResponse response = bookingService.updateBookingStatus(id, bookingStatus);
+            return ResponseEntity.ok(ApiResponse.success("Booking status updated", response));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                ApiResponse.error("Invalid booking status: " + status)
+            );
+        }
     }
     
     @Operation(summary = "Cancel booking")
